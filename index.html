@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Backlog">
+<title>Backlog</title>
+
+<!-- ===== CONFIG — fill in your Client ID below ===== -->
+<script>
+const CONFIG = {
+  CLIENT_ID: '79dffb14-01e3-4e4d-bc16-c7e86981106f',
+  FILE_PATH: '/me/drive/root:/0 - Data/Backlog/backlog.md:/content',
+  SCOPES: ['Files.ReadWrite', 'User.Read']
+};
+</script>
+<!-- =================================================== -->
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #F2F2F7;
+  --surface: #FFFFFF;
+  --text: #1C1C1E;
+  --text2: #636366;
+  --text3: #8E8E93;
+  --border: rgba(60,60,67,0.18);
+  --accent: #1C1C1E;
+  --green: #1D9E75;
+  --red: #E24B4A;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+}
+#login-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  gap: 20px;
+  padding: 40px;
+  text-align: center;
+}
+#login-screen h1 { font-size: 28px; font-weight: 700; }
+#login-screen p { font-size: 15px; color: var(--text2); line-height: 1.6; max-width: 280px; }
+.login-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  font-family: inherit;
+}
+#app-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+/* Header */
+.app-header {
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--border);
+  padding: calc(var(--safe-top) + 14px) 20px 12px;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.app-header h1 { font-size: 22px; font-weight: 700; }
+.add-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  background: var(--accent);
+  border: none;
+  color: white;
+  font-size: 24px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.header-sub { font-size: 13px; color: var(--text3); margin-top: 3px; }
+/* Filters */
+.filter-bar {
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.pill {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  border: 0.5px solid var(--border);
+  color: var(--text3);
+  background: transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pill.active { background: var(--accent); color: white; border-color: transparent; }
+/* Content */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
+}
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 12px 4px;
+}
+.stat-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.stat-label { font-size: 11px; color: var(--text3); }
+.stat-value { font-size: 24px; font-weight: 700; margin-top: 2px; }
+/* Section label */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 14px 20px 6px;
+}
+/* Task row */
+.task-row {
+  background: var(--surface);
+  margin: 0 12px 8px;
+  border-radius: 12px;
+  border: 0.5px solid var(--border);
+  padding: 13px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+}
+.task-row:active { opacity: 0.7; }
+.check-ring {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.check-ring.is-done {
+  background: var(--green);
+  border-color: var(--green);
+}
+.check-ring.is-done::after {
+  content: '✓';
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+.task-info { flex: 1; min-width: 0; }
+.task-name {
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--text);
+}
+.task-name.is-done { color: var(--text3); text-decoration: line-through; }
+.task-tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+.tag-home     { background: #E6F1FB; color: #185FA5; }
+.tag-personal { background: #FAEEDA; color: #854F0B; }
+.tag-health   { background: #EAF3DE; color: #3B6D11; }
+.tag-gcs      { background: #EEEDFE; color: #534AB7; }
+.task-chevron { color: #C7C7CC; font-size: 18px; }
+/* Bottom nav */
+.bottom-nav {
+  background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  padding: 8px 0 calc(var(--safe-bottom) + 6px);
+}
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 0;
+  cursor: pointer;
+  -webkit-user-select: none;
+}
+.nav-icon { font-size: 22px; color: var(--text3); }
+.nav-tab.active .nav-icon { color: var(--text); }
+.nav-label { font-size: 10px; color: var(--text3); }
+.nav-tab.active .nav-label { color: var(--text); }
+/* Modal */
+.modal-wrap {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+}
+.modal-box {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px calc(var(--safe-bottom) + 28px);
+  width: 100%;
+}
+.modal-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 18px; }
+.modal-input {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 12px;
+  border: 0.5px solid var(--border);
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 12px;
+  -webkit-appearance: none;
+}
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.modal-select {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 12px;
+  border: 0.5px solid var(--border);
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 16px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.modal-actions { display: flex; gap: 10px; }
+.btn-cancel {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: 0.5px solid var(--border);
+  font-size: 16px;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+}
+.btn-save {
+  flex: 2;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-delete {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 0.5px solid var(--red);
+  color: var(--red);
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.empty-state {
+  text-align: center;
+  padding: 60px 30px;
+  color: var(--text3);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.loading-state {
+  text-align: center;
+  padding: 60px 30px;
+  color: var(--text3);
+  font-size: 15px;
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen" class="hidden">
+  <h1>Backlog</h1>
+  <p>Sign in with your Microsoft account to load your OneDrive backlog.</p>
+  <button class="login-btn" onclick="signIn()">Sign in with Microsoft</button>
+</div>
+
+<!-- App -->
+<div id="app-screen" class="hidden">
+  <div class="app-header">
+    <div class="header-row">
+      <h1>My Backlog</h1>
+      <button class="add-btn" onclick="openAdd()" aria-label="Add task">+</button>
+    </div>
+    <div class="header-sub" id="subtitle">Loading…</div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="pill active" onclick="setFilter('all', this)">All</button>
+    <button class="pill" onclick="setFilter('home', this)">Home</button>
+    <button class="pill" onclick="setFilter('personal', this)">Personal</button>
+    <button class="pill" onclick="setFilter('health', this)">Health</button>
+    <button class="pill" onclick="setFilter('gcs', this)">GCS</button>
+  </div>
+
+  <div class="content-area" id="content">
+    <div class="loading-state">Loading your backlog…</div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-tab active" id="tab-backlog" onclick="setTab('backlog', this)">
+      <span class="nav-icon">☰</span>
+      <span class="nav-label">Backlog</span>
+    </div>
+    <div class="nav-tab" id="tab-stats" onclick="setTab('stats', this)">
+      <span class="nav-icon">◎</span>
+      <span class="nav-label">Stats</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal-wrap hidden" onclick="handleModalBg(event)">
+  <div class="modal-box">
+    <h3 id="modal-heading">Add Task</h3>
+    <input id="task-input" class="modal-input" type="text" placeholder="What needs to get done?" />
+    <select id="tag-input" class="modal-select">
+      <option value="">No tag</option>
+      <option value="home">Home</option>
+      <option value="personal">Personal</option>
+      <option value="health">Health</option>
+      <option value="gcs">GCS</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTask()">Save</button>
+    </div>
+    <button id="delete-btn" class="btn-delete hidden" onclick="deleteTask()">Delete Task</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2/dist/msal-browser.min.js"></script>
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let msalApp = null;
+let tasks = [];
+let rawMd = '';
+let activeFilter = 'all';
+let activeTab = 'backlog';
+let editLineIndex = null;
+
+// ─── MSAL Init ───────────────────────────────────────────────────────────────
+async function initAuth() {
+  const redirectUri = window.location.origin + window.location.pathname;
+  msalApp = new msal.PublicClientApplication({
+    auth: {
+      clientId: CONFIG.CLIENT_ID,
+      authority: 'https://login.microsoftonline.com/common',
+      redirectUri: redirectUri
+    },
+    cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
+  });
+
+  const result = await msalApp.handleRedirectPromise();
+  if (result) msalApp.setActiveAccount(result.account);
+
+  const accounts = msalApp.getAllAccounts();
+  if (accounts.length > 0) {
+    msalApp.setActiveAccount(accounts[0]);
+    showApp();
+    await loadBacklog();
+  } else {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app-screen').classList.add('hidden');
+}
+
+function showApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+}
+
+async function signIn() {
+  await msalApp.loginRedirect({ scopes: CONFIG.SCOPES });
+}
+
+async function getToken() {
+  const account = msalApp.getActiveAccount();
+  const result = await msalApp.acquireTokenSilent({ scopes: CONFIG.SCOPES, account });
+  return result.accessToken;
+}
+
+// ─── OneDrive ────────────────────────────────────────────────────────────────
+async function loadBacklog() {
+  try {
+    const token = await getToken();
+    const res = await fetch('https://graph.microsoft.com/v1.0' + CONFIG.FILE_PATH, {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    rawMd = await res.text();
+    parseTasks();
+    render();
+  } catch (e) {
+    document.getElementById('subtitle').textContent = 'Error loading backlog';
+    document.getElementById('content').innerHTML = '<div class="empty-state">Could not load backlog.md.<br>Check your config and try again.</div>';
+    console.error(e);
+  }
+}
+
+async function saveBacklog() {
+  const token = await getToken();
+  await fetch('https://graph.microsoft.com/v1.0' + CONFIG.FILE_PATH, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'text/plain' },
+    body: rawMd
+  });
+}
+
+// ─── Parser ──────────────────────────────────────────────────────────────────
+function parseTasks() {
+  tasks = [];
+  const lines = rawMd.split('\n');
+  lines.forEach((line, i) => {
+    const m = line.match(/^- \[( |x)\] (.+?)(?:\s+\((\w+)\))?$/i);
+    if (m) {
+      const tag = m[3] ? m[3].toLowerCase() : '';
+      const title = m[2].replace(/\s+\(\w+\)$/, '').trim();
+      tasks.push({ done: m[1].toLowerCase() === 'x', title, tag, lineIndex: i });
+    }
+  });
+}
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function render() {
+  const active = tasks.filter(t => !t.done && matchesFilter(t));
+  const done   = tasks.filter(t =>  t.done && matchesFilter(t));
+  const totalActive = tasks.filter(t => !t.done).length;
+  const totalDone   = tasks.filter(t =>  t.done).length;
+
+  document.getElementById('subtitle').textContent =
+    totalActive + ' active · ' + totalDone + ' done';
+
+  if (activeTab === 'stats') { renderStats(totalActive, totalDone); return; }
+
+  let html = '';
+
+  // Stats strip
+  html += '<div class="stats-grid">';
+  html += '<div class="stat-card"><div class="stat-label">Active</div><div class="stat-value">' + totalActive + '</div></div>';
+  html += '<div class="stat-card"><div class="stat-label">Done</div><div class="stat-value">' + totalDone + '</div></div>';
+  html += '</div>';
+
+  if (active.length === 0 && done.length === 0) {
+    html += '<div class="empty-state">Nothing here yet.<br>Tap + to add your first task.</div>';
+  } else {
+    if (active.length > 0) {
+      html += '<div class="section-label">Active</div>';
+      active.forEach(t => { html += taskHTML(t); });
+    }
+    if (done.length > 0) {
+      html += '<div class="section-label">Done</div>';
+      done.forEach(t => { html += taskHTML(t); });
+    }
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function matchesFilter(t) {
+  return activeFilter === 'all' || t.tag === activeFilter;
+}
+
+function taskHTML(t) {
+  const ringClass = t.done ? 'check-ring is-done' : 'check-ring';
+  const nameClass = t.done ? 'task-name is-done' : 'task-name';
+  const tagHTML   = t.tag ? '<span class="task-tag tag-' + t.tag + '">' + t.tag + '</span>' : '';
+  const chevron   = t.done ? '' : '<span class="task-chevron">›</span>';
+  return (
+    '<div class="task-row" onclick="openEdit(' + t.lineIndex + ')">' +
+      '<div class="' + ringClass + '" onclick="toggleDone(event,' + t.lineIndex + ')"></div>' +
+      '<div class="task-info">' +
+        '<div class="' + nameClass + '">' + escHtml(t.title) + '</div>' +
+        tagHTML +
+      '</div>' +
+      chevron +
+    '</div>'
+  );
+}
+
+function renderStats(active, done) {
+  const total = active + done;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('content').innerHTML =
+    '<div class="stats-grid">' +
+      '<div class="stat-card"><div class="stat-label">Active</div><div class="stat-value">' + active + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Done</div><div class="stat-value">' + done + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">' + total + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Completion</div><div class="stat-value">' + pct + '%</div></div>' +
+    '</div>';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Task Actions ─────────────────────────────────────────────────────────────
+async function toggleDone(e, lineIndex) {
+  e.stopPropagation();
+  const lines = rawMd.split('\n');
+  const line = lines[lineIndex];
+  if (/^- \[ \]/.test(line)) {
+    lines[lineIndex] = line.replace('- [ ]', '- [x]');
+  } else {
+    lines[lineIndex] = line.replace('- [x]', '- [ ]');
+  }
+  rawMd = lines.join('\n');
+  parseTasks();
+  render();
+  await saveBacklog();
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function openAdd() {
+  editLineIndex = null;
+  document.getElementById('modal-heading').textContent = 'Add Task';
+  document.getElementById('task-input').value = '';
+  document.getElementById('tag-input').value = '';
+  document.getElementById('delete-btn').classList.add('hidden');
+  document.getElementById('modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('task-input').focus(), 80);
+}
+
+function openEdit(lineIndex) {
+  const t = tasks.find(t => t.lineIndex === lineIndex);
+  if (!t) return;
+  editLineIndex = lineIndex;
+  document.getElementById('modal-heading').textContent = 'Edit Task';
+  document.getElementById('task-input').value = t.title;
+  document.getElementById('tag-input').value = t.tag || '';
+  document.getElementById('delete-btn').classList.remove('hidden');
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  editLineIndex = null;
+}
+
+function handleModalBg(e) {
+  if (e.target.id === 'modal') closeModal();
+}
+
+async function saveTask() {
+  const title = document.getElementById('task-input').value.trim();
+  if (!title) { document.getElementById('task-input').focus(); return; }
+  const tag = document.getElementById('tag-input').value;
+  const tagStr = tag ? ' (' + tag + ')' : '';
+  const newLine = '- [ ] ' + title + tagStr;
+  const lines = rawMd.split('\n');
+
+  if (editLineIndex !== null) {
+    const old = lines[editLineIndex];
+    const isDone = /^- \[x\]/.test(old);
+    lines[editLineIndex] = (isDone ? '- [x] ' : '- [ ] ') + title + tagStr;
+  } else {
+    const activeIdx = lines.findIndex(l => l.trim() === '## Active');
+    if (activeIdx >= 0) {
+      lines.splice(activeIdx + 2, 0, newLine);
+    } else {
+      lines.push(newLine);
+    }
+  }
+
+  rawMd = lines.join('\n');
+  parseTasks();
+  render();
+  closeModal();
+  await saveBacklog();
+}
+
+async function deleteTask() {
+  if (editLineIndex === null) return;
+  const lines = rawMd.split('\n');
+  lines.splice(editLineIndex, 1);
+  rawMd = lines.join('\n');
+  parseTasks();
+  render();
+  closeModal();
+  await saveBacklog();
+}
+
+// ─── Filters & Tabs ──────────────────────────────────────────────────────────
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-bar .pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function setTab(t, el) {
+  activeTab = t;
+  document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+// ─── Boot ────────────────────────────────────────────────────────────────────
+initAuth().catch(console.error);
+</script>
+</body>
+</h
