@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Backlog</title>
+<!-- ===== CONFIG — fill in your values ===== -->
+<script>
+const CONFIG = {
+ CLIENT_ID: '79dffb14-01e3-4e4d-bc16-c7e86981106f',
+ FILE_PATH: '/me/drive/root:/0 - Data/Backlog/backlog.md:/content',
+ SCOPES: ['Files.ReadWrite', 'User.Read']
+};
+</script>
+<!-- =========================================== -->
+<style>
+ * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+ :root {
+ --bg: #F2F2F7; --surface: #FFFFFF; --text: #1C1C1E;
+ --text2: #636366; --text3: #8E8E93; --border: rgba(60,60,67,0.18);
+ --accent: #1C1C1E; --green: #1D9E75; --blue: #185FA5;
+ --safe-top: env(safe-area-inset-top); --safe-bottom: env(safe-area-inset-bottom);
+ }
+ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+ background: var(--bg); color: var(--text); min-height: 100dvh; }
+ #app { display: flex; flex-direction: column; height: 100dvh; }
+ /* Header */
+ .header { background: var(--surface); border-bottom: 0.5px solid var(--border);
+ padding: calc(var(--safe-top) + 12px) 20px 12px; }
+ .header-top { display: flex; justify-content: space-between; align-items: center; }
+ .header h1 { font-size: 22px; font-weight: 700; }
+ .header-sub { font-size: 13px; color: var(--text3); margin-top: 2px; }
+ .add-btn { width: 32px; height: 32px; border-radius: 16px; background: var(--accent);
+ border: none; color: white; font-size: 22px; display: flex; align-items: center;
+ justify-content: center; cursor: pointer; }
+ /* Filters */
+ .filters { background: var(--surface); border-bottom: 0.5px solid var(--border);
+ display: flex; gap: 8px; padding: 10px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+ .filters::-webkit-scrollbar { display: none; }
+ .pill { padding: 5px 14px; border-radius: 20px; font-size: 12px; border: 0.5px solid var(--border);
+ color: var(--text3); background: transparent; white-space: nowrap; cursor: pointer; }
+ .pill.active { background: var(--accent); color: white; border-color: transparent; }
+ /* Content area */
+ .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 0 12px; }
+ /* Stats */
+ .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 12px 4px; }
+ .stat { background: var(--surface); border-radius: 12px; padding: 12px 14px; }
+ .stat-label { font-size: 11px; color: var(--text3); }
+ .stat-value { font-size: 22px; font-weight: 700; }
+ /* Section label */
+ .section-label { font-size: 11px; font-weight: 700; color: var(--text3);
+Page 8 of 17
+ letter-spacing: 0.06em; text-transform: uppercase; padding: 12px 20px 6px; }
+ /* Task card */
+ .task { background: var(--surface); margin: 0 12px 8px; border-radius: 12px;
+ border: 0.5px solid var(--border); padding: 13px 14px; display: flex;
+ align-items: center; gap: 12px; cursor: pointer; }
+ .circle { width: 22px; height: 22px; border-radius: 11px; border: 1.5px solid var(--border);
+ flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+ .circle.done { background: var(--green); border-color: var(--green); }
+ .circle.done::after { content: '✓'; color: white; font-size: 12px; font-weight: 700; }
+ .task-body { flex: 1; min-width: 0; }
+ .task-title { font-size: 15px; line-height: 1.3; }
+ .task-title.done { color: var(--text3); text-decoration: line-through; }
+ .task-tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-top: 
+4px; }
+ .tag-home { background: #E6F1FB; color: #185FA5; }
+ .tag-personal { background: #FAEEDA; color: #854F0B; }
+ .tag-health { background: #EAF3DE; color: #3B6D11; }
+ .tag-gcs { background: #EEEDFE; color: #534AB7; }
+ .chevron { color: #C7C7CC; font-size: 16px; }
+ /* Bottom nav */
+ .nav { background: var(--surface); border-top: 0.5px solid var(--border);
+ display: flex; padding: 8px 0 calc(var(--safe-bottom) + 8px); }
+ .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center;
+ gap: 3px; padding: 4px; cursor: pointer; }
+ .nav-icon { font-size: 20px; color: var(--text3); }
+ .nav-tab.active .nav-icon { color: var(--text); }
+ .nav-label { font-size: 10px; color: var(--text3); }
+ .nav-tab.active .nav-label { color: var(--text); }
+ /* Login screen */
+ #login { display: flex; flex-direction: column; align-items: center; justify-content: center;
+ height: 100dvh; gap: 20px; padding: 40px; }
+ #login h2 { font-size: 22px; font-weight: 700; text-align: center; }
+ #login p { font-size: 14px; color: var(--text2); text-align: center; line-height: 1.6; }
+ .login-btn { background: var(--accent); color: white; border: none; border-radius: 12px;
+ padding: 14px 32px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; }
+ /* Modal */
+ .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+ display: flex; align-items: flex-end; z-index: 100; }
+ .modal { background: var(--surface); border-radius: 16px 16px 0 0;
+ padding: 24px 20px calc(var(--safe-bottom) + 24px); width: 100%; }
+ .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+ .modal input, .modal select { width: 100%; padding: 12px 14px; border-radius: 10px;
+ border: 0.5px solid var(--border); font-size: 15px; font-family: inherit;
+ background: var(--bg); margin-bottom: 12px; color: var(--text); }
+ .modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+ .btn-cancel { flex: 1; padding: 13px; border-radius: 10px; border: 0.5px solid var(--border);
+ font-size: 15px; background: transparent; cursor: pointer; font-family: inherit; color: var(--text); }
+ .btn-save { flex: 2; padding: 13px; border-radius: 10px; border: none;
+ font-size: 15px; font-weight: 600; background: var(--accent); color: white; cursor: pointer; fontfamily: inherit; }
+ .btn-delete { color: #E24B4A; background: transparent; border: 0.5px solid #E24B4A;
+ border-radius: 10px; padding: 13px; font-size: 15px; cursor: pointer; font-family: inherit; margintop: 8px; width: 100%; }
+ .hidden { display: none !important; }
+</style>
+</head>
+<body>
+Page 9 of 17
+<div id="login" class="hidden">
+ <h2>Backlog</h2>
+ <p>Sign in with your Microsoft account to access your OneDrive backlog.</p>
+ <button class="login-btn" onclick="signIn()">Sign in with Microsoft</button>
+</div>
+<div id="app" class="hidden">
+ <div class="header">
+ <div class="header-top">
+ <h1>My Backlog</h1>
+ <button class="add-btn" onclick="openAddModal()" aria-label="Add task">+</button>
+ </div>
+ <div class="header-sub" id="subtitle">Loading...</div>
+ </div>
+ <div class="filters" id="filters">
+ <button class="pill active" onclick="setFilter('all',this)">All</button>
+ <button class="pill" onclick="setFilter('home',this)">Home</button>
+ <button class="pill" onclick="setFilter('personal',this)">Personal</button>
+ <button class="pill" onclick="setFilter('health',this)">Health</button>
+ <button class="pill" onclick="setFilter('gcs',this)">GCS</button>
+ </div>
+ <div class="content" id="content"></div>
+ <div class="nav">
+ <div class="nav-tab active" onclick="setTab('backlog',this)">
+ <span class="nav-icon">☰</span>
+ <span class="nav-label">Backlog</span>
+ </div>
+ <div class="nav-tab" onclick="setTab('today',this)">
+ <span class="nav-icon">📅</span>
+ <span class="nav-label">Today</span>
+ </div>
+ <div class="nav-tab" onclick="setTab('stats',this)">
+ <span class="nav-icon">📊</span>
+ <span class="nav-label">Stats</span>
+ </div>
+ </div>
+</div>
+<div id="modal" class="modal-overlay hidden" onclick="closeModalIfBg(event)">
+ <div class="modal">
+ <h3 id="modal-title">Add Task</h3>
+ <input id="task-input" type="text" placeholder="Task description" />
+ <select id="tag-select">
+ <option value="">No tag</option>
+ <option value="home">Home</option>
+ <option value="personal">Personal</option>
+ <option value="health">Health</option>
+ <option value="gcs">GCS</option>
+ </select>
+ <div class="modal-actions">
+ <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+ <button class="btn-save" onclick="saveTask()">Save</button>
+ </div>
+ <button id="delete-btn" class="btn-delete hidden" onclick="deleteTask()">Delete Task</button>
+ </div>
+</div>
+<script src="https://unpkg.com/@azure/msal-browser@3/dist/msal-browser.min.js"></script>
+Page 10 of 17
+<script>
+const msalConfig = {
+ auth: { clientId: CONFIG.CLIENT_ID, authority: 'https://login.microsoftonline.com/common', redirectUri: 
+window.location.href.split('?')[0] }
+};
+const msal = new msal.PublicClientApplication(msalConfig);
+let tasks = [], filter = 'all', tab = 'backlog', editingIndex = null, rawContent = '';
+async function init() {
+ await msal.initialize();
+ const resp = await msal.handleRedirectPromise();
+ const accounts = msal.getAllAccounts();
+ if (!accounts.length) { document.getElementById('login').classList.remove('hidden'); return; }
+ msal.setActiveAccount(accounts[0]);
+ document.getElementById('app').classList.remove('hidden');
+ await loadTasks();
+}
+async function signIn() {
+ await msal.loginRedirect({ scopes: CONFIG.SCOPES });
+}
+async function getToken() {
+ const result = await msal.acquireTokenSilent({ scopes: CONFIG.SCOPES });
+ return result.accessToken;
+}
+async function loadTasks() {
+ try {
+ const token = await getToken();
+ const res = await fetch('https://graph.microsoft.com/v1.0' + CONFIG.FILE_PATH, {
+ headers: { Authorization: 'Bearer ' + token }
+ });
+ rawContent = await res.text();
+ parseTasks();
+ render();
+ } catch(e) { document.getElementById('subtitle').textContent = 'Error loading backlog'; }
+}
+function parseTasks() {
+ tasks = [];
+ const lines = rawContent.split('\n');
+ lines.forEach((line, i) => {
+ const m = line.match(/^- \[( |x)\] (.+?)(?:\s+\((\w+)\))?$/);
+ if (m) tasks.push({ done: m[1]==='x', title: m[2].replace(/ \(\w+\)$/, '').trim(), tag: m[3]||'', 
+lineIndex: i });
+ });
+}
+function render() {
+ const active = tasks.filter(t => !t.done && (filter==='all' || t.tag===filter));
+ const done = tasks.filter(t => t.done && (filter==='all' || t.tag===filter));
+ document.getElementById('subtitle').textContent = tasks.filter(t=>!t.done).length + ' active · ' + 
+tasks.filter(t=>t.done).length + ' done';
+ if (tab !== 'backlog') { renderStats(); return; }
+ let html = '<div class="stats"><div class="stat"><div class="stat-label">Active</div><div class="statvalue">' + tasks.filter(t=>!t.done).length + '</div></div><div class="stat"><div class="stat-label">Done</
+div><div class="stat-value">' + tasks.filter(t=>t.done).length + '</div></div></div>';
+Page 11 of 17
+ if (active.length) {
+ html += '<div class="section-label">Active</div>';
+ active.forEach(t => { html += taskHTML(t); });
+ }
+ if (done.length) {
+ html += '<div class="section-label">Done</div>';
+ done.forEach(t => { html += taskHTML(t); });
+ }
+ document.getElementById('content').innerHTML = html;
+}
+function taskHTML(t) {
+ const tagClass = t.tag ? 'task-tag tag-' + t.tag : '';
+ const tagHTML = t.tag ? '<span class="' + tagClass + '">' + t.tag + '</span>' : '';
+ return '<div class="task" onclick="openEditModal(' + t.lineIndex + ')"><div class="circle' + (t.done?' 
+done':'') + '" onclick="toggleTask(event,' + t.lineIndex + ')"></div><div class="task-body"><div 
+class="task-title' + (t.done?' done':'') + '">' + t.title + '</div>' + tagHTML + '</div>' + 
+(t.done?'':'<span class="chevron">&rsaquo;</span>') + '</div>';
+}
+function renderStats() {
+ const total = tasks.length, active = tasks.filter(t=>!t.done).length, done = 
+tasks.filter(t=>t.done).length;
+ document.getElementById('content').innerHTML = '<div class="stats"><div class="stat"><div class="statlabel">Active</div><div class="stat-value">' + active + '</div></div><div class="stat"><div class="statlabel">Total done</div><div class="stat-value">' + done + '</div></div></div>';
+}
+async function toggleTask(e, lineIndex) {
+ e.stopPropagation();
+ const lines = rawContent.split('\n');
+ if (lines[lineIndex].includes('- [ ]')) { lines[lineIndex] = lines[lineIndex].replace('- [ ]', '- 
+[x]'); }
+ else { lines[lineIndex] = lines[lineIndex].replace('- [x]', '- [ ]'); }
+ rawContent = lines.join('\n');
+ parseTasks(); render();
+ await saveToOneDrive();
+}
+async function saveToOneDrive() {
+ const token = await getToken();
+ await fetch('https://graph.microsoft.com/v1.0' + CONFIG.FILE_PATH, {
+ method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'text/plain' }, body: 
+rawContent
+ });
+}
+function openAddModal() {
+ editingIndex = null;
+ document.getElementById('modal-title').textContent = 'Add Task';
+ document.getElementById('task-input').value = '';
+ document.getElementById('tag-select').value = '';
+ document.getElementById('delete-btn').classList.add('hidden');
+ document.getElementById('modal').classList.remove('hidden');
+ setTimeout(() => document.getElementById('task-input').focus(), 100);
+}
+function openEditModal(lineIndex) {
+Page 12 of 17
+ const t = tasks.find(t => t.lineIndex === lineIndex);
+ if (!t) return;
+ editingIndex = lineIndex;
+ document.getElementById('modal-title').textContent = 'Edit Task';
+ document.getElementById('task-input').value = t.title;
+ document.getElementById('tag-select').value = t.tag || '';
+ document.getElementById('delete-btn').classList.remove('hidden');
+ document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function closeModalIfBg(e) { if (e.target.id === 'modal') closeModal(); }
+async function saveTask() {
+ const title = document.getElementById('task-input').value.trim();
+ if (!title) return;
+ const tag = document.getElementById('tag-select').value;
+ const tagStr = tag ? ' (' + tag + ')' : '';
+ const newLine = '- [ ] ' + title + tagStr;
+ const lines = rawContent.split('\n');
+ if (editingIndex !== null) {
+ const old = lines[editingIndex];
+ const isDone = old.includes('- [x]');
+ lines[editingIndex] = (isDone ? '- [x] ' : '- [ ] ') + title + tagStr;
+ } else {
+ const activeIdx = lines.findIndex(l => l.trim() === '## Active');
+ if (activeIdx >= 0) { lines.splice(activeIdx + 2, 0, newLine); }
+ else { lines.push(newLine); }
+ }
+ rawContent = lines.join('\n');
+ parseTasks(); render(); closeModal();
+ await saveToOneDrive();
+}
+async function deleteTask() {
+ if (editingIndex === null) return;
+ const lines = rawContent.split('\n');
+ lines.splice(editingIndex, 1);
+ rawContent = lines.join('\n');
+ parseTasks(); render(); closeModal();
+ await saveToOneDrive();
+}
+function setFilter(f, el) {
+ filter = f;
+ document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+ el.classList.add('active');
+ render();
+}
+function setTab(t, el) {
+ tab = t;
+ document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+ el.classList.add('active');
+ render();
+}
+init();
+Page 13 of 17
+</script>
+</body>
+</html>
