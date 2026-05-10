@@ -382,7 +382,7 @@ body {
   </div>
 </div>
 
-<script src="https://unpkg.com/@azure/msal-browser@3/dist/msal-browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2/dist/msal-browser.min.js"></script>
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
 let msalApp = null;
@@ -394,15 +394,15 @@ let editLineIndex = null;
 
 // ─── MSAL Init ───────────────────────────────────────────────────────────────
 async function initAuth() {
+  const redirectUri = window.location.origin + window.location.pathname;
   msalApp = new msal.PublicClientApplication({
     auth: {
       clientId: CONFIG.CLIENT_ID,
       authority: 'https://login.microsoftonline.com/common',
-      redirectUri: window.location.href.split('?')[0].split('#')[0]
+      redirectUri: redirectUri
     },
-    cache: { cacheLocation: 'localStorage' }
+    cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
   });
-  await msalApp.initialize();
 
   const result = await msalApp.handleRedirectPromise();
   if (result) msalApp.setActiveAccount(result.account);
@@ -656,4 +656,4 @@ function setTab(t, el) {
 initAuth().catch(console.error);
 </script>
 </body>
-</html>
+</h
