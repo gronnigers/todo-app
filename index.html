@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Backlog">
+<title>Backlog</title>
+
+<!-- ===== CONFIG — your values are already filled in ===== -->
+<!-- v3 -->
+<script>
+const CONFIG = {
+  CLIENT_ID: '79dffb14-01e3-4e4d-bc16-c7e86981106f',
+  FILE_PATH: '/me/drive/root:/0 - Data/Backlog/backlog.md:/content',
+  SCOPES: 'Files.ReadWrite offline_access'
+};
+</script>
+<!-- ======================================================= -->
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #F2F2F7; --surface: #FFFFFF; --text: #1C1C1E;
+  --text2: #636366; --text3: #8E8E93; --border: rgba(60,60,67,0.18);
+  --accent: #1C1C1E; --green: #1D9E75; --red: #E24B4A;
+  --safe-top: env(safe-area-inset-top); --safe-bottom: env(safe-area-inset-bottom);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; }
+#login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100dvh; gap: 20px; padding: 40px; text-align: center; }
+#login-screen h1 { font-size: 28px; font-weight: 700; }
+#login-screen p { font-size: 15px; color: var(--text2); line-height: 1.6; max-width: 280px; }
+.login-btn { background: var(--accent); color: white; border: none; border-radius: 14px; padding: 16px 32px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; max-width: 300px; font-family: inherit; }
+#error-msg { color: var(--red); font-size: 12px; display: none; max-width: 300px; line-height: 1.5; }
+#app-screen { display: flex; flex-direction: column; height: 100dvh; }
+.app-header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: calc(var(--safe-top) + 14px) 20px 12px; }
+.header-row { display: flex; justify-content: space-between; align-items: center; }
+.app-header h1 { font-size: 22px; font-weight: 700; }
+.add-btn { width: 34px; height: 34px; border-radius: 17px; background: var(--accent); border: none; color: white; font-size: 24px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.header-sub { font-size: 13px; color: var(--text3); margin-top: 3px; }
+.filter-bar { background: var(--surface); border-bottom: 0.5px solid var(--border); display: flex; gap: 8px; padding: 10px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.filter-bar::-webkit-scrollbar { display: none; }
+.pill { padding: 5px 14px; border-radius: 20px; font-size: 12px; border: 0.5px solid var(--border); color: var(--text3); background: transparent; white-space: nowrap; cursor: pointer; font-family: inherit; }
+.pill.active { background: var(--accent); color: white; border-color: transparent; }
+.content-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 16px; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 12px 4px; }
+.stat-card { background: var(--surface); border-radius: 12px; padding: 12px 14px; }
+.stat-label { font-size: 11px; color: var(--text3); }
+.stat-value { font-size: 24px; font-weight: 700; margin-top: 2px; }
+.section-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 0.07em; text-transform: uppercase; padding: 14px 20px 6px; }
+.task-row { background: var(--surface); margin: 0 12px 8px; border-radius: 12px; border: 0.5px solid var(--border); padding: 13px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.task-row:active { opacity: 0.7; }
+.check-ring { width: 24px; height: 24px; border-radius: 12px; border: 1.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.check-ring.is-done { background: var(--green); border-color: var(--green); }
+.check-ring.is-done::after { content: '✓'; color: white; font-size: 13px; font-weight: 700; }
+.task-info { flex: 1; min-width: 0; }
+.task-name { font-size: 15px; line-height: 1.35; color: var(--text); }
+.task-name.is-done { color: var(--text3); text-decoration: line-through; }
+.task-tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-top: 4px; font-weight: 500; }
+.tag-home     { background: #E6F1FB; color: #185FA5; }
+.tag-personal { background: #FAEEDA; color: #854F0B; }
+.tag-health   { background: #EAF3DE; color: #3B6D11; }
+.tag-gcs      { background: #EEEDFE; color: #534AB7; }
+.task-chevron { color: #C7C7CC; font-size: 18px; }
+.bottom-nav { background: var(--surface); border-top: 0.5px solid var(--border); display: flex; padding: 8px 0 calc(var(--safe-bottom) + 6px); }
+.nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0; cursor: pointer; }
+.nav-icon { font-size: 22px; color: var(--text3); }
+.nav-tab.active .nav-icon { color: var(--text); }
+.nav-label { font-size: 10px; color: var(--text3); }
+.nav-tab.active .nav-label { color: var(--text); }
+.modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: flex; align-items: flex-end; }
+.modal-box { background: var(--surface); border-radius: 20px 20px 0 0; padding: 24px 20px calc(var(--safe-bottom) + 28px); width: 100%; }
+.modal-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 18px; }
+.modal-input { width: 100%; padding: 13px 14px; border-radius: 12px; border: 0.5px solid var(--border); font-size: 16px; font-family: inherit; background: var(--bg); color: var(--text); margin-bottom: 12px; -webkit-appearance: none; }
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.modal-select { width: 100%; padding: 13px 14px; border-radius: 12px; border: 0.5px solid var(--border); font-size: 16px; font-family: inherit; background: var(--bg); color: var(--text); margin-bottom: 16px; -webkit-appearance: none; appearance: none; }
+.modal-actions { display: flex; gap: 10px; }
+.btn-cancel { flex: 1; padding: 14px; border-radius: 12px; border: 0.5px solid var(--border); font-size: 16px; background: transparent; cursor: pointer; font-family: inherit; color: var(--text); }
+.btn-save { flex: 2; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; background: var(--accent); color: white; cursor: pointer; font-family: inherit; }
+.btn-delete { width: 100%; margin-top: 10px; padding: 14px; border-radius: 12px; border: 0.5px solid var(--red); color: var(--red); background: transparent; font-size: 16px; cursor: pointer; font-family: inherit; }
+.btn-signout { width: 100%; margin-top: 10px; padding: 14px; border-radius: 12px; border: 0.5px solid var(--border); color: var(--text2); background: transparent; font-size: 16px; cursor: pointer; font-family: inherit; }
+.empty-state { text-align: center; padding: 60px 30px; color: var(--text3); font-size: 15px; line-height: 1.6; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <h1>Backlog</h1>
+  <p>Sign in with your Microsoft account to load your OneDrive backlog.</p>
+  <button class="login-btn" onclick="signIn()">Sign in with Microsoft</button>
+  <p id="error-msg"></p>
+</div>
+
+<div id="app-screen" class="hidden">
+  <div class="app-header">
+    <div class="header-row">
+      <h1>My Backlog</h1>
+      <button class="add-btn" onclick="openAdd()" aria-label="Add task">+</button>
+    </div>
+    <div class="header-sub" id="subtitle">Loading…</div>
+  </div>
+  <div class="filter-bar">
+    <button class="pill active" onclick="setFilter('all', this)">All</button>
+    <button class="pill" onclick="setFilter('home', this)">Home</button>
+    <button class="pill" onclick="setFilter('personal', this)">Personal</button>
+    <button class="pill" onclick="setFilter('health', this)">Health</button>
+    <button class="pill" onclick="setFilter('gcs', this)">GCS</button>
+  </div>
+  <div class="content-area" id="content">
+    <div class="empty-state">Loading your backlog…</div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-tab active" onclick="setTab('backlog', this)">
+      <span class="nav-icon">☰</span><span class="nav-label">Backlog</span>
+    </div>
+    <div class="nav-tab" onclick="setTab('stats', this)">
+      <span class="nav-icon">◎</span><span class="nav-label">Stats</span>
+    </div>
+    <div class="nav-tab" onclick="signOut()">
+      <span class="nav-icon">↩</span><span class="nav-label">Sign out</span>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal-wrap hidden" onclick="handleModalBg(event)">
+  <div class="modal-box">
+    <h3 id="modal-heading">Add Task</h3>
+    <input id="task-input" class="modal-input" type="text" placeholder="What needs to get done?" />
+    <select id="tag-input" class="modal-select">
+      <option value="">No tag</option>
+      <option value="home">Home</option>
+      <option value="personal">Personal</option>
+      <option value="health">Health</option>
+      <option value="gcs">GCS</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTask()">Save</button>
+    </div>
+    <button id="delete-btn" class="btn-delete hidden" onclick="deleteTask()">Delete Task</button>
+  </div>
+</div>
+
+<script>
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function getRedirectUri() {
+  return window.location.origin + window.location.pathname;
+}
+
+function showLogin() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app-screen').classList.add('hidden');
+}
+
+function showApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+}
+
+// ─── PKCE helpers ────────────────────────────────────────────────────────────
+function randomBase64url(len) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return btoa(String.fromCharCode(...arr))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+async function sha256base64url(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+async function signIn() {
+  const verifier = randomBase64url(64);
+  const challenge = await sha256base64url(verifier);
+  localStorage.setItem('pkce_v', verifier);
+
+  const params = new URLSearchParams({
+    client_id: CONFIG.CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: getRedirectUri(),
+    scope: CONFIG.SCOPES,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    response_mode: 'query'
+  });
+  window.location.href = 'https://login.microsoftonline.com/0ae860f2-b1e0-4222-b0e1-37314eddf4df/oauth2/v2.0/authorize?' + params;
+}
+
+function signOut() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('token_expires');
+  showLogin();
+}
+
+async function exchangeCode(code) {
+  const verifier = localStorage.getItem('pkce_v');
+  if (!verifier) throw new Error('No PKCE verifier found');
+
+  const body = new URLSearchParams({
+    client_id: CONFIG.CLIENT_ID,
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: getRedirectUri(),
+    code_verifier: verifier,
+    scope: CONFIG.SCOPES
+  });
+
+  const res = await fetch('https://login.microsoftonline.com/0ae860f2-b1e0-4222-b0e1-37314eddf4df/oauth2/v2.0/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString()
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error + ': ' + data.error_description);
+
+  localStorage.setItem('access_token', data.access_token);
+  if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
+  localStorage.setItem('token_expires', Date.now() + data.expires_in * 1000);
+  localStorage.removeItem('pkce_v');
+}
+
+async function getToken() {
+  const expires = parseInt(localStorage.getItem('token_expires') || '0');
+  if (localStorage.getItem('access_token') && Date.now() < expires - 60000) {
+    return localStorage.getItem('access_token');
+  }
+  const rt = localStorage.getItem('refresh_token');
+  if (!rt) throw new Error('No refresh token');
+
+  const body = new URLSearchParams({
+    client_id: CONFIG.CLIENT_ID,
+    grant_type: 'refresh_token',
+    refresh_token: rt,
+    scope: CONFIG.SCOPES
+  });
+  const res = await fetch('https://login.microsoftonline.com/0ae860f2-b1e0-4222-b0e1-37314eddf4df/oauth2/v2.0/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString()
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error_description);
+
+  localStorage.setItem('access_token', data.access_token);
+  if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
+  localStorage.setItem('token_expires', Date.now() + data.expires_in * 1000);
+  return data.access_token;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+async function initApp() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const error = params.get('error');
+
+  if (error) {
+    showError('Sign-in error: ' + (params.get('error_description') || error));
+    window.history.replaceState({}, '', getRedirectUri());
+    return;
+  }
+
+  if (code) {
+    try {
+      await exchangeCode(code);
+      window.history.replaceState({}, '', getRedirectUri());
+      showApp();
+      await loadBacklog();
+    } catch(e) {
+      showError('Auth failed: ' + e.message);
+    }
+    return;
+  }
+
+  if (localStorage.getItem('refresh_token')) {
+    try {
+      await getToken();
+      showApp();
+      await loadBacklog();
+    } catch(e) {
+      signOut();
+    }
+    return;
+  }
+  // else: login screen is already visible
+}
+
+// ─── OneDrive ─────────────────────────────────────────────────────────────────
+let rawMd = '';
+let tasks = [];
+let activeFilter = 'all';
+let activeTab = 'backlog';
+let editLineIndex = null;
+
+async function loadBacklog() {
+  try {
+    const token = await getToken();
+    const res = await fetch('https://graph.microsoft.com/v1.0' + CONFIG.FILE_PATH, {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    rawMd = await res.text();
+    parseTasks();
+    render();
+  } catch(e) {
+    document.getElementById('subtitle').textContent = 'Error loading backlog';
+    document.getElementById('content').innerHTML =
+      '<div class="empty-state">Could not load backlog.md<br><small>' + e.message + '</small></div>';
+  }
+}
+
+async function saveBacklog() {
+  const token = await getToken();
+  await fetch('https://graph.microsoft.com/v1.0' + CONFIG.FILE_PATH, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'text/plain' },
+    body: rawMd
+  });
+}
+
+// ─── Parser ───────────────────────────────────────────────────────────────────
+function parseTasks() {
+  tasks = [];
+  rawMd.split('\n').forEach((line, i) => {
+    const m = line.match(/^- \[( |x)\] (.+?)(?:\s+\((\w+)\))?$/i);
+    if (m) {
+      tasks.push({
+        done: m[1].toLowerCase() === 'x',
+        title: m[2].replace(/\s+\(\w+\)$/, '').trim(),
+        tag: m[3] ? m[3].toLowerCase() : '',
+        lineIndex: i
+      });
+    }
+  });
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const active = tasks.filter(t => !t.done && matchFilter(t));
+  const done   = tasks.filter(t =>  t.done && matchFilter(t));
+  const ta = tasks.filter(t => !t.done).length;
+  const td = tasks.filter(t =>  t.done).length;
+
+  document.getElementById('subtitle').textContent = ta + ' active · ' + td + ' done';
+
+  if (activeTab === 'stats') { renderStats(ta, td); return; }
+
+  let html = '<div class="stats-grid">' +
+    '<div class="stat-card"><div class="stat-label">Active</div><div class="stat-value">' + ta + '</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Done</div><div class="stat-value">' + td + '</div></div>' +
+    '</div>';
+
+  if (!active.length && !done.length) {
+    html += '<div class="empty-state">Nothing here yet.<br>Tap + to add your first task.</div>';
+  } else {
+    if (active.length) { html += '<div class="section-label">Active</div>'; active.forEach(t => { html += taskHTML(t); }); }
+    if (done.length)   { html += '<div class="section-label">Done</div>';   done.forEach(t => { html += taskHTML(t); }); }
+  }
+  document.getElementById('content').innerHTML = html;
+}
+
+function matchFilter(t) { return activeFilter === 'all' || t.tag === activeFilter; }
+
+function taskHTML(t) {
+  const ring = t.done ? 'check-ring is-done' : 'check-ring';
+  const name = t.done ? 'task-name is-done' : 'task-name';
+  const tag  = t.tag ? '<span class="task-tag tag-' + t.tag + '">' + t.tag + '</span>' : '';
+  const chev = t.done ? '' : '<span class="task-chevron">›</span>';
+  return '<div class="task-row" onclick="openEdit(' + t.lineIndex + ')">' +
+    '<div class="' + ring + '" onclick="toggleDone(event,' + t.lineIndex + ')"></div>' +
+    '<div class="task-info"><div class="' + name + '">' + esc(t.title) + '</div>' + tag + '</div>' +
+    chev + '</div>';
+}
+
+function renderStats(ta, td) {
+  const total = ta + td;
+  const pct = total > 0 ? Math.round(td / total * 100) : 0;
+  document.getElementById('content').innerHTML = '<div class="stats-grid">' +
+    '<div class="stat-card"><div class="stat-label">Active</div><div class="stat-value">' + ta + '</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Done</div><div class="stat-value">' + td + '</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">' + total + '</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Completion</div><div class="stat-value">' + pct + '%</div></div>' +
+    '</div>';
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+async function toggleDone(e, idx) {
+  e.stopPropagation();
+  const lines = rawMd.split('\n');
+  lines[idx] = /^- \[ \]/.test(lines[idx])
+    ? lines[idx].replace('- [ ]', '- [x]')
+    : lines[idx].replace('- [x]', '- [ ]');
+  rawMd = lines.join('\n');
+  parseTasks(); render();
+  await saveBacklog();
+}
+
+function openAdd() {
+  editLineIndex = null;
+  document.getElementById('modal-heading').textContent = 'Add Task';
+  document.getElementById('task-input').value = '';
+  document.getElementById('tag-input').value = '';
+  document.getElementById('delete-btn').classList.add('hidden');
+  document.getElementById('modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('task-input').focus(), 80);
+}
+
+function openEdit(idx) {
+  const t = tasks.find(t => t.lineIndex === idx);
+  if (!t) return;
+  editLineIndex = idx;
+  document.getElementById('modal-heading').textContent = 'Edit Task';
+  document.getElementById('task-input').value = t.title;
+  document.getElementById('tag-input').value = t.tag || '';
+  document.getElementById('delete-btn').classList.remove('hidden');
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() { document.getElementById('modal').classList.add('hidden'); editLineIndex = null; }
+function handleModalBg(e) { if (e.target.id === 'modal') closeModal(); }
+
+async function saveTask() {
+  const title = document.getElementById('task-input').value.trim();
+  if (!title) { document.getElementById('task-input').focus(); return; }
+  const tag = document.getElementById('tag-input').value;
+  const tagStr = tag ? ' (' + tag + ')' : '';
+  const lines = rawMd.split('\n');
+  if (editLineIndex !== null) {
+    const isDone = /^- \[x\]/i.test(lines[editLineIndex]);
+    lines[editLineIndex] = (isDone ? '- [x] ' : '- [ ] ') + title + tagStr;
+  } else {
+    const ai = lines.findIndex(l => l.trim() === '## Active');
+    if (ai >= 0) lines.splice(ai + 2, 0, '- [ ] ' + title + tagStr);
+    else lines.push('- [ ] ' + title + tagStr);
+  }
+  rawMd = lines.join('\n');
+  parseTasks(); render(); closeModal();
+  await saveBacklog();
+}
+
+async function deleteTask() {
+  if (editLineIndex === null) return;
+  const lines = rawMd.split('\n');
+  lines.splice(editLineIndex, 1);
+  rawMd = lines.join('\n');
+  parseTasks(); render(); closeModal();
+  await saveBacklog();
+}
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-bar .pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function setTab(t, el) {
+  activeTab = t;
+  document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+initApp().catch(e => showError('Startup error: ' + e.message));
+</script>
+</body>
+</html>
