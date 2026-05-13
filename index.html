@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Backlog">
+<title>Backlog</title>
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAEN0lEQVR4nO3dwXHbSBCG0ZFqk5DCWGciZbCBbQbrTKQw7DDWB5ddMgWSGHBANH68d+SBQqE+thtUafzQivj7v2//b30NLPf++vyw9TW01tpmFyHgbFsFftcfKuJjumfcq/8gEfPR2nGv9uZC5pK1wh7+pkKmx+iwH0e+mZjpNbqZIZ8OITPCiGl984QWM6OMaOmmoMXMaLc2tWjEC5l7WLKCdE9oMXMvS1rrClrM3Ftvc7ODFjNb6Wlv6PfQsLVZQZvObG1ug1eDFjNVzGnxYtBippprTdqhiXI2aNOZqi61ORm0mKnuXKNWDqJ8Ctp0Zi+mWjWhifJH0KYze3ParAlNFEET5XfQ1g326mO7JjRRBE2Ux9asG+zfr4ZNaKIImiiCJsqD/ZkkJjRRBE0UQRNF0EQRNFEETRRBE0XQRBE0UQRNFEETRdBEETRRBE0UQRNF0EQRNFH+2voCrnl7efr02pev3ze4Evag9ISeivnS61A26GvRipopJYOeG6uoOVVuh+6N9O3lafZO7QMwXrXnmZITeg1iXke1+3qYoDkGQRPlMEFX2/VSVLuvJY8C69nLqt1QtlVyQs+NVMycKhl0a9djFTNTygbd2vloxcw55X6xckq89Cg9oaGXoIkiaKIImiiCJoqgiSJoogiaKIImiqCJImiiCJoogiaKoIkiaKIImiiCJoqgiVL+T7CcD02P0hPa+dD0Khu086FZomTQzodmqXI7tPOh96Xa80zJCb0GMa+j2n09TNAcg6CJcpigq+16KardV+dDE6XkhHY+NEuVDLo150OzTNmgW3M+NP3K/WLllHjpUXpCQy9BE0XQRBE0UQRNFEETRdBEETRRBE0UQRNF0EQRNFEETRRBE0XQRBE0UQRNFEETpfyfYL29PP1z+tqXr9//3eJaqK/0hJ6K+dLrUDboa9GKmiklg54bq6g5Ve4osCWRzt2pfQDGq/Y8U3JCr0HM66h2Xw8TNMcgaKIcJuhqu16Kave13ENha317WbUbyrZKTui5kYqZUyWDbu16rGJmStmgWzsfrZg5p+QODUuVntDQS9BEETRRBE0UQRNF0EQRNFEETRRBE0XQRBE0UQRNFEETRdBEETRRBE2Ux/fX54etLwJGeH99fjChiSJoogiaKI+t/dw9tr4QuMWvhk1oogiaKL+DtnawVx/bNaGJImii/BG0tYO9OW3WhCbKp6BNafZiqlUTmiiTQZvSVHeu0bMTWtRUdalNKwdRLgZtSlPNtSavTmhRU8WcFmetHKJma3MbtEMTZXbQpjRb6Wmva0KLmnvrba575RA197KktZvi9J92soZbhuZND4WmNaPd2tTN33KImlFGtDQ0RisIS4wcikO/hzat6TW6mdUCNK25ZK3ht/pEFTYfrf2v+F1XBHEf0z1X0c12XnFn2+p5qsxDnMD3rcoXAj8AlfNGgczTDaMAAAAASUVORK5CYII=">
+<style>
+  /* === LIGHT THEME (default) === */
+  :root {
+    --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93;
+    --accent: #007aff; --accent-light: rgba(0,122,255,.12); --danger: #ff3b30;
+    --green: #34c759; --border: rgba(0,0,0,.08); --nav-bg: rgba(249,249,249,.92);
+    --tag-bg: rgba(0,0,0,.06); --progress-bg: rgba(0,0,0,.08);
+    --chart-bar: rgba(0,122,255,.35); --chart-bar-today: #007aff;
+    --donut-bg: rgba(0,0,0,.07);
+  }
+  /* === DARK THEME — system === */
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      --bg: #1c1c1e; --card: #2c2c2e; --text: #ffffff; --sub: #8e8e93;
+      --border: rgba(255,255,255,.08); --nav-bg: rgba(28,28,30,.92);
+      --tag-bg: rgba(255,255,255,.10); --progress-bg: rgba(255,255,255,.10);
+      --chart-bar: rgba(0,122,255,.45); --chart-bar-today: #409cff;
+      --donut-bg: rgba(255,255,255,.08);
+    }
+  }
+  /* === DARK THEME — forced === */
+  html[data-theme="dark"] {
+    --bg: #1c1c1e; --card: #2c2c2e; --text: #ffffff; --sub: #8e8e93;
+    --border: rgba(255,255,255,.08); --nav-bg: rgba(28,28,30,.92);
+    --tag-bg: rgba(255,255,255,.10); --progress-bg: rgba(255,255,255,.10);
+    --chart-bar: rgba(0,122,255,.45); --chart-bar-today: #409cff;
+    --donut-bg: rgba(255,255,255,.08);
+  }
+  /* === LIGHT THEME — forced === */
+  html[data-theme="light"] {
+    --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93;
+    --accent: #007aff; --accent-light: rgba(0,122,255,.12); --danger: #ff3b30;
+    --green: #34c759; --border: rgba(0,0,0,.08); --nav-bg: rgba(249,249,249,.92);
+    --tag-bg: rgba(0,0,0,.06); --progress-bg: rgba(0,0,0,.08);
+    --chart-bar: rgba(0,122,255,.35); --chart-bar-today: #007aff;
+    --donut-bg: rgba(0,0,0,.07);
+  }
+
+  /* === TAG COLORS === */
+  .tag-gcs      { background: rgba(180,80,20,.14);   color: rgb(180,80,20); }
+  .tag-finance  { background: rgba(200,40,40,.13);   color: rgb(200,40,40); }
+  .tag-house    { background: rgba(0,100,200,.13);   color: rgb(0,100,200); }
+  .tag-personal { background: rgba(40,150,70,.13);   color: rgb(40,150,70); }
+  .tag-health   { background: rgba(50,160,160,.13);  color: rgb(50,160,160); }
+  .tag-shopping { background: rgba(130,60,200,.13);  color: rgb(130,60,200); }
+  .tag-errand   { background: rgba(200,140,0,.13);   color: rgb(180,120,0); }
+  .tag-admin    { background: rgba(100,100,110,.13); color: rgb(90,90,100); }
+  .tag-default  { background: var(--tag-bg);         color: var(--sub); }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) .tag-gcs      { background: rgba(220,110,40,.18); color: rgb(230,130,60); }
+    html:not([data-theme="light"]) .tag-finance  { background: rgba(220,60,60,.18);  color: rgb(230,90,90); }
+    html:not([data-theme="light"]) .tag-house    { background: rgba(40,130,230,.18); color: rgb(80,160,240); }
+    html:not([data-theme="light"]) .tag-personal { background: rgba(50,180,90,.18);  color: rgb(70,200,100); }
+    html:not([data-theme="light"]) .tag-health   { background: rgba(60,190,190,.18); color: rgb(80,210,210); }
+    html:not([data-theme="light"]) .tag-shopping { background: rgba(160,90,230,.18); color: rgb(180,130,240); }
+    html:not([data-theme="light"]) .tag-errand   { background: rgba(220,170,40,.18); color: rgb(230,185,60); }
+    html:not([data-theme="light"]) .tag-admin    { background: rgba(140,140,155,.18);color: rgb(170,170,185); }
+  }
+  html[data-theme="dark"] .tag-gcs      { background: rgba(220,110,40,.18); color: rgb(230,130,60); }
+  html[data-theme="dark"] .tag-finance  { background: rgba(220,60,60,.18);  color: rgb(230,90,90); }
+  html[data-theme="dark"] .tag-house    { background: rgba(40,130,230,.18); color: rgb(80,160,240); }
+  html[data-theme="dark"] .tag-personal { background: rgba(50,180,90,.18);  color: rgb(70,200,100); }
+  html[data-theme="dark"] .tag-health   { background: rgba(60,190,190,.18); color: rgb(80,210,210); }
+  html[data-theme="dark"] .tag-shopping { background: rgba(160,90,230,.18); color: rgb(180,130,240); }
+  html[data-theme="dark"] .tag-errand   { background: rgba(220,170,40,.18); color: rgb(230,185,60); }
+  html[data-theme="dark"] .tag-admin    { background: rgba(140,140,155,.18);color: rgb(170,170,185); }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh;
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+
+  /* === HEADER === */
+  .header {
+    position: sticky; top: 0; z-index: 20;
+    padding: calc(env(safe-area-inset-top) + 16px) 20px 12px;
+    background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-row { display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -.5px; }
+  .add-btn {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; line-height: 1; flex-shrink: 0;
+  }
+  .search-row { margin-top: 10px; display: flex; align-items: center; gap: 8px; width: 100%; }
+  .search-wrap {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px;
+    background: var(--tag-bg); border-radius: 10px; padding: 8px 12px;
+  }
+  .search-wrap input {
+    flex: 1; min-width: 0; border: none; background: none; font-size: 15px;
+    color: var(--text); outline: none;
+  }
+  .search-wrap input::placeholder { color: var(--sub); }
+  .filter-select {
+    appearance: none; -webkit-appearance: none;
+    background: var(--tag-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+    border: none; border-radius: 10px; padding: 8px 28px 8px 12px;
+    font-size: 13px; color: var(--sub); cursor: pointer; flex-shrink: 0; font-family: inherit;
+  }
+  .filter-select.active { background-color: var(--accent-light); color: var(--accent); font-weight: 600; }
+  .sort-btn {
+    background: var(--tag-bg); border: none; border-radius: 10px;
+    padding: 8px 11px; cursor: pointer; color: var(--sub);
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    font-size: 12px; font-weight: 600; font-family: inherit;
+  }
+  .sort-btn:active { opacity: 0.6; }
+  .sync-btn {
+    background: var(--tag-bg); border: none; border-radius: 10px;
+    padding: 8px 10px; cursor: pointer; color: var(--sub);
+    display: flex; align-items: center; flex-shrink: 0;
+  }
+  .sync-btn:active { opacity: 0.6; }
+
+  /* === CONTENT === */
+  .content { padding: 16px 16px 0; }
+
+  /* === SWIPE TO DELETE === */
+  .swipe-wrap {
+    position: relative; overflow: hidden; border-radius: 13px; margin-bottom: 10px;
+  }
+  .swipe-wrap .task-card {
+    margin-bottom: 0; border-radius: 13px; touch-action: pan-y;
+    user-select: none; -webkit-user-select: none;
+    will-change: transform; transition: transform .2s cubic-bezier(.25,.46,.45,.94);
+  }
+  .swipe-wrap .task-card.swiping { transition: none; }
+  .delete-action {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 76px;
+    background: var(--danger); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    color: #fff; font-size: 12px; font-weight: 600; border-radius: 0 13px 13px 0; cursor: pointer;
+  }
+  .delete-action svg { width: 18px; height: 18px; }
+
+  /* === TASK CARD === */
+  .task-card {
+    display: flex; align-items: center; gap: 12px; background: var(--card);
+    border-radius: 13px; padding: 14px 16px; margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06); position: relative;
+  }
+  .check-ring {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--sub); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all .15s;
+  }
+  .check-ring.done { background: var(--green); border-color: var(--green); }
+  .check-ring svg { opacity: 0; transition: opacity .15s; }
+  .check-ring.done svg { opacity: 1; }
+  .task-body { flex: 1; min-width: 0; cursor: pointer; }
+  .task-title { font-size: 15px; font-weight: 500; line-height: 1.3; }
+  .task-title.done { text-decoration: line-through; color: var(--sub); }
+  .task-tag {
+    display: inline-block; margin-top: 4px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
+    padding: 2px 7px; border-radius: 5px;
+  }
+  .today-ring-btn {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    border: 2px dashed var(--sub); cursor: pointer; background: none;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--sub); font-size: 17px; transition: all .15s;
+  }
+  .today-ring-btn.in-today { background: var(--accent-light); border: 2px solid var(--accent); color: var(--accent); }
+  .today-ring-btn:active { transform: scale(.9); }
+
+  /* === TODAY TAB === */
+  .today-date { font-size: 13px; color: var(--sub); font-weight: 500; margin-bottom: 10px; }
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-label { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--sub); margin-bottom: 6px; }
+  .progress-label strong { font-size: 15px; color: var(--text); font-weight: 600; }
+  .progress-bar-bg { height: 8px; border-radius: 4px; background: var(--progress-bg); overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width .3s ease; }
+  .section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--sub); margin: 18px 0 8px; }
+  .today-age-24 .task-title { color: #ff9500 !important; }
+  .today-age-48 .task-title { color: #ff3b30 !important; }
+  .today-age-24 .check-ring:not(.done) { border-color: #ff9500; }
+  .today-age-48 .check-ring:not(.done) { border-color: #ff3b30; }
+  .today-empty { text-align: center; padding: 40px 20px; color: var(--sub); font-size: 15px; line-height: 1.6; }
+  .today-empty .emoji { font-size: 40px; display: block; margin-bottom: 12px; }
+  .today-celebration {
+    text-align: center; padding: 60px 20px;
+    animation: celebrate-in .4s ease;
+  }
+  @keyframes celebrate-in {
+    from { opacity: 0; transform: scale(.92); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .celebration-emoji { font-size: 64px; margin-bottom: 16px; }
+  .celebration-title { font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .celebration-sub { font-size: 14px; color: var(--sub); }
+  .remove-today-btn {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    border: none; cursor: pointer; background: rgba(255,59,48,.12);
+    display: flex; align-items: center; justify-content: center; color: var(--danger); font-size: 17px;
+  }
+
+  /* === COLLAPSED DONE === */
+  .done-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    background: none; border: none; width: 100%; padding: 0; cursor: pointer; margin: 18px 0 8px;
+  }
+  .done-toggle-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--sub); }
+  .done-chevron { color: var(--sub); transition: transform .2s; }
+  .done-chevron.open { transform: rotate(180deg); }
+
+  /* === STATS === */
+  .seg-ctrl {
+    display: flex; background: var(--tag-bg); border-radius: 10px;
+    padding: 3px; gap: 3px; margin-bottom: 16px;
+  }
+  .seg-btn {
+    flex: 1; padding: 7px 10px; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 500; cursor: pointer; background: none;
+    color: var(--sub); font-family: inherit; transition: all .15s;
+  }
+  .seg-btn.active { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: var(--card); border-radius: 13px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .score-card {
+    background: var(--card); border-radius: 13px; padding: 20px 16px; margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06); text-align: center;
+  }
+  .score-value { font-size: 48px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .score-label { font-size: 13px; color: var(--sub); margin-top: 6px; }
+  .score-sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
+
+  .chart-card { background: var(--card); border-radius: 13px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .chart-title { font-size: 13px; font-weight: 600; color: var(--sub); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 12px; }
+  .chart-card svg text { fill: var(--sub); font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+
+  .donut-row { display: flex; align-items: center; gap: 16px; }
+  .donut-svg { width: 110px; height: 110px; flex-shrink: 0; }
+  .donut-legend { flex: 1; min-width: 0; }
+  .legend-item { display: flex; align-items: center; gap: 7px; padding: 4px 0; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { font-size: 13px; color: var(--text); flex: 1; min-width: 0; text-transform: capitalize; }
+  .legend-count { font-size: 13px; font-weight: 600; color: var(--sub); }
+
+  .tag-stat { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .tag-stat:last-child { border-bottom: none; }
+
+  .theme-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--card); border-radius: 13px; padding: 14px 16px;
+    margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .theme-label { font-size: 15px; font-weight: 500; }
+  .theme-seg { display: flex; background: var(--tag-bg); border-radius: 8px; padding: 2px; gap: 2px; }
+  .theme-btn {
+    padding: 5px 11px; border: none; border-radius: 6px; font-size: 12px; font-weight: 500;
+    cursor: pointer; background: none; color: var(--sub); font-family: inherit;
+  }
+  .theme-btn.active { background: var(--card); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+
+  .signout-link {
+    display: block; text-align: center; margin: 4px auto 0;
+    background: none; border: none; color: var(--sub);
+    font-size: 15px; cursor: pointer; padding: 8px; text-decoration: underline;
+  }
+  .signout-link:active { opacity: .6; }
+
+  /* === MODALS === */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 80;
+    background: rgba(0,0,0,.4); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: var(--card); border-radius: 20px 20px 0 0;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    width: 100%; max-width: 480px;
+  }
+  .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .modal input, .modal select {
+    width: 100%; padding: 12px 14px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: var(--bg);
+    font-size: 16px; color: var(--text); margin-bottom: 12px; outline: none;
+  }
+  .modal input:focus, .modal select:focus { border-color: var(--accent); }
+  .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+  .modal-btns button {
+    flex: 1; padding: 14px; border-radius: 12px; font-size: 16px;
+    font-weight: 600; cursor: pointer; border: none;
+  }
+  .btn-cancel { background: var(--tag-bg); color: var(--text); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-danger-outline {
+    background: none; border: 1.5px solid var(--danger) !important;
+    color: var(--danger); border-radius: 12px; padding: 12px; font-size: 15px;
+    font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px;
+  }
+
+  /* === BOTTOM NAV === */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+    background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border); display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px 0; cursor: pointer; border: none; background: none;
+    color: var(--sub); font-size: 10px; font-weight: 500; gap: 3px; transition: color .15s;
+  }
+  .nav-item svg { width: 24px; height: 24px; }
+  .nav-item.active { color: var(--accent); }
+
+  /* === AUTH / LOADING === */
+  .loading-screen, .auth-screen {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px; padding: 40px 24px;
+  }
+  .auth-screen h2 { font-size: 24px; font-weight: 700; text-align: center; }
+  .auth-screen p { font-size: 15px; color: var(--sub); text-align: center; line-height: 1.6; }
+  .auth-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 14px;
+    padding: 16px 32px; font-size: 17px; font-weight: 600; cursor: pointer;
+    width: 100%; max-width: 300px;
+  }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast {
+    position: fixed; bottom: calc(70px + env(safe-area-inset-bottom));
+    left: 50%; transform: translateX(-50%);
+    background: #333; color: #fff; padding: 10px 18px; border-radius: 20px;
+    font-size: 14px; z-index: 100; opacity: 0; transition: opacity .2s;
+    pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Add / Edit Modal -->
+<div class="modal-overlay hidden" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">New Task</h2>
+    <input type="text" id="modal-task-title" placeholder="What needs to get done?" />
+    <select id="modal-task-tag">
+      <option value="">No tag</option>
+      <option value="home">Home</option>
+      <option value="personal">Personal</option>
+      <option value="GCS">GCS</option>
+      <option value="finance">Finance</option>
+      <option value="health">Health</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-submit-btn" onclick="submitModal()">Add Task</button>
+    </div>
+    <button class="btn-danger-outline hidden" id="modal-delete-btn" onclick="deleteFromModal()">Delete Task</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const CONFIG = {
+  CLIENT_ID: '79dffb14-01e3-4e4d-bc16-c7e86981106f',
+  TENANT: '0ae860f2-b1e0-4222-b0e1-37314eddf4df',
+  FILE_PATH: '/me/drive/root:/0 - Data/Backlog/backlog.md:/content',
+  SCOPES: 'Files.ReadWrite offline_access'
+};
+const REDIRECT_URI = location.origin + location.pathname;
+
+// ============================================================
+// STATE
+// ============================================================
+let accessToken = null;
+let tasks = [];
+let rawMd = '';
+let currentTab = 'backlog';
+let filterTag = null;
+let searchQ = '';
+let sortOrder = localStorage.getItem('sortOrder') || 'oldest'; // 'oldest' | 'newest'
+let doneExpanded = false;
+let statsView = 'month'; // 'month' | 'alltime'
+let modalMode = 'add';   // 'add' | 'edit'
+let editingTask = null;  // task object when editing
+
+// Theme
+let themeMode = localStorage.getItem('themeMode') || 'auto';
+applyTheme();
+
+// Completions: { "Task title": "ISO datetime string" }
+let completions = loadCompletions();
+
+// Today set (persistent — never auto-cleared)
+let todaySet = loadTodaySet();
+
+// ============================================================
+// THEME
+// ============================================================
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', themeMode);
+  localStorage.setItem('themeMode', themeMode);
+}
+function setTheme(t) { themeMode = t; applyTheme(); render(); }
+
+// ============================================================
+// COMPLETIONS STORAGE
+// ============================================================
+function loadCompletions() {
+  try { return JSON.parse(localStorage.getItem('completions') || '{}'); }
+  catch { return {}; }
+}
+function saveCompletions() {
+  localStorage.setItem('completions', JSON.stringify(completions));
+}
+
+// ============================================================
+// TODAY STORAGE (persistent, no date reset)
+// ============================================================
+function loadTodaySet() {
+  try { return new Set(JSON.parse(localStorage.getItem('today_tasks') || '[]')); }
+  catch { return new Set(); }
+}
+function saveTodaySet() {
+  localStorage.setItem('today_tasks', JSON.stringify([...todaySet]));
+}
+async function addToToday(title) {
+  const task = tasks.find(t => t.title === title && !t.done);
+  if (!task) return;
+  const lines = rawMd.split('\n');
+  if (!lines[task.lineIndex].includes('[today')) {
+    lines[task.lineIndex] = lines[task.lineIndex].trimEnd() + ` [today:${new Date().toISOString()}]`;
+    rawMd = lines.join('\n');
+    parseTasks(); render();
+    await saveBacklog();
+  }
+}
+async function removeFromToday(title) {
+  const task = tasks.find(t => t.title === title);
+  if (!task) return;
+  const lines = rawMd.split('\n');
+  lines[task.lineIndex] = lines[task.lineIndex].replace(/\s+\[today(?::[^\]]+)?\]/, '');
+  rawMd = lines.join('\n');
+  parseTasks(); render();
+  await saveBacklog();
+}
+
+// ============================================================
+// CREATED TIMESTAMPS STORAGE: { "Task title": "ISO datetime" }
+// ============================================================
+function loadCreated() {
+  try { return JSON.parse(localStorage.getItem('created_timestamps') || '{}'); }
+  catch { return {}; }
+}
+function saveCreated() {
+  localStorage.setItem('created_timestamps', JSON.stringify(created));
+}
+let created = loadCreated();
+
+// ============================================================
+// TAG HELPERS
+// ============================================================
+const TAG_COLORS = {
+  gcs:      { light: 'rgb(180,80,20)',   dark: 'rgb(230,130,60)',  dot: '#b45014' },
+  finance:  { light: 'rgb(200,40,40)',   dark: 'rgb(230,90,90)',   dot: '#c82828' },
+  house:    { light: 'rgb(0,100,200)',   dark: 'rgb(80,160,240)',  dot: '#0064c8' },
+  personal: { light: 'rgb(40,150,70)',   dark: 'rgb(70,200,100)',  dot: '#289646' },
+  health:   { light: 'rgb(50,160,160)',  dark: 'rgb(80,210,210)',  dot: '#32a0a0' },
+  shopping: { light: 'rgb(130,60,200)',  dark: 'rgb(180,130,240)', dot: '#8230c8' },
+  errand:   { light: 'rgb(180,120,0)',   dark: 'rgb(230,185,60)',  dot: '#b47800' },
+  admin:    { light: 'rgb(90,90,100)',   dark: 'rgb(170,170,185)', dot: '#5a5a64' },
+};
+const TAG_DOT_COLORS = {
+  gcs: '#b45014', finance: '#c82828', house: '#0064c8',
+  personal: '#289646', health: '#32a0a0', shopping: '#8230c8',
+  errand: '#b47800', admin: '#5a5a64', untagged: '#8e8e93'
+};
+
+function tagClass(tag) {
+  if (!tag) return '';
+  const t = tag.toLowerCase();
+  return TAG_COLORS[t] ? `tag-${t}` : 'tag-default';
+}
+function tagHTML(tag) {
+  if (!tag) return '';
+  return `<span class="task-tag ${tagClass(tag)}">${tag}</span>`;
+}
+function tagDotColor(tag) {
+  return TAG_DOT_COLORS[(tag||'').toLowerCase()] || '#8e8e93';
+}
+
+// ============================================================
+// PKCE AUTH
+// ============================================================
+function base64urlEncode(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+async function generatePKCE() {
+  const verifier = base64urlEncode(crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = base64urlEncode(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+  return { verifier, challenge };
+}
+async function login() {
+  const { verifier, challenge } = await generatePKCE();
+  const state = base64urlEncode(crypto.getRandomValues(new Uint8Array(16)));
+  localStorage.setItem('pkce_verifier', verifier);
+  localStorage.setItem('pkce_state', state);
+  localStorage.setItem('auth_error', '');
+  const p = new URLSearchParams({
+    client_id: CONFIG.CLIENT_ID, response_type: 'code',
+    redirect_uri: REDIRECT_URI, scope: CONFIG.SCOPES,
+    code_challenge: challenge, code_challenge_method: 'S256', state
+  });
+  location.href = `https://login.microsoftonline.com/${CONFIG.TENANT}/oauth2/v2.0/authorize?${p}`;
+}
+async function exchangeCode(code, returnedState) {
+  const verifier = localStorage.getItem('pkce_verifier');
+  const savedState = localStorage.getItem('pkce_state');
+  if (!verifier) { localStorage.setItem('auth_error', 'PKCE verifier missing.'); return false; }
+  if (savedState && returnedState && savedState !== returnedState) {
+    localStorage.setItem('auth_error', 'State mismatch.'); return false;
+  }
+  try {
+    const res = await fetch(`https://login.microsoftonline.com/${CONFIG.TENANT}/oauth2/v2.0/token`, {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: CONFIG.CLIENT_ID, grant_type: 'authorization_code',
+        code, redirect_uri: REDIRECT_URI, code_verifier: verifier
+      })
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      accessToken = data.access_token;
+      localStorage.setItem('ms_token', accessToken);
+      if (data.refresh_token) localStorage.setItem('ms_refresh', data.refresh_token);
+      localStorage.removeItem('pkce_verifier'); localStorage.removeItem('pkce_state');
+      localStorage.setItem('auth_error', '');
+      history.replaceState({}, '', location.pathname);
+      return true;
+    }
+    localStorage.setItem('auth_error', data.error_description || data.error || JSON.stringify(data));
+    return false;
+  } catch(e) {
+    localStorage.setItem('auth_error', 'Network error: ' + e.message); return false;
+  }
+}
+async function refreshToken() {
+  const rt = localStorage.getItem('ms_refresh');
+  if (!rt) return false;
+  const res = await fetch(`https://login.microsoftonline.com/${CONFIG.TENANT}/oauth2/v2.0/token`, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: CONFIG.CLIENT_ID, grant_type: 'refresh_token',
+      refresh_token: rt, scope: CONFIG.SCOPES
+    })
+  });
+  const data = await res.json();
+  if (data.access_token) {
+    accessToken = data.access_token;
+    localStorage.setItem('ms_token', accessToken);
+    if (data.refresh_token) localStorage.setItem('ms_refresh', data.refresh_token);
+    return true;
+  }
+  return false;
+}
+
+// ============================================================
+// GRAPH API
+// ============================================================
+async function graphFetch(url, opts = {}) {
+  const res = await fetch('https://graph.microsoft.com/v1.0' + url, {
+    ...opts, headers: { Authorization: 'Bearer ' + accessToken, ...(opts.headers || {}) }
+  });
+  if (res.status === 401) {
+    const ok = await refreshToken();
+    if (ok) return graphFetch(url, opts);
+    signOut(); return null;
+  }
+  return res;
+}
+
+let lastSynced = null;
+let syncError = null;
+
+async function loadBacklog() {
+  syncError = null;
+  const res = await graphFetch(CONFIG.FILE_PATH);
+  if (!res) { syncError = 'Auth failed — signed out'; return; }
+  if (!res.ok) {
+    const body = await res.text().catch(()=>'');
+    syncError = `Load failed: HTTP ${res.status} — ${body.slice(0,120)}`;
+    showToast('⚠️ Could not load backlog (' + res.status + ')');
+    return;
+  }
+  rawMd = await res.text();
+  lastSynced = new Date();
+  parseTasks();
+}
+
+async function saveBacklog() {
+  const res = await graphFetch(CONFIG.FILE_PATH, {
+    method: 'PUT', headers: { 'Content-Type': 'text/plain' }, body: rawMd
+  });
+  if (res && !res.ok) {
+    const body = await res.text().catch(()=>'');
+    syncError = `Save failed: HTTP ${res.status} — ${body.slice(0,120)}`;
+    showToast('⚠️ Save failed (' + res.status + ')');
+  } else if (res && res.ok) {
+    lastSynced = new Date();
+  }
+}
+
+async function manualRefresh() {
+  showToast('Refreshing…');
+  await loadBacklog();
+  render();
+  if (!syncError) showToast('✓ Synced');
+}
+
+// ============================================================
+// PARSE
+// ============================================================
+function parseTasks() {
+  tasks = [];
+  rawMd.split('\n').forEach((line, i) => {
+    const m = line.match(/^- \[( |x)\] (.+?)(?:\s+\((\w+)\))?(\s+\[today(?::([^\]]+))?\])?$/);
+    if (m) tasks.push({
+      done: m[1]==='x', title: m[2], tag: m[3]||null,
+      today: !!m[4],
+      todayAt: m[5] ? new Date(m[5]) : null, // null = [today] without timestamp
+      lineIndex: i
+    });
+  });
+}
+
+function todayAgeHours(task) {
+  if (!task.today || !task.todayAt || task.done) return 0;
+  return (Date.now() - task.todayAt.getTime()) / 3600000;
+}
+
+// ============================================================
+// TOGGLE DONE — records timestamp
+// ============================================================
+let todayCelebrating = false;
+
+async function clearTodayList() {
+  const lines = rawMd.split('\n').map(l => l.replace(/\s+\[today(?::[^\]]+)?\]/, ''));
+  rawMd = lines.join('\n');
+  todayCelebrating = false;
+  parseTasks(); render();
+  await saveBacklog();
+}
+
+async function toggleDone(title, lineIndex) {
+  const lines = rawMd.split('\n');
+  const line = lines[lineIndex];
+  if (!line) return;
+  const marking = line.includes('- [ ]');
+  const newLine = marking ? line.replace('- [ ]','- [x]') : line.replace('- [x]','- [ ]');
+  lines[lineIndex] = newLine;
+  rawMd = lines.join('\n');
+
+  if (marking) {
+    completions[title] = new Date().toISOString();
+  } else {
+    delete completions[title];
+  }
+  saveCompletions();
+
+  parseTasks();
+  render();
+  await saveBacklog();
+
+  // Check if all today tasks are now complete
+  if (marking && !todayCelebrating) {
+    const todayTasks = tasks.filter(t => t.today);
+    if (todayTasks.length > 0 && todayTasks.every(t => t.done)) {
+      todayCelebrating = true;
+      render(); // re-render to show celebration state
+      setTimeout(clearTodayList, 3500);
+    }
+  }
+}
+
+// ============================================================
+// ADD TASK
+// ============================================================
+async function addTask(title, tag) {
+  const lines = rawMd.split('\n');
+  const activeIdx = lines.findIndex(l => l.trim() === '## Active');
+  const newLine = tag ? `- [ ] ${title} (${tag})` : `- [ ] ${title}`;
+  if (activeIdx !== -1) lines.splice(activeIdx + 2, 0, newLine);
+  else lines.push(newLine);
+  rawMd = lines.join('\n');
+  // Record creation timestamp
+  if (!created[title]) { created[title] = new Date().toISOString(); saveCreated(); }
+  parseTasks(); render();
+  await saveBacklog();
+}
+
+// ============================================================
+// EDIT TASK
+// ============================================================
+async function editTask(lineIndex, oldTitle, newTitle, newTag) {
+  const lines = rawMd.split('\n');
+  const line = lines[lineIndex];
+  if (!line) return;
+  const isDone = line.includes('- [x]');
+  const isToday = line.includes('[today]');
+  const todayFlag = isToday ? ' [today]' : '';
+  lines[lineIndex] = newTag
+    ? `${isDone?'- [x]':'- [ ]'} ${newTitle} (${newTag})${todayFlag}`
+    : `${isDone?'- [x]':'- [ ]'} ${newTitle}${todayFlag}`;
+  rawMd = lines.join('\n');
+
+  // Update completions key if title changed
+  if (oldTitle !== newTitle && completions[oldTitle]) {
+    completions[newTitle] = completions[oldTitle];
+    delete completions[oldTitle];
+    saveCompletions();
+  }
+  // Update created key if title changed
+  if (oldTitle !== newTitle && created[oldTitle]) {
+    created[newTitle] = created[oldTitle];
+    delete created[oldTitle];
+    saveCreated();
+  }
+
+  parseTasks(); render();
+  await saveBacklog();
+}
+
+// ============================================================
+// DELETE TASK
+// ============================================================
+async function deleteTask(lineIndex, title) {
+  const lines = rawMd.split('\n');
+  lines.splice(lineIndex, 1);
+  rawMd = lines.join('\n');
+  if (title) { delete completions[title]; saveCompletions(); }
+  if (title) { delete created[title]; saveCreated(); }
+  parseTasks(); render();
+  showToast('Task deleted');
+  await saveBacklog();
+}
+
+// ============================================================
+// SIGN OUT
+// ============================================================
+function signOut() {
+  localStorage.removeItem('ms_token'); localStorage.removeItem('ms_refresh');
+  accessToken = null; render();
+}
+
+// ============================================================
+// MODAL (add / edit)
+// ============================================================
+function openAddModal() {
+  modalMode = 'add'; editingTask = null;
+  document.getElementById('modal-title').textContent = 'New Task';
+  document.getElementById('modal-submit-btn').textContent = 'Add Task';
+  document.getElementById('modal-task-title').value = '';
+  document.getElementById('modal-task-tag').value = '';
+  document.getElementById('modal-delete-btn').classList.add('hidden');
+  document.getElementById('modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('modal-task-title').focus(), 100);
+}
+function openEditModal(task) {
+  modalMode = 'edit'; editingTask = task;
+  document.getElementById('modal-title').textContent = 'Edit Task';
+  document.getElementById('modal-submit-btn').textContent = 'Save';
+  document.getElementById('modal-task-title').value = task.title;
+  document.getElementById('modal-task-tag').value = task.tag || '';
+  document.getElementById('modal-delete-btn').classList.remove('hidden');
+  document.getElementById('modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('modal-task-title').focus(), 100);
+}
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+function submitModal() {
+  const title = document.getElementById('modal-task-title').value.trim();
+  const tag = document.getElementById('modal-task-tag').value || null;
+  if (!title) return;
+  closeModal();
+  if (modalMode === 'add') {
+    addTask(title, tag); showToast('Task added');
+  } else {
+    editTask(editingTask.lineIndex, editingTask.title, title, tag);
+    showToast('Task saved');
+  }
+}
+function deleteFromModal() {
+  if (!editingTask) return;
+  closeModal();
+  deleteTask(editingTask.lineIndex, editingTask.title);
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ============================================================
+// STATS HELPERS
+// ============================================================
+function getCompletionsThisMonth() {
+  const now = new Date();
+  const yr = now.getFullYear(), mo = now.getMonth();
+  return Object.entries(completions).filter(([,iso]) => {
+    const d = new Date(iso);
+    return d.getFullYear() === yr && d.getMonth() === mo;
+  });
+}
+function getCompletionsByDay() {
+  const now = new Date();
+  const yr = now.getFullYear(), mo = now.getMonth();
+  const daysInMonth = new Date(yr, mo+1, 0).getDate();
+  const byDay = new Array(daysInMonth+1).fill(0);
+  Object.values(completions).forEach(iso => {
+    const d = new Date(iso);
+    if (d.getFullYear()===yr && d.getMonth()===mo) byDay[d.getDate()]++;
+  });
+  return { byDay, daysInMonth };
+}
+
+// ============================================================
+// SVG CHARTS
+// ============================================================
+function buildDonutChart(segments) {
+  // segments: [{label, count, color}]
+  const total = segments.reduce((s,x) => s+x.count, 0);
+  if (total === 0) {
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="donut-svg">
+      <circle cx="50" cy="50" r="35" fill="none" stroke="var(--donut-bg)" stroke-width="12"/>
+      <text x="50" y="50" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="var(--sub)" font-family="-apple-system,sans-serif">No data</text>
+    </svg>`;
+  }
+  const r = 35, cx = 50, cy = 50, circ = 2 * Math.PI * r;
+  let accum = 0;
+  const arcs = segments.filter(s=>s.count>0).map(s => {
+    const len = (s.count / total) * circ;
+    const offset = circ / 4 - accum;
+    accum += len;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color}"
+      stroke-width="12" stroke-dasharray="${len.toFixed(2)} ${(circ-len).toFixed(2)}"
+      stroke-dashoffset="${offset.toFixed(2)}"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="donut-svg">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--donut-bg)" stroke-width="12"/>
+    ${arcs}
+    <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="16" font-weight="700" fill="var(--text)" font-family="-apple-system,sans-serif">${total}</text>
+    <text x="${cx}" y="${cy+9}" text-anchor="middle" font-size="8" fill="var(--sub)" font-family="-apple-system,sans-serif">completed</text>
+  </svg>`;
+}
+
+function buildBarChart(byDay, daysInMonth) {
+  const today = new Date().getDate();
+  const W = 320, H = 110, padL = 4, padR = 4, padT = 6, padB = 18;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const maxVal = Math.max(1, ...byDay.slice(1, daysInMonth+1));
+  const barSlot = chartW / daysInMonth;
+  const barW = Math.max(3, barSlot * 0.72);
+  let bars = '';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const val = byDay[d] || 0;
+    const x = padL + (d-1)*barSlot + (barSlot - barW)/2;
+    const barH = val > 0 ? Math.max(3, (val/maxVal)*chartH) : 2;
+    const y = padT + chartH - barH;
+    const isToday = d === today;
+    const fill = isToday ? 'var(--chart-bar-today)' : 'var(--chart-bar)';
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" rx="2" fill="${fill}"/>`;
+    // Label every 5th and first/last
+    if (d===1 || d===10 || d===20 || d===daysInMonth || d===today) {
+      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${H-3}" text-anchor="middle" font-size="7.5" fill="var(--sub)" font-family="-apple-system,sans-serif" font-weight="${isToday?700:400}">${d}</text>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">${bars}</svg>`;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  const app = document.getElementById('app');
+  if (!accessToken) { renderAuth(app); return; }
+  renderMain(app);
+}
+
+function renderAuth(app) {
+  const errMsg = localStorage.getItem('auth_error') || '';
+  const errBlock = errMsg ? `
+    <div style="background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.3);border-radius:12px;padding:12px 16px;max-width:360px;text-align:left;margin-top:4px">
+      <div style="font-size:12px;font-weight:700;color:var(--danger);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Sign-in error</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.5;word-break:break-word">${errMsg}</div>
+    </div>` : '';
+  app.innerHTML = `
+    <div class="auth-screen">
+      <div style="font-size:56px">📋</div>
+      <h2>Backlog</h2>
+      <p>Sign in with your Microsoft account to access your task backlog.</p>
+      ${errBlock}
+      <button class="auth-btn" onclick="login()">Sign in with Microsoft</button>
+      <div style="font-size:12px;color:var(--sub);margin-top:8px;word-break:break-all">Redirect URI: ${REDIRECT_URI}</div>
+    </div>`;
+}
+
+function renderMain(app) {
+  const activeTasks = tasks.filter(t => !t.done);
+  const doneTasks = tasks.filter(t => t.done);
+  const titles = { backlog:'Backlog', today:'Today', stats:'Stats' };
+  const tags = [...new Set(tasks.map(t=>t.tag).filter(Boolean))];
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="header-row">
+        <h1>${titles[currentTab]}</h1>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="sync-btn" onclick="manualRefresh()" title="Refresh from OneDrive">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+          ${currentTab==='backlog' ? `<button class="add-btn" onclick="openAddModal()">+</button>` : '<div></div>'}
+        </div>
+      </div>
+      ${syncError ? `<div style="font-size:11px;color:var(--danger);padding:4px 0 2px;word-break:break-word">${syncError}</div>` : lastSynced ? `<div style="font-size:11px;color:var(--sub);padding:2px 0">Synced ${lastSynced.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>` : ''}
+      ${currentTab==='backlog' ? `
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--sub);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="search" placeholder="Search tasks…" value="${searchQ}" oninput="searchQ=this.value;render()"/>
+        </div>
+        <select class="filter-select ${filterTag?'active':''}" onchange="filterTag=this.value||null;render()">
+          <option value="">All</option>
+          ${tags.map(t=>`<option value="${t}" ${filterTag===t?'selected':''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('')}
+        </select>
+        <button class="sort-btn" onclick="sortOrder=sortOrder==='oldest'?'newest':'oldest';localStorage.setItem('sortOrder',sortOrder);render()">
+          ${sortOrder==='newest'
+            ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> Newest`
+            : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg> Oldest`}
+        </button>
+      </div>` : ''}
+    </div>
+    <div class="content" id="content"></div>
+    <div class="bottom-nav">
+      ${navItem('backlog',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,'Backlog')}
+      ${navItem('today',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,'Today')}
+      ${navItem('stats',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,'Stats')}
+    </div>`;
+
+  const content = document.getElementById('content');
+  if (currentTab==='backlog') renderBacklog(content, activeTasks, doneTasks);
+  else if (currentTab==='today') renderToday(content, activeTasks, doneTasks);
+  else renderStats(content, activeTasks, doneTasks);
+}
+
+function navItem(tab, icon, label) {
+  return `<button class="nav-item ${currentTab===tab?'active':''}" onclick="switchTab('${tab}')">
+    ${icon}<span>${label}</span></button>`;
+}
+
+// ---- BACKLOG TAB ----
+function renderBacklog(el, activeTasks, doneTasks) {
+  let filtered = activeTasks;
+  if (filterTag) filtered = filtered.filter(t=>t.tag===filterTag);
+  if (searchQ) filtered = filtered.filter(t=>t.title.toLowerCase().includes(searchQ.toLowerCase()));
+  // Sort by creation timestamp; tasks without a timestamp go to end (treated as oldest)
+  filtered = [...filtered].sort((a, b) => {
+    const ta = created[a.title] ? new Date(created[a.title]).getTime() : 0;
+    const tb = created[b.title] ? new Date(created[b.title]).getTime() : 0;
+    return sortOrder === 'newest' ? tb - ta : ta - tb;
+  });
+
+  let html = '';
+  if (filtered.length===0) {
+    html += `<div style="text-align:center;padding:60px 20px;color:var(--sub);font-size:15px">
+      ${searchQ||filterTag?'No tasks match your filter.':'🎉 All clear! Add something new.'}</div>`;
+  } else {
+    filtered.forEach(t => { html += taskCard(t); });
+  }
+
+  if (doneTasks.length > 0) {
+    html += `<button class="done-toggle" onclick="doneExpanded=!doneExpanded;render()">
+      <span class="done-toggle-label">Completed (${doneTasks.length})</span>
+      <svg class="done-chevron ${doneExpanded?'open':''}" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>`;
+    if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
+  }
+  html += '<div style="height:16px"></div>';
+  el.innerHTML = html;
+  attachTaskEvents(el);
+}
+
+// ---- TODAY TAB ----
+function renderToday(el, activeTasks, doneTasks) {
+  const inToday = activeTasks.filter(t=>t.today);
+  const doneToday = doneTasks.filter(t=>t.today);
+  const total = inToday.length + doneToday.length;
+  const doneCount = doneToday.length;
+  const pct = total>0 ? Math.round((doneCount/total)*100) : 0;
+  const dateStr = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+  let html = `<div class="today-date">${dateStr}</div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>${doneCount} of ${total} done</span><strong>${pct}%</strong></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+
+  if (todayCelebrating) {
+    html += `<div class="today-celebration">
+      <div class="celebration-emoji">🎉</div>
+      <div class="celebration-title">You crushed it!</div>
+      <div class="celebration-sub">Every task done. List clearing in a moment…</div>
+    </div>`;
+  } else if (total===0) {
+    html += `<div class="today-empty"><span class="emoji">📅</span>Go to Backlog and tap the circle on any task to add it to Today.</div>`;
+  } else {
+    if (inToday.length>0) {
+      html += `<div class="section-label">Up Next</div>`;
+      inToday.forEach(t => { html += todayCard(t, false); });
+    }
+    if (doneToday.length>0) {
+      html += `<div class="section-label">Done</div>`;
+      doneToday.forEach(t => { html += todayCard(t, true); });
+    }
+  }
+  html += '<div style="height:16px"></div>';
+  el.innerHTML = html;
+  attachTaskEvents(el);
+}
+
+function todayCard(t, done) {
+  const hrs = todayAgeHours(t);
+  const ageClass = hrs >= 48 ? 'today-age-48' : hrs >= 24 ? 'today-age-24' : '';
+  return `<div class="task-card ${ageClass}" style="${done?'opacity:.6':''}">
+    <div class="check-ring ${done?'done':''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="task-body" data-edit-line="${t.lineIndex}">
+      <div class="task-title ${done?'done':''}">${t.title}</div>
+      ${tagHTML(t.tag)}
+    </div>
+    <button class="remove-today-btn" data-remove="${esc(t.title)}">×</button>
+  </div>`;
+}
+
+// ---- STATS TAB ----
+function renderStats(el, activeTasks, doneTasks) {
+  const now = new Date();
+  const monthName = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  // Month data
+  const monthCompletions = getCompletionsThisMonth();
+  const monthCount = monthCompletions.length;
+  const score = monthCount; // score = completions / 100 * 100 = completions
+  const { byDay, daysInMonth } = getCompletionsByDay();
+
+  // All-time data
+  const totalDone = Object.keys(completions).length;
+  const totalActive = activeTasks.length;
+  const totalTasks = tasks.length;
+
+  // Category breakdown (active tasks)
+  const tagCounts = {};
+  activeTasks.forEach(t => { const k=t.tag||'untagged'; tagCounts[k]=(tagCounts[k]||0)+1; });
+
+  // Doughnut — completed tasks by category (current completions we know about)
+  const completedTitles = new Set(Object.keys(completions));
+  const donutByTag = {};
+  tasks.filter(t=>t.done && completedTitles.has(t.title)).forEach(t => {
+    const k=t.tag||'untagged'; donutByTag[k]=(donutByTag[k]||0)+1;
+  });
+  // Also count completions for tasks that might be deleted
+  const trackedTitles = new Set(tasks.map(t=>t.title));
+  Object.keys(completions).filter(k=>!trackedTitles.has(k)).forEach(k => {
+    donutByTag['untagged']=(donutByTag['untagged']||0)+1;
+  });
+
+  const donutSegs = Object.entries(donutByTag).map(([tag,count])=>({
+    label: tag, count, color: tagDotColor(tag)
+  })).sort((a,b)=>b.count-a.count);
+
+  let html = `
+    <div class="seg-ctrl">
+      <button class="seg-btn ${statsView==='month'?'active':''}" onclick="statsView='month';render()">This Month</button>
+      <button class="seg-btn ${statsView==='alltime'?'active':''}" onclick="statsView='alltime';render()">All Time</button>
+    </div>`;
+
+  if (statsView==='month') {
+    html += `
+      <div class="score-card">
+        <div class="score-value">${score}%</div>
+        <div class="score-label">Productivity Score — ${monthName}</div>
+        <div class="score-sub">${monthCount} tasks completed · goal: 100</div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Completions by day</div>
+        ${buildBarChart(byDay, daysInMonth)}
+      </div>`;
+  } else {
+    html += `
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value">${totalDone}</div><div class="stat-label">All-time completed</div></div>
+        <div class="stat-card"><div class="stat-value">${totalActive}</div><div class="stat-label">Open tasks</div></div>
+        <div class="stat-card"><div class="stat-value">${totalTasks}</div><div class="stat-label">Total tasks</div></div>
+        <div class="stat-card"><div class="stat-value">${monthCount}</div><div class="stat-label">This month</div></div>
+      </div>`;
+  }
+
+  // Doughnut chart
+  if (donutSegs.length > 0 || statsView==='month') {
+    html += `<div class="chart-card">
+      <div class="chart-title">Completed by category</div>
+      <div class="donut-row">
+        ${buildDonutChart(donutSegs)}
+        <div class="donut-legend">
+          ${donutSegs.map(s=>`<div class="legend-item">
+            <div class="legend-dot" style="background:${s.color}"></div>
+            <span class="legend-label">${s.label}</span>
+            <span class="legend-count">${s.count}</span>
+          </div>`).join('')}
+          ${donutSegs.length===0?'<div style="color:var(--sub);font-size:13px">No completions yet</div>':''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Active tasks by category
+  if (Object.keys(tagCounts).length > 0) {
+    html += `<div class="chart-card">
+      <div class="chart-title">Active by category</div>
+      ${Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).map(([tag,count])=>`
+        <div class="tag-stat">
+          <span class="task-tag ${tagClass(tag)}" style="font-size:12px">${tag}</span>
+          <span style="font-size:15px;font-weight:600;color:var(--accent)">${count}</span>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  // Theme toggle
+  html += `
+    <div class="theme-row">
+      <span class="theme-label">Appearance</span>
+      <div class="theme-seg">
+        <button class="theme-btn ${themeMode==='light'?'active':''}" onclick="setTheme('light')">Light</button>
+        <button class="theme-btn ${themeMode==='auto'?'active':''}" onclick="setTheme('auto')">Auto</button>
+        <button class="theme-btn ${themeMode==='dark'?'active':''}" onclick="setTheme('dark')">Dark</button>
+      </div>
+    </div>
+    <button class="signout-link" onclick="signOut()">Sign out</button>
+    <div style="height:16px"></div>`;
+
+  el.innerHTML = html;
+}
+
+// ---- TASK CARD (backlog) ----
+function taskCard(t) {
+  const inT = t.today;
+  return `<div class="swipe-wrap" data-swipe-line="${t.lineIndex}">
+    <div class="delete-action" data-delete-line="${t.lineIndex}" data-delete-title="${esc(t.title)}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Delete
+    </div>
+    <div class="task-card">
+      <div class="check-ring ${t.done?'done':''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="task-body" data-edit-line="${t.lineIndex}">
+        <div class="task-title ${t.done?'done':''}">${t.title}</div>
+        ${tagHTML(t.tag)}
+      </div>
+      ${!t.done ? (() => { const hrs=todayAgeHours(t); const ac=hrs>=48?'today-age-48':hrs>=24?'today-age-24':''; return `<button class="today-ring-btn ${inT?'in-today':''} ${ac}" data-today-toggle="${esc(t.title)}">${inT?`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`:`+`}</button>`; })() : ''}
+    </div>
+  </div>`;
+}
+
+// ---- ESCAPE helper ----
+function esc(s) { return s.replace(/"/g,'&quot;'); }
+
+// ============================================================
+// EVENTS
+// ============================================================
+let openSwipeWrap = null;
+
+function closeOpenSwipe() {
+  if (!openSwipeWrap) return;
+  const card = openSwipeWrap.querySelector('.task-card');
+  if (card) { card.classList.remove('swiping'); card.style.transform=''; card.style.transition=''; }
+  openSwipeWrap = null;
+}
+
+function attachTaskEvents(el) {
+  // Check ring — toggle done
+  el.querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (openSwipeWrap) { closeOpenSwipe(); return; }
+      toggleDone(btn.dataset.toggle, parseInt(btn.dataset.line));
+    });
+  });
+
+  // Task body — open edit modal
+  el.querySelectorAll('.task-body[data-edit-line]').forEach(body => {
+    body.addEventListener('click', e => {
+      e.stopPropagation();
+      if (openSwipeWrap) { closeOpenSwipe(); return; }
+      const lineIdx = parseInt(body.dataset.editLine);
+      const task = tasks.find(t=>t.lineIndex===lineIdx);
+      if (task) openEditModal(task);
+    });
+  });
+
+  // Today toggle button
+  el.querySelectorAll('[data-today-toggle]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      if (openSwipeWrap) { closeOpenSwipe(); return; }
+      const title = btn.dataset.todayToggle;
+      const task = tasks.find(t => t.title === title);
+      if (task && task.today) { await removeFromToday(title); showToast('Removed from Today'); }
+      else { await addToToday(title); showToast('Added to Today'); }
+    });
+  });
+
+  // Today remove button
+  el.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      await removeFromToday(btn.dataset.remove); showToast('Removed from Today');
+    });
+  });
+
+  // Delete action
+  el.querySelectorAll('[data-delete-line]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      deleteTask(parseInt(btn.dataset.deleteLine), btn.dataset.deleteTitle);
+    });
+  });
+
+  // Swipe-to-delete
+  const OPEN_X = 76, THRESHOLD = 40;
+  el.querySelectorAll('.swipe-wrap').forEach(wrap => {
+    const card = wrap.querySelector('.task-card');
+    if (!card) return;
+    let startX=0, startY=0, dx=0, tracking=false, startedOpen=false;
+
+    card.addEventListener('touchstart', e => {
+      if (openSwipeWrap && openSwipeWrap!==wrap) closeOpenSwipe();
+      startX=e.touches[0].clientX; startY=e.touches[0].clientY;
+      startedOpen = openSwipeWrap===wrap;
+      dx = startedOpen ? -OPEN_X : 0;
+      tracking=true; card.classList.add('swiping');
+    }, {passive:true});
+
+    card.addEventListener('touchmove', e => {
+      if (!tracking) return;
+      const mx=e.touches[0].clientX-startX, my=e.touches[0].clientY-startY;
+      if (Math.abs(my)>Math.abs(mx)+8) { tracking=false; card.classList.remove('swiping'); return; }
+      dx=Math.max(-OPEN_X,Math.min(0,(startedOpen?-OPEN_X:0)+mx));
+      card.style.transform=`translateX(${dx}px)`;
+    }, {passive:true});
+
+    card.addEventListener('touchend', () => {
+      if (!tracking) return;
+      tracking=false; card.classList.remove('swiping');
+      if (dx < -THRESHOLD) {
+        card.style.transition='transform .2s cubic-bezier(.25,.46,.45,.94)';
+        card.style.transform=`translateX(-${OPEN_X}px)`;
+        openSwipeWrap=wrap;
+      } else {
+        card.style.transition='transform .2s cubic-bezier(.25,.46,.45,.94)';
+        card.style.transform='';
+        if (openSwipeWrap===wrap) openSwipeWrap=null;
+      }
+      setTimeout(()=>{ card.style.transition=''; },220);
+    }, {passive:true});
+  });
+
+  el.addEventListener('touchstart', e=>{
+    if (openSwipeWrap&&!openSwipeWrap.contains(e.target)) closeOpenSwipe();
+  },{passive:true});
+}
+
+function switchTab(tab) { currentTab=tab; filterTag=null; searchQ=''; closeOpenSwipe(); render(); }
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter' && !document.getElementById('modal')?.classList.contains('hidden')) submitModal();
+  if (e.key==='Escape') closeModal();
+});
+
+// ============================================================
+// BOOT
+// ============================================================
+async function boot() {
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="loading-screen"><div class="spinner"></div></div>`;
+
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  const urlError = params.get('error');
+  const returnedState = params.get('state');
+
+  if (urlError) {
+    localStorage.setItem('auth_error', params.get('error_description') || urlError);
+    history.replaceState({}, '', location.pathname);
+    render(); return;
+  }
+
+  if (code) {
+    const ok = await exchangeCode(code, returnedState);
+    if (!ok) { render(); return; }
+  } else {
+    accessToken = localStorage.getItem('ms_token');
+    if (accessToken) {
+      const ok = await refreshToken();
+      if (!ok) accessToken = localStorage.getItem('ms_token');
+    }
+  }
+
+  if (!accessToken) { render(); return; }
+
+  try { await loadBacklog(); render(); }
+  catch(e) { console.error(e); render(); }
+}
+
+boot();
+</script>
+</body>
+</html>
