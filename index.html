@@ -656,6 +656,109 @@
     pointer-events: none; white-space: nowrap;
   }
   .toast.show { opacity: 1; }
+
+  /* brand shown only in the desktop sidebar */
+  .nav-brand { display: none; }
+
+  /* ============================================================
+     DESKTOP / WIDE SCREENS
+     Turn the phone layout into a real desktop web app:
+     the bottom tab bar becomes a fixed left sidebar, and the
+     content + header become a centered, readable column.
+     Everything below only applies at >=860px, so mobile is
+     completely untouched.
+     ============================================================ */
+  @media (min-width: 860px) {
+    html, body {
+      touch-action: auto;              /* mouse, not touch gestures */
+      overscroll-behavior: auto;
+    }
+    body {
+      padding-bottom: 0;               /* nav is no longer along the bottom */
+    }
+
+    /* ---- LEFT SIDEBAR (was .bottom-nav) ---- */
+    .bottom-nav {
+      top: 0; bottom: 0; left: 0; right: auto;
+      width: 232px;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 3px;
+      padding: 22px 14px 22px;
+      border-top: none;
+      border-right: 1px solid var(--border);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 11px;
+      font-size: 20px; font-weight: 800; letter-spacing: -.4px;
+      color: var(--text); padding: 4px 12px 20px;
+    }
+    .nav-brand .glyph {
+      width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent), #5ac8fa);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; box-shadow: 0 2px 8px rgba(0,122,255,.30);
+    }
+    .nav-brand .glyph svg { width: 17px; height: 17px; }
+
+    .nav-item {
+      flex: 0 0 auto;
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 11px 13px;
+      border-radius: 10px;
+      font-size: 14.5px;
+      font-weight: 600;
+      transition: background .12s, color .12s;
+    }
+    .nav-item svg { width: 20px; height: 20px; }
+    .nav-item span { font-size: 14.5px; }
+    .nav-item:hover { background: var(--tag-bg); color: var(--text); }
+    .nav-item.active { background: var(--accent-light); color: var(--accent); }
+    .nav-item.active:hover { background: var(--accent-light); }
+
+    /* ---- MAIN COLUMN: offset past the sidebar and centered ----
+       Centers a ~760px column in the space right of the 232px
+       sidebar, keeping >=36px gutters, so the list never stretches
+       edge-to-edge on a wide monitor. */
+    .header {
+      padding-top: 26px;
+      padding-bottom: 14px;
+      padding-left:  max(36px, calc(232px + (100vw - 232px - 760px) / 2));
+      padding-right: max(36px, calc((100vw - 232px - 760px) / 2));
+    }
+    .header h1 { font-size: 24px; }
+
+    .content {
+      padding-top: 24px;
+      padding-bottom: 64px;
+      padding-left:  max(36px, calc(232px + (100vw - 232px - 760px) / 2));
+      padding-right: max(36px, calc((100vw - 232px - 760px) / 2));
+    }
+
+    /* ---- MOUSE HOVER AFFORDANCES ---- */
+    .task-card { transition: box-shadow .15s, transform .15s, border-color .15s; }
+    .swipe-wrap:not(.swiping) .task-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    .add-btn:hover, .auth-btn:hover, .btn-primary:hover { filter: brightness(1.06); }
+    .sync-btn:hover, .filter-btn:hover, .sort-btn2:hover,
+    .seg-btn:hover, .theme-btn:hover, .hm-nav:hover { background: var(--border); }
+    .check-ring:hover { border-color: var(--accent); }
+    .today-ring-btn:hover, .pull-today-btn:hover, .remove-today-btn:hover { filter: brightness(1.05); }
+    .pop-row:hover { background: var(--tag-bg); }
+    .pick-row:hover { border-color: var(--accent); }
+    .tmr-add-btn:hover, .bonus-add-btn:hover, .core-add-btn:hover { background: var(--tag-bg); }
+    .done-toggle:hover .done-toggle-label { color: var(--text); }
+    .signout-link:hover { color: var(--text); }
+
+    /* modals sit centered on desktop instead of dropping from the top */
+    .modal-overlay { align-items: center; padding-top: 0; }
+    .modal { max-width: 440px; }
+  }
 </style>
 </head>
 <body>
@@ -1867,6 +1970,7 @@ function renderMain(app) {
     </div>
     <div class="content" id="content"></div>
     <div class="bottom-nav">
+      <div class="nav-brand"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Backlog</div>
       ${navItem('backlog',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,'Backlog')}
       ${navItem('today',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,'Today')}
       ${navItem('stats',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,'Stats')}
