@@ -1060,6 +1060,17 @@
   /* glass cards are translucent — only reveal the red delete action while swiping/open */
   .swipe-wrap .delete-action { visibility: hidden; }
   .swipe-wrap:has(.task-card.swiping) .delete-action, .swipe-wrap:has(.task-card[style*="translateX"]) .delete-action { visibility: visible; }
+  /* desktop: Projects board uses the full width right of the sidebar */
+  @media (min-width: 860px) {
+    body[data-tab="projects"] .header, body[data-tab="projects"] .content { padding-left: 268px; padding-right: 32px; }
+    body[data-tab="projects"] .pj-board { margin: 0 -32px 0 -16px; padding: 2px 32px 14px 16px; scroll-snap-type: none; }
+    body[data-tab="projects"] .pj-col { flex: 0 0 300px; }
+  }
+  .pj-board::-webkit-scrollbar, .pj-cards::-webkit-scrollbar { height: 8px; width: 6px; }
+  .pj-board::-webkit-scrollbar-track, .pj-cards::-webkit-scrollbar-track { background: transparent; }
+  .pj-board::-webkit-scrollbar-thumb, .pj-cards::-webkit-scrollbar-thumb { background: var(--tag-bg); border-radius: 8px; }
+  .pj-board::-webkit-scrollbar-thumb:hover { background: var(--border); }
+  .pj-board, .pj-cards { scrollbar-width: thin; scrollbar-color: var(--tag-bg) transparent; }
 </style>
 </head>
 <body>
@@ -2243,6 +2254,7 @@ function renderAuth(app) {
 }
 
 function renderMain(app) {
+  document.body.dataset.tab = currentTab;
   const activeTasks = tasks.filter(t => !t.done);
   const doneTasks = tasks.filter(t => t.done);
   const titles = { backlog:'Backlog', projects:'Projects', today:'Today', stats:'Stats' };
