@@ -2378,7 +2378,7 @@ function renderBacklog(el, activeTasks, doneTasks) {
     if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
   }
   if (pjGrouped && blDesktop()) {
-    html = blKpis(activeTasks) + `<div class="bl-dash"><div class="bl-col glass-panel"><div class="bl-col-inner">${pjHtml || '<div class="pj-bighead">Projects</div><div class="bl-empty">No open project tasks</div>'}</div></div><div class="bl-col glass-panel"><div class="bl-col-inner"><div class="pj-bighead">Everything else</div>${html}</div></div></div>`;
+    html = blKpis(activeTasks) + `<div class="bl-dash"><div class="bl-col glass-panel"><div class="bl-col-inner"><div class="pj-bighead">Everything else</div>${html}</div></div><div class="bl-col glass-panel"><div class="bl-col-inner">${pjHtml || '<div class="pj-bighead">Projects</div><div class="bl-empty">No open project tasks</div>'}</div></div></div>`;
   } else html = pjHtml + html;
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
