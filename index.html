@@ -1071,6 +1071,31 @@
   .pj-board::-webkit-scrollbar-thumb, .pj-cards::-webkit-scrollbar-thumb { background: var(--tag-bg); border-radius: 8px; }
   .pj-board::-webkit-scrollbar-thumb:hover { background: var(--border); }
   .pj-board, .pj-cards { scrollbar-width: thin; scrollbar-color: var(--tag-bg) transparent; }
+  .age-chip { font-size: 10.5px; font-weight: 600; padding: 1px 6px; border-radius: 6px; background: var(--tag-bg); color: var(--sub); font-variant-numeric: tabular-nums; }
+  .age-chip.mid { color: var(--orange); background: rgba(240,140,0,.12); }
+  .age-chip.old { color: var(--danger); background: rgba(229,72,77,.12); }
+  @media (min-width: 860px) {
+    body[data-tab="backlog"] .header, body[data-tab="backlog"] .content {
+      padding-left: max(268px, calc(232px + (100vw - 232px - 1240px) / 2));
+      padding-right: max(36px, calc((100vw - 232px - 1240px) / 2)); }
+    .bl-kpis { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .glass-panel { background: var(--card); border: 1px solid var(--card-hairline); border-radius: 18px; -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: var(--shadow-sm); }
+    .bl-kpi { padding: 16px 18px; min-width: 0; transition: transform .15s, box-shadow .15s; }
+    .bl-kpi[data-pj-checkin], .bl-kpi[data-bl-open], .bl-kpi-ring { cursor: pointer; }
+    .bl-kpi[data-pj-checkin]:hover, .bl-kpi[data-bl-open]:hover, .bl-kpi-ring:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .bl-kpi .l { font-size: 11.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--sub); }
+    .bl-kpi .v { font-size: 30px; font-weight: 800; letter-spacing: -1px; margin: 4px 0 2px; }
+    .bl-kpi .s { font-size: 12.5px; color: var(--sub); }
+    .bl-kpi-ring { display: flex; align-items: center; gap: 16px; }
+    .bl-trunc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bl-dash { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+    .bl-col-inner { padding: 16px 16px 10px; }
+    .bl-col .pj-divider { display: none; }
+    .bl-col .pj-bighead { margin-top: 0; font-size: 18px; }
+    .bl-col .swipe-wrap { margin-bottom: 8px; }
+    .bl-col .task-card { padding: 12px 14px 12px 16px; }
+    .bl-empty { color: var(--sub); padding: 18px 4px; }
+  }
 </style>
 </head>
 <body>
@@ -2323,7 +2348,8 @@ function renderBacklog(el, activeTasks, doneTasks) {
     return sortOrder === 'newest' ? -diff : diff;
   });
 
-  let html = pjGrouped ? pjBacklogHTML() : '';
+  const pjHtml = pjGrouped ? pjBacklogHTML() : '';
+  let html = '';
   // Active task count header
   const countLabel = (searchQ || filterTag) ? `${filtered.length} of ${activeTasks.length}` : `${activeTasks.length}`;
   html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 2px;">
@@ -2351,6 +2377,9 @@ function renderBacklog(el, activeTasks, doneTasks) {
     </button>`;
     if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
   }
+  if (pjGrouped && blDesktop()) {
+    html = blKpis(activeTasks) + `<div class="bl-dash"><div class="bl-col glass-panel"><div class="bl-col-inner">${pjHtml || '<div class="pj-bighead">Projects</div><div class="bl-empty">No open project tasks</div>'}</div></div><div class="bl-col glass-panel"><div class="bl-col-inner"><div class="pj-bighead">Everything else</div>${html}</div></div></div>`;
+  } else html = pjHtml + html;
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
   attachTaskEvents(el);
@@ -2944,7 +2973,7 @@ function taskCard(t) {
       </div>
       <div class="task-body" data-edit-line="${t.lineIndex}">
         <div class="task-title ${t.done?'done':''}">${t.title}</div>${px?px.line:''}
-        ${(t.tag || t.notes || px) ? `<div class="task-meta">${px?px.meta:''}${tagHTML(t.tag)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
+        ${(t.tag || t.notes || px || createdMsOf(t)) ? `<div class="task-meta">${px?px.meta:''}${tagHTML(t.tag)}${ageChip(t)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
       </div>
       ${px && px.right && !t.done ? px.right : !t.done ? (() => {
         if (t.tomorrow) return `<button class="today-ring-btn in-tomorrow" data-tmr-toggle="${esc(t.title)}" title="Staged for tomorrow — tap to unstage">🌙</button>`;
@@ -3860,6 +3889,39 @@ editTask = async function (lineIndex, oldTitle, newTitle, newTag, newNotes) {
   if (t && t.cardId) { const [, c] = pjFind(t.cardId); if (c && c.title !== newTitle) { c.title = newTitle; pjTouch(c); pjSave(); } newTag = 'project'; }
   return _pjEditTask(lineIndex, oldTitle, newTitle, newTag, newNotes);
 };
+
+// ---------- DESKTOP DASHBOARD (Backlog tab) ----------
+const blMQ = window.matchMedia('(min-width: 860px)');
+function blDesktop() { return blMQ.matches; }
+blMQ.addEventListener('change', () => { if (accessToken && currentTab === 'backlog') render(); });
+function ageChip(t) {
+  const ms = createdMsOf(t); if (!ms || t.done) return '';
+  const d = Math.floor((Date.now() - ms) / 864e5);
+  const cls = d >= 30 ? 'old' : d >= 14 ? 'mid' : '';
+  return `<span class="age-chip ${cls}" title="Created ${new Date(ms).toLocaleDateString()}">${d < 1 ? 'new' : d + 'd'}</span>`;
+}
+function blKpis(activeTasks) {
+  const U = todayUnfinishedCount(), Dn = todayDoneCount(), goal = TODAY_LIMIT;
+  const pct = Math.min(1, Dn / goal), C = 2 * Math.PI * 15;
+  let ready = 0, waiting = 0, due = 0;
+  pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t || t.done) return;
+    if (c.ready || pjDue(c)) ready++; if (c.waiting) { waiting++; if (pjDue(c)) due++; } }));
+  const dated = activeTasks.filter(t => createdMsOf(t)).sort((a, b) => createdMsOf(a) - createdMsOf(b));
+  const old = dated[0], oldD = old ? Math.floor((Date.now() - createdMsOf(old)) / 864e5) : 0;
+  return `<div class="bl-kpis">
+    <div class="bl-kpi glass-panel bl-kpi-ring" onclick="switchTab('today')"><svg width="70" height="70" viewBox="0 0 36 36"><defs><linearGradient id="blgr" x1="0" x2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs>
+      <circle cx="18" cy="18" r="15" fill="none" stroke="var(--tag-bg)" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="url(#blgr)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${pct * C} ${C}" transform="rotate(-90 18 18)"/></svg>
+      <div><div class="l">Today’s focus</div><div class="v">${Dn} / ${goal}</div><div class="s">${U ? `${U} still open` : Dn >= goal ? 'Set complete 🤙' : 'Open slots — add some'}</div></div></div>
+    <div class="bl-kpi glass-panel" ${ready ? 'data-pj-checkin' : ''}><div class="l">⚡ Ready for you</div><div class="v" style="color:var(--green)">${ready}</div><div class="s">${ready ? 'your move — tap to check in' : 'nothing came back yet'}</div></div>
+    <div class="bl-kpi glass-panel"><div class="l">⏳ Waiting on others</div><div class="v" style="color:var(--orange)">${waiting}</div><div class="s">${due ? `<span style="color:var(--danger)">${due} follow-up${due > 1 ? 's' : ''} due</span>` : 'no follow-ups due'}</div></div>
+    <div class="bl-kpi glass-panel" ${old ? `data-bl-open="${old.lineIndex}"` : ''}><div class="l">Oldest open</div><div class="v">${old ? oldD + 'd' : '—'}</div><div class="s bl-trunc">${old ? old.title.replace(/</g, '&lt;') : 'nothing dated'}</div></div>
+  </div>`;
+}
+document.addEventListener('click', e => {
+  const o = e.target.closest && e.target.closest('[data-bl-open]'); if (!o) return;
+  const t = tasks.find(x => x.lineIndex === +o.dataset.blOpen); if (!t) return;
+  if (t.cardId && pjFind(t.cardId)[1]) pjOpen('card', t.cardId); else openEditModal(t);
+});
 
 boot();
 </script>
