@@ -1,7 +1,7 @@
 {
-  "name": "Backlog",
-  "short_name": "Backlog",
-  "description": "Personal task backlog",
+  "name": "Donezo",
+  "short_name": "Donezo",
+  "description": "Get it done.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

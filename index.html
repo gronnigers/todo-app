@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Backlog">
+<meta name="apple-mobile-web-app-title" content="Donezo">
 <link rel="manifest" href="manifest.json">
-<title>Backlog</title>
+<title>Donezo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAEN0lEQVR4nO3dwXHbSBCG0ZFqk5DCWGciZbCBbQbrTKQw7DDWB5ddMgWSGHBANH68d+SBQqE+thtUafzQivj7v2//b30NLPf++vyw9TW01tpmFyHgbFsFftcfKuJjumfcq/8gEfPR2nGv9uZC5pK1wh7+pkKmx+iwH0e+mZjpNbqZIZ8OITPCiGl984QWM6OMaOmmoMXMaLc2tWjEC5l7WLKCdE9oMXMvS1rrClrM3Ftvc7ODFjNb6Wlv6PfQsLVZQZvObG1ug1eDFjNVzGnxYtBippprTdqhiXI2aNOZqi61ORm0mKnuXKNWDqJ8Ctp0Zi+mWjWhifJH0KYze3ParAlNFEET5XfQ1g326mO7JjRRBE2Ux9asG+zfr4ZNaKIImiiCJsqD/ZkkJjRRBE0UQRNF0EQRNFEETRRBE0XQRBE0UQRNFEETRdBEETRRBE0UQRNF0EQRNFH+2voCrnl7efr02pev3ze4Evag9ISeivnS61A26GvRipopJYOeG6uoOVVuh+6N9O3lafZO7QMwXrXnmZITeg1iXke1+3qYoDkGQRPlMEFX2/VSVLuvJY8C69nLqt1QtlVyQs+NVMycKhl0a9djFTNTygbd2vloxcw55X6xckq89Cg9oaGXoIkiaKIImiiCJoqgiSJoogiaKIImiqCJImiiCJoogiaKoIkiaKIImiiCJoqgiVL+T7CcD02P0hPa+dD0Khu086FZomTQzodmqXI7tPOh96Xa80zJCb0GMa+j2n09TNAcg6CJcpigq+16KardV+dDE6XkhHY+NEuVDLo150OzTNmgW3M+NP3K/WLllHjpUXpCQy9BE0XQRBE0UQRNFEETRdBEETRRBE0UQRNF0EQRNFEETRRBE0XQRBE0UQRNFEETpfyfYL29PP1z+tqXr9//3eJaqK/0hJ6K+dLrUDboa9GKmiklg54bq6g5Ve4osCWRzt2pfQDGq/Y8U3JCr0HM66h2Xw8TNMcgaKIcJuhqu16Kave13ENha317WbUbyrZKTui5kYqZUyWDbu16rGJmStmgWzsfrZg5p+QODUuVntDQS9BEETRRBE0UQRNF0EQRNFEETRRBE0XQRBE0UQRNFEETRdBEETRRBE2Ux/fX54etLwJGeH99fjChiSJoogiaKI+t/dw9tr4QuMWvhk1oogiaKL+DtnawVx/bNaGJImii/BG0tYO9OW3WhCbKp6BNafZiqlUTmiiTQZvSVHeu0bMTWtRUdalNKwdRLgZtSlPNtSavTmhRU8WcFmetHKJma3MbtEMTZXbQpjRb6Wmva0KLmnvrba575RA197KktZvi9J92soZbhuZND4WmNaPd2tTN33KImlFGtDQ0RisIS4wcikO/hzat6TW6mdUCNK25ZK3ht/pEFTYfrf2v+F1XBHEf0z1X0c12XnFn2+p5qsxDnMD3rcoXAj8AlfNGgczTDaMAAAAASUVORK5CYII=">
@@ -1135,6 +1135,15 @@
   .glass-sw:hover { background: var(--tag-bg); }
   .glass-sw i { display: block; height: 38px; border-radius: 8px; margin-bottom: 5px; border: 1px solid var(--card-hairline); }
   .pop-panel:has(.glass-grid) { max-width: none; }
+  .pj-collapse-head { cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .pj-chev { display: inline-block; font-size: 20px; color: var(--sub); transition: transform .25s cubic-bezier(.2,.8,.2,1); width: 14px; }
+  .pj-chev.open { transform: rotate(90deg); }
+  .pj-hcount { font-size: 12px; font-weight: 600; color: var(--sub); background: var(--tag-bg); padding: 2px 8px; border-radius: 10px; }
+  .pj-hsum { font-size: 12.5px; font-weight: 600; color: var(--green); }
+  .pj-hbtns { margin-left: auto; display: flex; gap: 4px; }
+  .pj-bighead .pj-hbtns button { margin-left: 0; padding: 4px 8px; border-radius: 8px; }
+  .pj-bighead .pj-hbtns button:hover { background: var(--tag-bg); }
+  .pj-block.collapsed { margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -2322,7 +2331,7 @@ function renderAuth(app) {
   app.innerHTML = `
     <div class="auth-screen">
       <div style="font-size:56px">📋</div>
-      <h2>Backlog</h2>
+      <h2>Donezo</h2>
       <p>Sign in with your Microsoft account to access your task backlog.</p>
       ${errBlock}
       <button class="auth-btn" onclick="login()">Sign in with Microsoft</button>
@@ -2364,7 +2373,7 @@ function renderMain(app) {
     </div>
     <div class="content ${currentTab==='today'?'lane-today':''} ${currentTab==='projects'?'lane-projects':''}" id="content"></div>
     <div class="bottom-nav">
-      <div class="nav-brand"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Backlog</div>
+      <div class="nav-brand"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Donezo</div>
       ${navItem('backlog',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,'Backlog')}
       ${navItem('projects',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>`,'Projects')}
       ${navItem('today',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,'Today')}
@@ -2431,8 +2440,12 @@ function renderBacklog(el, activeTasks, doneTasks) {
     if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
   }
   if (pjGrouped && blDesktop()) {
-    html = blKpis(activeTasks) + `<div class="bl-dash"><div class="bl-col glass-panel"><div class="bl-col-inner"><div class="pj-bighead">Everything else</div>${html}</div></div><div class="bl-col glass-panel"><div class="bl-col-inner">${pjHtml || '<div class="pj-bighead">Projects</div><div class="bl-empty">No open project tasks</div>'}</div></div></div>`;
-  } else html = pjHtml + html;
+    const colE = `<div class="bl-col glass-panel"><div class="bl-col-inner"><div class="pj-bighead">Everything else</div>${html}</div></div>`;
+    const colP = `<div class="bl-col glass-panel"><div class="bl-col-inner">${pjCheckinBar()}${pjHtml || '<div class="pj-bighead">Projects</div><div class="bl-empty">No open project tasks</div>'}</div></div>`;
+    html = blKpis(activeTasks) + `<div class="bl-dash">${pjOnTop ? colP + colE : colE + colP}</div>`;
+  } else if (pjGrouped) {
+    html = pjCheckinBar() + (pjOnTop ? pjHtml + (pjHtml ? '<div class="pj-divider"></div>' : '') + html : html + (pjHtml ? '<div class="pj-divider"></div>' + pjHtml : ''));
+  }
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
   attachTaskEvents(el);
@@ -3980,26 +3993,40 @@ function pjCreateProject() {
 }
 
 // ---------- BACKLOG integration ----------
+let pjCollapsed = localStorage.getItem('pj_collapsed') === '1';
+let pjOnTop = localStorage.getItem('pj_top') === '1';
+function pjCheckinBar() {
+  const ci = pjCheckinItems().length;
+  return ci ? `<button class="pj-checkin" data-pj-checkin><span class="ic">☀</span><span><b>Morning check-in</b><small>${ci} project item${ci > 1 ? 's' : ''} need a decision</small></span><span class="go">Start ›</span></button>` : '';
+}
 function pjBacklogHTML() {
-  // Project tasks grouped by where they stand. Rendered above the regular Backlog list.
+  // Project tasks grouped by where they stand. Collapsible; placed below (default) or above the regular list.
   const rows = [];
   pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t || t.done) return; const l = pjListOf(p, c);
     rows.push({ t, c, p, k: pjKind(l), i: p.lists.indexOf(l), today: t.today }); }));
-  const ci = pjCheckinItems().length;
-  let h = ci ? `<button class="pj-checkin" data-pj-checkin><span class="ic">☀</span><span><b>Morning check-in</b><small>${ci} project item${ci > 1 ? 's' : ''} need a decision</small></span><span class="go">Start ›</span></button>` : '';
-  if (!rows.length) return h;
+  if (!rows.length) return '';
   const grp = (label, arr, cls = '') => arr.length ? `<div class="pj-sec ${cls}">${label} · ${arr.length}</div>` + arr.map(r => taskCard(r.t)).join('') : '';
   const onToday = rows.filter(r => r.today); const notToday = rows.filter(r => !r.today);
   const ready = notToday.filter(r => r.c.ready || pjDue(r.c)), rest = notToday.filter(r => !(r.c.ready || pjDue(r.c)));
-  h += `<div class="pj-bighead">Projects<button onclick="switchTab('projects')">Board ›</button></div>`;
+  const summary = [ready.length && `⚡ ${ready.length} ready`, onToday.length && `☀ ${onToday.length} today`].filter(Boolean).join(' · ');
+  let h = `<div class="pj-bighead pj-collapse-head" data-pj-collapse><span class="pj-chev ${pjCollapsed ? '' : 'open'}">›</span>Projects <span class="pj-hcount">${rows.length}</span>
+    ${pjCollapsed && summary ? `<span class="pj-hsum">${summary}</span>` : ''}
+    <span class="pj-hbtns"><button data-pj-move title="${pjOnTop ? 'Move below my tasks' : 'Move above my tasks'}">${pjOnTop ? '↓ Bottom' : '↑ Top'}</button><button onclick="event.stopPropagation();switchTab('projects')">Board ›</button></span></div>`;
+  if (pjCollapsed) return `<div class="pj-block collapsed">${h}</div>`;
   h += grp('☀ On Today', onToday);
   h += grp('⚡ Ready for you', ready, 'ready');
   h += grp('▶ In progress', rest.filter(r => r.k === 'active'));
   h += grp('Up next', rest.filter(r => r.k === 'queue').sort((a, b) => b.i - a.i));
   h += grp('⏳ Waiting on others', rest.filter(r => r.k === 'waiting'));
-  h += `<div class="pj-divider"></div>`;
-  return h;
+  return `<div class="pj-block">${h}</div>`;
 }
+document.addEventListener('click', e => {
+  if (!e.target.closest) return;
+  const mv = e.target.closest('[data-pj-move]');
+  if (mv) { e.stopPropagation(); pjOnTop = !pjOnTop; localStorage.setItem('pj_top', pjOnTop ? '1' : '0'); pjRefresh(); return; }
+  const hd = e.target.closest('[data-pj-collapse]');
+  if (hd && !e.target.closest('button')) { pjCollapsed = !pjCollapsed; localStorage.setItem('pj_collapsed', pjCollapsed ? '1' : '0'); pjRefresh(); }
+});
 // extra bits for a project task row: stage pill + waiting/ready line
 function pjTaskExtras(t) {
   const [p, c] = pjFind(t.cardId); if (!c) return { meta: '', line: '', parked: false, right: null };
