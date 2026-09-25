@@ -1075,7 +1075,7 @@
   .age-chip.mid { color: var(--orange); background: rgba(240,140,0,.12); }
   .age-chip.old { color: var(--danger); background: rgba(229,72,77,.12); }
   @media (min-width: 860px) {
-    body[data-tab="backlog"] .header, body[data-tab="backlog"] .content {
+    body:not([data-tab="projects"]) .header, body:not([data-tab="projects"]) .content {
       padding-left: max(268px, calc(232px + (100vw - 232px - 1240px) / 2));
       padding-right: max(36px, calc((100vw - 232px - 1240px) / 2)); }
     .bl-kpis { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
