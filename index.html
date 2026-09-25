@@ -3465,16 +3465,37 @@ async function pjAddToday(c, quiet) {
   const t = pjTask(c); if (!t || t.done || t.today) return !!(t && t.today);
   let ok;
   if (bonusUnlocked()) ok = await addBonus(t.title); else ok = await addToToday(t.title);
-  if (ok) { pjLog(c, 'Added to Today', '☀'); pjSave(); if (!quiet) showToast('☀ Added to Today'); }
+  if (ok) { c.paused = null; pjLog(c, 'Added to Today', '☀'); pjSave(); if (!quiet) showToast('☀ Added to Today'); }
   return ok;
 }
 
+// ---------- status-driven lists ----------
+// A project starts with just To Do. Other lists are created on demand by task status:
+//   Start it → In Progress · Did my part → Waiting On · Complete → Completed
+const PJ_KIND_NAME = { queue: 'To Do', active: 'In Progress', waiting: 'Waiting On', done: 'Completed' };
+const PJ_KIND_RANK = { queue: 0, active: 1, waiting: 2, done: 3 };
+function pjEnsureList(p, kind) {
+  let l = p.lists.find(x => pjKind(x) === kind); if (l) return l;
+  l = { id: pjId('l'), name: PJ_KIND_NAME[kind], kind };
+  let at = p.lists.length; for (let i = p.lists.length - 1; i >= 0; i--) { if (PJ_KIND_RANK[pjKind(p.lists[i])] <= PJ_KIND_RANK[kind]) { at = i + 1; break; } at = i; }
+  p.lists.splice(at, 0, l); pjTouch(p); return l;
+}
+function pjNormalize() {   // completed cards always live in the Completed list; reopened ones leave it
+  let changed = false;
+  pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t) return; const k = pjKind(pjListOf(p, c));
+    if (t.done && k !== 'done') { const d = pjEnsureList(p, 'done'); c.prevList = c.listId; c.listId = d.id; c.waiting = null; c.ready = false; pjTouch(c); changed = true; }
+    else if (!t.done && t.today && k === 'queue') { pjMove(c, pjEnsureList(p, 'active').id); changed = true; }
+    else if (!t.done && k === 'done') { const back = p.lists.find(l => l.id === c.prevList && pjKind(l) !== 'done') || pjEnsureList(p, 'queue'); c.listId = back.id; pjTouch(c); changed = true; } }));
+  if (changed) pjSave();
+}
+const pjPauseDue = c => !!(c.paused && (!c.paused.until || c.paused.until <= pjToday()) && c.paused.until);
 // ---------- stage transitions (the rules) ----------
 // Enter Waiting → parked (off Today). Leave Waiting → flagged Ready. Enter an Active list → Ready cleared.
 function pjTransition(p, c, fromId) {
   const from = p.lists.find(l => l.id === fromId), to = pjListOf(p, c);
   if (from && to && from !== to) pjLog(c, `Moved ${from.name} → ${to.name}`, '→');
-  let r;
+  let r; if (from !== to) c.paused = null;
+  if (pjKind(to) === 'done') { c.prevList = fromId; c.waiting = null; c.waitSince = null; c.ready = false; pjTouch(c, p); return 'done'; }
   if (pjKind(to) === 'waiting' && pjKind(from) !== 'waiting') {
     c.prevList = fromId; c.ready = false; c.waitSince = pjNow();
     if (pjStripTodayFlags(c)) saveBacklog();
@@ -3492,8 +3513,7 @@ function pjMove(c, listId) {
   return pjTransition(p, c, from);
 }
 function pjSetWaiting(c, on, until) {
-  const [p] = pjFind(c.id); let wl = p.lists.find(l => pjKind(l) === 'waiting');
-  if (!wl) { wl = { id: pjId('l'), name: 'Waiting On', kind: 'waiting' }; p.lists.push(wl); }
+  const [p] = pjFind(c.id); const wl = pjEnsureList(p, 'waiting');
   if (c.listId !== wl.id) pjMove(c, wl.id);
   c.waiting = { on: on || '', until: until || null }; c.ready = false; if (!c.waitSince) c.waitSince = pjNow();
   if (pjStripTodayFlags(c)) saveBacklog();
@@ -3501,7 +3521,7 @@ function pjSetWaiting(c, on, until) {
 }
 function pjUnblock(c) {
   const [p] = pjFind(c.id);
-  const back = p.lists.find(l => l.id === c.prevList && pjKind(l) !== 'waiting') || p.lists.find(l => pjKind(l) === 'queue') || p.lists[0];
+  const back = p.lists.find(l => l.id === c.prevList && pjKind(l) !== 'waiting' && pjKind(l) !== 'done') || pjEnsureList(p, 'queue');
   pjMove(c, back.id); c.ready = true; pjTouch(c);
 }
 
@@ -3535,7 +3555,7 @@ function renderProjects(el) {
     el.innerHTML = `<div class="pj-empty"><div class="big">🗂️</div><b>No projects yet</b>Track multi-stage work on a board. Every card becomes a Backlog task tagged <b>project</b>.<br><br><button class="pj-btn" onclick="pjOpen('project')">＋ New project</button></div>`;
     return;
   }
-  pjActive = p.id;
+  pjActive = p.id; pjNormalize();
   const oldB = document.querySelector('.pj-board'); const sl = oldB ? oldB.scrollLeft : 0;
   const colScroll = {}; document.querySelectorAll('.pj-cards').forEach(e => colScroll[e.dataset.list] = e.scrollTop);
   const openBox = document.querySelector('.pj-add-box textarea'); const openList = openBox && openBox.closest('.pj-col').dataset.id, openVal = openBox && openBox.value;
@@ -3549,9 +3569,9 @@ function renderProjects(el) {
       return `<div class="pj-col" data-pk="col-${l.id}" data-id="${l.id}">
         <div class="pj-col-head"><span class="pj-dot" style="background:${pjDotFor(p, l)}"></span>${pjh(l.name)}${pjKind(l) !== 'queue' ? `<span class="kind">${pjKind(l) === 'active' ? '▶' : '⏳'}</span>` : ''}<span class="pj-count">${open}${cs.length > open ? ' / ' + cs.length : ''}</span></div>
         <div class="pj-cards" data-list="${l.id}">${cs.map(pjCardHTML).join('')}</div>
-        <button class="pj-add-card">＋ Add card</button></div>`;
+        ${pjKind(l) === 'queue' ? '<button class="pj-add-card">＋ Add card</button>' : ''}</div>`;
     }).join('')}
-      <button class="pj-new-col" data-pj-newcol>＋ Add list</button></div>`;
+      </div>`;
   const b = el.querySelector('.pj-board'); b.scrollLeft = sl;
   el.querySelectorAll('.pj-cards').forEach(e => { if (colScroll[e.dataset.list]) e.scrollTop = colScroll[e.dataset.list]; });
   pjSizeBoard();
@@ -3577,6 +3597,7 @@ function pjBadges(c, t) {
   let h = '';
   if (c.waiting) h += pjDue(c) ? `<span class="pj-badge due">⏰ Follow up${c.waiting.on ? ' · ' + pjh(c.waiting.on) : ''}</span>` : `<span class="pj-badge wait">⏳ ${c.waiting.on ? pjh(c.waiting.on) : 'Waiting'}${c.waiting.until ? ' · ' + pjFmtDay(c.waiting.until) : ''}</span>`;
   if (c.ready) h += '<span class="pj-badge ready">⚡ Ready</span>';
+  if (c.paused) h += pjPauseDue(c) ? '<span class="pj-badge due">⏸ Back to this</span>' : `<span class="pj-badge">⏸ Paused${c.paused.until ? ' · ' + pjFmtDay(c.paused.until) : ''}</span>`;
   if (t && t.today) h += '<span class="pj-badge today">☀ Today</span>';
   else if (t && t.tomorrow) h += '<span class="pj-badge">🌙 Tomorrow</span>';
   return h;
@@ -3669,7 +3690,7 @@ document.addEventListener('pointerdown', e => {
   const head = e.target.closest('.pj-col-head');
   if (head) { cfg = PJ_CFG.col; item = head.closest('.pj-col'); }
   else { item = e.target.closest('.pj-card'); cfg = item && PJ_CFG.card;
-    if (item && item.classList.contains('done')) { pjPending = { tapOnly: true, item, x: e.clientX, y: e.clientY, cx: e.clientX, cy: e.clientY, cfg }; return; } }
+    if (item) { pjPending = { tapOnly: true, item, x: e.clientX, y: e.clientY, cx: e.clientX, cy: e.clientY, cfg }; return; } }
   if (!item) return;
   pjPending = { cfg, item, x: e.clientX, y: e.clientY, cx: e.clientX, cy: e.clientY, touch: e.pointerType !== 'mouse' };
   if (pjPending.touch) pjPending.timer = setTimeout(() => { if (pjPending && !pjPending.tapOnly) pjBegin(); }, cfg.delay);
@@ -3768,15 +3789,13 @@ function pjRenderSheet() {
   const head = (title, btn = '<button class="pj-btn" data-pj-close>Done</button>') => `<div class="pj-grab"></div><div class="pj-sh-head"><h2>${title}</h2>${btn}</div>`;
   if (pjMode === 'project') {
     s.innerHTML = head('New project', '<button class="pj-btn" data-pj-createproj>Create</button>') + `<div class="pj-sh-body"><input class="pj-field" placeholder="Project name" data-pj-projname enterkeyhint="done">
-      <div class="pj-sub" style="margin:0 4px">Starts with To Do · Doing · Waiting On. Rename, reorder or add lists anytime.</div></div>`;
+      <div class="pj-sub" style="margin:0 4px">Starts with a To Do list. In Progress, Waiting On and Completed appear on their own as you update each task’s status.</div></div>`;
   } else if (pjMode === 'list') {
     const p = pjProj(), l = p && p.lists.find(l => l.id === pjArg); if (!l) return pjClose();
     const cnt = p.cards.filter(c => c.listId === l.id).length;
     s.innerHTML = head('List') + `<div class="pj-sh-body"><input class="pj-field" value="${pjh(l.name)}" data-pj-rename="${l.id}" enterkeyhint="done">
-      <div class="pj-lbl">This list means</div>
-      <div class="pj-kinds">${[['queue', 'Queue', 'Up next, not started'], ['active', 'Active', 'You’re working it'], ['waiting', 'Waiting', 'Someone else’s court']].map(([k, n, d]) => `<button class="pj-kind ${pjKind(l) === k ? 'on' : ''}" data-pj-kind="${k}"><b>${n}</b><small>${d}</small></button>`).join('')}</div>
       <div class="pj-sub" style="margin:0 4px 14px">Tip: press &amp; hold a list header on the board, then drag to reorder.</div>
-      <div class="pj-stack"><button class="pj-btn danger big" data-pj-dellist="${l.id}" ${p.lists.length < 2 ? 'disabled style="opacity:.4"' : ''}>Delete list${cnt ? ` (moves ${cnt} card${cnt > 1 ? 's' : ''} to its neighbor)` : ''}</button>
+      <div class="pj-stack">${cnt || pjKind(l) === 'queue' ? `<div class="pj-sub" style="margin:0 4px 4px">${pjKind(l) === 'queue' ? 'To Do is where every task starts.' : 'Lists fill and empty themselves as task statuses change.'}</div>` : `<button class="pj-btn danger big" data-pj-dellist="${l.id}">Remove empty list</button>`}
       <button class="pj-btn soft big" data-pj-renameproj>Rename project…</button><button class="pj-btn ghost big" data-pj-delproj style="color:var(--danger)">Delete project</button></div></div>`;
   } else if (pjMode === 'projmenu') {
     const p = pjProj(); if (!p) return pjClose();
@@ -3808,8 +3827,8 @@ function pjRenderSheet() {
     const hs = c.history || [], age = hs.length ? pjDaysSince(hs[0].at) : 0, backs = hs.filter(h => h.ic === '⚡').length;
     s.innerHTML = head('Card') + `<div class="pj-sh-body">
       <input class="pj-field" value="${pjh(c.title)}" data-pj-cardtitle>
-      <div class="pj-lbl">Stage</div>
-      <div class="pj-chips">${p.lists.map(l => `<button class="pj-chip ${l.id === c.listId ? 'on' : ''}" data-pj-stage="${l.id}"><span class="pj-dot" style="background:${pjDotFor(p, l)}"></span>${pjh(l.name)}</button>`).join('')}</div>
+      <div class="pj-lbl">Status</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:0 2px 16px">${pjStagePill(p, c)}${pjBadges(c, t)}</div>
       <div class="pj-lbl">Notes</div>
       <textarea class="pj-notes" data-pj-notes placeholder="Add notes, links, details…">${pjh(c.notes || '')}</textarea><div class="pj-saved">✓ Saved</div>
       <div class="pj-lbl">Attachments</div>
@@ -3825,10 +3844,13 @@ function pjRenderSheet() {
     const ta = s.querySelector('[data-pj-notes]'); if (ta) { ta.style.height = 'auto'; ta.style.height = Math.max(110, ta.scrollHeight + 2) + 'px'; }
   } else if (pjMode === 'act') {
     const [p, c] = pjFind(pjArg); if (!c) return pjClose(); const l = pjListOf(p, c), k = pjKind(l), wo = pjSub === 'wait', t = pjTask(c);
-    const activeL = p.lists.find(x => pjKind(x) === 'active');
-    s.innerHTML = head(wo ? 'Waiting on…' : 'Update task', '<button class="pj-btn ghost" data-pj-close>Cancel</button>') + `<div class="pj-sh-body">
+    s.innerHTML = head(pjSub === 'pause' ? 'Pause' : wo ? 'Waiting on…' : 'Update task', '<button class="pj-btn ghost" data-pj-close>Cancel</button>') + `<div class="pj-sh-body">
       <div class="pj-act-title">${pjh(c.title)}</div><div class="pj-sub" style="margin:0 2px 14px">${pjh(p.name)} · now in <b>${pjh(l.name)}</b></div>
-      ${wo ? `<input class="pj-field" data-pj-won placeholder="Who or what? (e.g. Krista, contractor, the city)" value="${pjh(c.waiting && c.waiting.on || '')}">
+      ${pjSub === 'pause' ? `<div class="pj-lbl">Come back to it</div>
+        <div class="pj-chips">${[['', 'No date'], [pjDayISO(1), 'Tomorrow'], [pjDayISO(3), 'In 3 days'], [pjDayISO(7), 'Next week']].map(([d, n]) => `<button class="pj-chip" data-pj-until="${d}">${n}</button>`).join('')}</div>
+        <div class="pj-sub" style="margin:-6px 4px 14px">On that day the morning check-in brings it back up.</div>
+        <div class="pj-stack"><button class="pj-btn big" data-pj-setpause>⏸ Pause it</button>${canStageTomorrow() ? '<button class="pj-btn soft big" data-pj-pausetmr>🌙 Stage for tomorrow instead</button>' : ''}</div>`
+      : wo ? `<input class="pj-field" data-pj-won placeholder="Who or what? (e.g. Krista, contractor, the city)" value="${pjh(c.waiting && c.waiting.on || '')}">
         <div class="pj-lbl">Follow up</div>
         <div class="pj-chips">${[['', 'No date'], [pjDayISO(1), 'Tomorrow'], [pjDayISO(3), 'In 3 days'], [pjDayISO(7), 'Next week']].map(([d, n]) => `<button class="pj-chip" data-pj-until="${d}">${n}</button>`).join('')}</div>
         <div class="pj-stack"><button class="pj-btn big" data-pj-setwait>⏳ Park it</button></div>`
@@ -3836,19 +3858,18 @@ function pjRenderSheet() {
         ${k === 'waiting' ? `<button class="pj-act" data-pj-act="back"><span class="ai" style="background:var(--green)">⚡</span><span><b>It’s back — ready for me</b><small>Returns to ${pjh((p.lists.find(x => x.id === c.prevList) || { name: 'the queue' }).name)}, flagged Ready</small></span></button>
           <button class="pj-act" data-pj-act="snooze"><span class="ai" style="background:var(--orange)">⏰</span><span><b>Still waiting</b><small>Push the follow-up out</small></span></button>`
         : `<button class="pj-act" data-pj-act="wait"><span class="ai" style="background:var(--orange)">⏳</span><span><b>Did my part — waiting on…</b><small>Parks it off your list until it’s back</small></span></button>`}
-        ${k !== 'active' && activeL ? `<button class="pj-act" data-pj-act="start"><span class="ai" style="background:var(--accent)">▶</span><span><b>Start it</b><small>Move to ${pjh(activeL.name)}${t && !t.today ? ' + add to Today' : ''}</small></span></button>` : ''}
+        ${k !== 'active' ? `<button class="pj-act" data-pj-act="start"><span class="ai" style="background:var(--accent)">▶</span><span><b>Start it</b><small>Move to In Progress${t && !t.today ? ' + add to Today' : ''}</small></span></button>` : ''}
+        ${k === 'active' ? `<button class="pj-act" data-pj-act="pause"><span class="ai" style="background:#8b93a8">⏸</span><span><b>Pause — come back to it</b><small>Off Today, stays In Progress · not done</small></span></button>` : ''}
         <button class="pj-act" data-pj-act="done"><span class="ai" style="background:var(--green)">✓</span><span><b>Complete</b><small>Grays out on the board</small></span></button>
         <button class="pj-act" data-pj-act="card"><span class="ai" style="background:var(--sub)">≡</span><span><b>Open card</b><small>Notes, attachments &amp; history</small></span></button>
-      </div>
-      <div class="pj-lbl" style="margin-top:16px">Or move to stage</div>
-      <div class="pj-chips">${p.lists.map(x => `<button class="pj-chip ${x.id === c.listId ? 'on' : ''}" data-pj-stage="${x.id}"><span class="pj-dot" style="background:${pjDotFor(p, x)}"></span>${pjh(x.name)}</button>`).join('')}</div>`}</div>`;
-    if (wo) pjMarkUntil();
+      </div>`}</div>`;
+    if (wo || pjSub === 'pause') pjMarkUntil();
   } else if (pjMode === 'checkin') {
     const it = pjCiQueue[0], done = pjCiTotal - pjCiQueue.length;
     const top = head('☀ Morning check-in', '<button class="pj-btn ghost" data-pj-close>Close</button>') + `<div class="pj-ci-prog"><i style="width:${pjCiTotal ? done / pjCiTotal * 100 : 100}%"></i></div>`;
     if (!it) { s.innerHTML = top + `<div class="pj-sh-body"><div class="pj-ci-done"><div class="big">🤙</div><b>All caught up</b><p>${pjCiAdded} project task${pjCiAdded === 1 ? '' : 's'} lined up for your day.</p><button class="pj-btn" data-pj-close style="padding:12px 28px">Let’s go</button></div></div>`; return; }
     const { p, c, why } = it, t = pjTask(c);
-    const lead = why === 'due' ? `⏰ Follow-up due — waiting on <b>${pjh(c.waiting.on || 'someone')}</b>${c.waitSince ? ` for ${pjDaysSince(c.waitSince)} days` : ''}` : why === 'ready' ? '⚡ Came back to you — it’s your move' : '▶ In progress but not on your day';
+    const lead = why === 'due' ? `⏰ Follow-up due — waiting on <b>${pjh(c.waiting.on || 'someone')}</b>${c.waitSince ? ` for ${pjDaysSince(c.waitSince)} days` : ''}` : why === 'ready' ? '⚡ Came back to you — it’s your move' : why === 'paused' ? `⏸ You paused this${c.paused && c.paused.until ? ' until ' + pjFmtDay(c.paused.until) : ''} — back to it today?` : '▶ In progress but not on your day';
     const chk = canAddToToday(), bonus = bonusUnlocked();
     s.innerHTML = top + `<div class="pj-sh-body"><div class="pj-sub" style="margin:0 2px 10px">${done + 1} of ${pjCiTotal}</div>
       <div class="pj-ci-card"><div class="pj-ci-why ${why}">${lead}</div><div class="pj-act-title" style="margin:6px 0 6px">${pjh(c.title)}</div>
@@ -3857,8 +3878,9 @@ function pjRenderSheet() {
       <div class="pj-stack">
         ${bonus ? `<button class="pj-btn big" data-pj-ci="today">✦ Add as stretch task</button>` : chk.ok ? `<button class="pj-btn big" data-pj-ci="today">☀ Add to Today</button>` : `<button class="pj-btn big" data-pj-ci="tomorrow" ${canStageTomorrow() ? '' : 'disabled style="opacity:.45"'}>🌙 Stage for tomorrow <span style="opacity:.7;font-weight:500">(Today’s full)</span></button>`}
         ${why === 'due' ? `<button class="pj-btn soft big" data-pj-ci="back">⚡ It’s back</button><button class="pj-btn soft big" data-pj-ci="snooze">⏰ Still waiting +3 days</button>` : ''}
-        ${why === 'ready' && p.lists.some(x => pjKind(x) === 'active') ? `<button class="pj-btn soft big" data-pj-ci="start">▶ Start it</button>` : ''}
+        ${why === 'ready' ? `<button class="pj-btn soft big" data-pj-ci="start">▶ Start it</button>` : ''}
         <button class="pj-btn soft big" data-pj-ci="done">✓ Already done</button>
+        ${why === 'paused' ? `<button class="pj-btn soft big" data-pj-ci="repause">⏸ Keep paused +3 days</button>` : ''}
         <button class="pj-btn ghost big" data-pj-ci="skip">Not today</button></div></div>`;
     const card = s.querySelector('.pj-ci-card'); card && card.animate([{ opacity: 0, transform: 'translateX(30px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: PJ_EASE });
   }
@@ -3868,7 +3890,8 @@ function pjCheckinItems() {
   pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t || t.done || t.today || t.tomorrow) return; const k = pjKind(pjListOf(p, c));
     if (pjDue(c)) out.push({ p, c, why: 'due', rank: 0 });
     else if (c.ready) out.push({ p, c, why: 'ready', rank: 1 });
-    else if (k === 'active') out.push({ p, c, why: 'active', rank: 2 }); }));
+    else if (pjPauseDue(c)) out.push({ p, c, why: 'paused', rank: 1.5 });
+    else if (k === 'active' && !c.paused) out.push({ p, c, why: 'active', rank: 2 }); }));
   return out.sort((a, b) => a.rank - b.rank);
 }
 function pjStartCheckin() { pjCiQueue = pjCheckinItems(); pjCiTotal = pjCiQueue.length; pjCiAdded = 0; pjOpen('checkin'); }
@@ -3896,14 +3919,23 @@ async function pjSheetClick(e) {
     if (pjMode === 'card') { pjRenderSheet(); pjRefresh(); } else { pjClose(); setTimeout(() => pjRefresh(), 240); }
     if (r === 'ready') showToast('⚡ Flagged Ready'); return; }
   const ab = t.closest('[data-pj-act]'); if (ab) { const [p, c] = pjFind(pjArg); const a = ab.dataset.pjAct, tk = pjTask(c);
+    if (a === 'pause') { pjSub = 'pause'; pjUntil = pjDayISO(1); pjRenderSheet(); return; }
     if (a === 'wait' || a === 'snooze') { pjSub = 'wait'; pjUntil = a === 'snooze' ? pjDayISO(3) : (c.waiting && c.waiting.until) || pjDayISO(3); pjRenderSheet(); if (a === 'wait') s.querySelector('[data-pj-won]').focus(); return; }
     if (a === 'card') return pjOpen('card', c.id);
     pjClose();
     if (a === 'done') { setTimeout(() => { if (tk && !tk.done) toggleDone(tk.title, tk.lineIndex); }, 240); return; }
     if (a === 'back') { setTimeout(() => { pjFlip(() => { pjUnblock(c); render(); }); pjSave(); showToast('⚡ Back in your court'); }, 240); return; }
-    if (a === 'start') { const al = p.lists.find(x => pjKind(x) === 'active'); setTimeout(async () => { pjFlip(() => { if (al) pjMove(c, al.id); render(); }); pjSave(); await pjAddToday(c, true); showToast(tk && tk.today ? '▶ Started · on Today' : '▶ Started'); }, 240); return; }
+    if (a === 'start') { const al = pjEnsureList(p, 'active'); setTimeout(async () => { pjFlip(() => { if (al) pjMove(c, al.id); render(); }); pjSave(); await pjAddToday(c, true); showToast(tk && tk.today ? '▶ Started · on Today' : '▶ Started'); }, 240); return; }
   }
   const wu = t.closest('[data-pj-until]'); if (wu) { pjUntil = wu.dataset.pjUntil || null; pjMarkUntil(); return; }
+  if (t.closest('[data-pj-setpause]') || t.closest('[data-pj-pausetmr]')) { const [, c] = pjFind(pjArg); const tmr = !!t.closest('[data-pj-pausetmr]'); const tk = pjTask(c); pjClose();
+    setTimeout(async () => {
+      const off = pjStripTodayFlags(c);
+      c.paused = { until: tmr ? pjDayISO(1) : (pjUntil || null) }; pjTouch(c);
+      pjLog(c, tmr ? 'Paused · staged for tomorrow' : `Paused${pjUntil ? ' · back ' + pjFmtDay(pjUntil) : ''}`, '⏸'); pjSave();
+      if (tmr && tk) { await addToTomorrow(tk.title); } else if (off) await saveBacklog();
+      pjFlip(render); showToast(tmr ? '🌙 Paused — back on Today tomorrow' : '⏸ Paused — still In Progress');
+    }, 240); return; }
   if (t.closest('[data-pj-setwait]')) { const [, c] = pjFind(pjArg); const who = s.querySelector('[data-pj-won]').value.trim(); pjClose();
     setTimeout(() => { pjFlip(() => { pjSetWaiting(c, who, pjUntil); render(); }); pjSave(); showToast(`⏳ Parked${who ? ' — waiting on ' + who : ''}`); }, 240); return; }
   const ci = t.closest('[data-pj-ci]'); if (ci && pjCiQueue[0]) { const { c } = pjCiQueue[0]; const a = ci.dataset.pjCi, tk = pjTask(c);
@@ -3911,12 +3943,13 @@ async function pjSheetClick(e) {
     if (a === 'today') { if (await pjAddToday(c, true)) pjCiAdded++; }
     if (a === 'tomorrow') { if (tk && await addToTomorrow(tk.title)) { pjCiAdded++; pjLog(c, 'Staged for tomorrow at check-in', '🌙'); } }
     if (a === 'back') { pjUnblock(c); }
+    if (a === 'repause') { c.paused = { until: pjDayISO(3) }; pjTouch(c); pjLog(c, 'Kept paused · back ' + pjFmtDay(c.paused.until), '⏸'); }
     if (a === 'snooze') { c.waiting.until = pjDayISO(3); pjLog(c, 'Still waiting · follow up ' + pjFmtDay(c.waiting.until), '⏰'); }
-    if (a === 'start') { const [p] = pjFind(c.id); const al = p.lists.find(x => pjKind(x) === 'active'); if (al) pjMove(c, al.id); if (await pjAddToday(c, true)) pjCiAdded++; }
+    if (a === 'start') { const [p] = pjFind(c.id); const al = pjEnsureList(p, 'active'); if (al) pjMove(c, al.id); if (await pjAddToday(c, true)) pjCiAdded++; }
     if (a === 'done') { if (tk && !tk.done) await toggleDone(tk.title, tk.lineIndex); }
     pjSave();
     if (a === 'back') { pjCiQueue[0].why = 'ready'; pjRenderSheet(); render(); return; }   // it's back → now decide what to do with it
-    const card = s.querySelector('.pj-ci-card'); const dir = (a === 'skip' || a === 'snooze') ? 1 : -1;
+    const card = s.querySelector('.pj-ci-card'); const dir = (a === 'skip' || a === 'snooze' || a === 'repause') ? 1 : -1;
     const fin = () => { pjCiQueue.shift(); pjRenderSheet(); render(); };
     if (card) card.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${dir * 40}px) rotate(${dir * 2}deg)` }], { duration: 200, easing: 'ease-in', fill: 'forwards' }).onfinish = fin; else fin();
     return; }
@@ -3987,7 +4020,7 @@ async function pjUpload(cardId, file) {
 }
 function pjCreateProject() {
   const v = (document.querySelector('#pj-sheet [data-pj-projname]').value || '').trim(); if (!v) return;
-  const p = { id: pjId('p'), name: v, lists: [['To Do', 'queue'], ['Doing', 'active'], ['Waiting On', 'waiting']].map(([n, k]) => ({ id: pjId('l'), name: n, kind: k })), cards: [], upd: Date.now() };
+  const p = { id: pjId('p'), name: v, lists: [{ id: pjId('l'), name: 'To Do', kind: 'queue' }], cards: [], upd: Date.now() };
   pj.projects.push(p); pjActive = p.id; localStorage.setItem('pj_active', p.id); pjSave(); pjClose();
   if (currentTab !== 'projects') switchTab('projects'); else render();
   const b = document.querySelector('.pj-board'); b && b.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: PJ_EASE });
@@ -4009,7 +4042,8 @@ function pjBacklogHTML() {
   if (!rows.length) return '';
   const grp = (label, arr, cls = '') => arr.length ? `<div class="pj-sec ${cls}">${label} · ${arr.length}</div>` + arr.map(r => taskCard(r.t)).join('') : '';
   const onToday = rows.filter(r => r.today); const notToday = rows.filter(r => !r.today);
-  const ready = notToday.filter(r => r.c.ready || pjDue(r.c)), rest = notToday.filter(r => !(r.c.ready || pjDue(r.c)));
+  const isReady = r => r.c.ready || pjDue(r.c) || pjPauseDue(r.c);
+  const ready = notToday.filter(isReady), rest = notToday.filter(r => !isReady(r));
   const summary = [ready.length && `⚡ ${ready.length} ready`, onToday.length && `☀ ${onToday.length} today`].filter(Boolean).join(' · ');
   let h = `<div class="pj-bighead pj-collapse-head" data-pj-collapse><span class="pj-chev ${pjCollapsed ? '' : 'open'}">›</span>Projects <span class="pj-hcount">${rows.length}</span>
     ${pjCollapsed && summary ? `<span class="pj-hsum">${summary}</span>` : ''}
@@ -4017,7 +4051,8 @@ function pjBacklogHTML() {
   if (pjCollapsed) return `<div class="pj-block collapsed">${h}</div>`;
   h += grp('☀ On Today', onToday);
   h += grp('⚡ Ready for you', ready, 'ready');
-  h += grp('▶ In progress', rest.filter(r => r.k === 'active'));
+  h += grp('▶ In progress', rest.filter(r => r.k === 'active' && !r.c.paused));
+  h += grp('⏸ Paused', rest.filter(r => r.k === 'active' && r.c.paused));
   h += grp('Up next', rest.filter(r => r.k === 'queue').sort((a, b) => b.i - a.i));
   h += grp('⏳ Waiting on others', rest.filter(r => r.k === 'waiting'));
   return `<div class="pj-block">${h}</div>`;
@@ -4036,9 +4071,10 @@ function pjTaskExtras(t) {
   const [p, c] = pjFind(t.cardId); if (!c) return { meta: '', line: '', parked: false, right: null };
   const w = c.waiting && !t.done, due = pjDue(c);
   const line = w ? (due ? `<div class="pj-wline due">⏰ Follow up${c.waiting.on ? ' with ' + pjh(c.waiting.on) : ''}</div>` : `<div class="pj-wline">Waiting on ${c.waiting.on ? pjh(c.waiting.on) : 'someone'}${c.waiting.until ? ' · follow up ' + pjFmtDay(c.waiting.until) : ''}</div>`)
-    : (c.ready && !t.done ? '<div class="pj-wline rdy">⚡ Unblocked — your move</div>' : '');
+    : (c.ready && !t.done ? '<div class="pj-wline rdy">⚡ Unblocked — your move</div>'
+    : c.paused && !t.done ? (pjPauseDue(c) ? '<div class="pj-wline rdy">⏸ Back to this today?</div>' : `<div class="pj-wline" style="color:var(--sub)">⏸ Paused${c.paused.until ? ' · back ' + pjFmtDay(c.paused.until) : ''}</div>`) : '');
   return { meta: pjStagePill(p, c) + `<span class="pj-badge">${pjh(p.name)}</span>` + (c.notes ? `<span class="pj-ind">${PJ_IC_NOTE}</span>` : '') + ((c.files || []).length ? `<span class="pj-ind">${PJ_IC_CLIP}${c.files.length}</span>` : ''),
-    line, parked: w && !due, right: w ? `<button class="pj-back-btn" data-pj-unblock="${c.id}">${due ? 'Follow up' : 'It’s back'}</button>` : null };
+    line, parked: (w && !due) || (!!c.paused && !pjPauseDue(c) && !t.done), right: w ? `<button class="pj-back-btn" data-pj-unblock="${c.id}">${due ? 'Follow up' : 'It’s back'}</button>` : null };
 }
 document.addEventListener('click', e => {
   const t = e.target; if (!t.closest) return;
@@ -4049,13 +4085,27 @@ document.addEventListener('click', e => {
 }, true);
 
 // ---------- hooks into existing app functions ----------
+function pjStartedByToday(title) {
+  const t = tasks.find(x => x.title === title && x.cardId); if (!t) return;
+  const [p, c] = pjFind(t.cardId); if (!c) return;
+  if (c.paused) { c.paused = null; pjTouch(c); pjSave(); }
+  if (pjKind(pjListOf(p, c)) === 'queue') { pjMove(c, pjEnsureList(p, 'active').id); pjSave(); }
+}
+const _pjAddToToday = addToToday;
+addToToday = async function (title) { const ok = await _pjAddToToday(title); if (ok) { pjStartedByToday(title); if (currentTab === 'projects') render(); } return ok; };
+const _pjAddBonus = addBonus;
+addBonus = async function (title) { const ok = await _pjAddBonus(title); if (ok) { pjStartedByToday(title); if (currentTab === 'projects') render(); } return ok; };
+const _pjPromote = promoteFromTomorrow;
+promoteFromTomorrow = async function (title) { const ok = await _pjPromote(title); if (ok) pjStartedByToday(title); return ok; };
 const _pjToggleDone = toggleDone;
 toggleDone = async function (title, lineIndex) {
   const t = tasks.find(x => x.lineIndex === lineIndex);
   const [, c] = t && t.cardId ? pjFind(t.cardId) : [null, null];
   if (c) { const completing = !t.done;
     pjLog(c, completing ? 'Completed' : 'Reopened', completing ? '✓' : '↺');
-    if (completing) { c.ready = false; c.waiting = null; c.waitSince = null; if (currentTab !== 'projects') pjSinking.add(c.id); }
+    const [cp] = pjFind(c.id);
+    if (completing) { pjMove(c, pjEnsureList(cp, 'done').id); if (currentTab !== 'projects') pjSinking.add(c.id); }
+    else { const back = cp.lists.find(l => l.id === c.prevList && pjKind(l) !== 'done') || pjEnsureList(cp, 'queue'); pjMove(c, back.id); }
     pjSave(); }
   return _pjToggleDone(title, lineIndex);
 };
