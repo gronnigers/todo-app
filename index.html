@@ -1144,6 +1144,10 @@
   .pj-bighead .pj-hbtns button { margin-left: 0; padding: 4px 8px; border-radius: 8px; }
   .pj-bighead .pj-hbtns button:hover { background: var(--tag-bg); }
   .pj-block.collapsed { margin-bottom: 6px; }
+  .pj-link-btn { width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--card-hairline); background: var(--tag-bg); color: var(--accent); font: 600 15px var(--font-ui); cursor: pointer; }
+  .pj-link-btn.hidden { display: none; }
+  .pj-add-existing { margin-top: -8px !important; font-size: 13.5px !important; opacity: .85; }
+  .pj-picklist { max-height: 52vh; overflow-y: auto; }
 </style>
 </head>
 <body>
@@ -1164,6 +1168,7 @@
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" id="modal-submit-btn" onclick="submitModal()">Add Task</button>
     </div>
+    <button class="pj-link-btn hidden" id="modal-link-btn" onclick="pjLinkFromModal()">📁 Add to a project…</button>
     <button class="btn-danger-outline hidden" id="modal-delete-btn" onclick="deleteFromModal()">Delete Task</button>
   </div>
 </div>
@@ -2130,6 +2135,7 @@ function openAddModal() {
   document.getElementById('modal-task-title').value = '';
   document.getElementById('modal-task-notes').value = '';
   document.getElementById('modal-delete-btn').classList.add('hidden');
+  document.getElementById('modal-link-btn').classList.add('hidden');
   populateTagSelect(null);
   showModal();
 }
@@ -2140,6 +2146,7 @@ function openEditModal(task) {
   document.getElementById('modal-task-title').value = task.title;
   document.getElementById('modal-task-notes').value = task.notes || '';
   document.getElementById('modal-delete-btn').classList.remove('hidden');
+  document.getElementById('modal-link-btn').classList.toggle('hidden', !!(task.done || task.cardId));
   populateTagSelect(task.tag || null);
   showModal();
 }
@@ -3397,6 +3404,24 @@ function pjReleaseTasks(ids) {
     return []; }).join('\n');
   parseTasks(); return kept;
 }
+// ---------- link an existing Backlog task to a project ----------
+let pjLinkPending = null, pjPickQ = '';
+function pjLinkFromModal() { const t = editingTask; if (!t) return; closeModal(); setTimeout(() => pjOpen('link', t.lineIndex), 220); }
+async function pjLinkTask(task, p, stay) {
+  if (!task || task.done || task.cardId || !p) return;
+  const lines = rawMd.split('\n'); let l = lines[task.lineIndex]; if (!l) return;
+  const c = { id: pjId('c'), listId: pjEnsureList(p, task.today ? 'active' : 'queue').id, title: task.title, notes: task.notes || '', files: [], history: [], ready: false, waiting: null, origTag: task.tag || null };
+  pjLog(c, `Added from Backlog${task.tag ? ' (was #' + task.tag + ')' : ''}`, '↳');
+  l = l.replace(/\s*\[notes:[^\]]*\]/, '');
+  if (/^- \[[ x]\] .+? \([A-Za-z0-9_-]+\)/.test(l)) l = l.replace(/^(- \[[ x]\] .+?) \([A-Za-z0-9_-]+\)/, '$1 (project)');
+  else l = l.replace(/^(- \[[ x]\] )(.+?)((?:\s+\[[^\]]*\])*)$/, '$1$2 (project)$3');
+  l = l.trimEnd() + ` [card:${c.id}]`;
+  lines[task.lineIndex] = l; rawMd = lines.join('\n'); parseTasks();
+  p.cards.push(c); pjTouch(p); pjSave();
+  if (!stay) { pjActive = p.id; localStorage.setItem('pj_active', p.id); }
+  render(); await saveBacklog();
+  showToast(`↳ Added to ${p.name}`);
+}
 // ---------- delete project ----------
 let pjDel = { choice: null, tags: {} };
 const PJ_TAG_WORDS = {
@@ -3569,7 +3594,7 @@ function renderProjects(el) {
       return `<div class="pj-col" data-pk="col-${l.id}" data-id="${l.id}">
         <div class="pj-col-head"><span class="pj-dot" style="background:${pjDotFor(p, l)}"></span>${pjh(l.name)}${pjKind(l) !== 'queue' ? `<span class="kind">${pjKind(l) === 'active' ? '▶' : '⏳'}</span>` : ''}<span class="pj-count">${open}${cs.length > open ? ' / ' + cs.length : ''}</span></div>
         <div class="pj-cards" data-list="${l.id}">${cs.map(pjCardHTML).join('')}</div>
-        ${pjKind(l) === 'queue' ? '<button class="pj-add-card">＋ Add card</button>' : ''}</div>`;
+        ${pjKind(l) === 'queue' ? '<button class="pj-add-card">＋ Add card</button><button class="pj-add-card pj-add-existing" data-pj-pick>↳ Add existing task</button>' : ''}</div>`;
     }).join('')}
       </div>`;
   const b = el.querySelector('.pj-board'); b.scrollLeft = sl;
@@ -3623,6 +3648,7 @@ document.addEventListener('click', e => {
   if (t.closest('[data-pj-newproj]')) return pjOpen('project');
   if (t.closest('[data-pj-newcol]')) { const p = pjProj(); const l = { id: pjId('l'), name: 'New List', kind: 'queue' }; p.lists.push(l); pjTouch(p); pjSave();
     pjFlip(render); const b = document.querySelector('.pj-board'); b.scrollTo({ left: b.scrollWidth, behavior: 'smooth' }); setTimeout(() => pjOpen('list', l.id), 320); return; }
+  if (t.closest('[data-pj-pick]')) return pjOpen('pick');
   if (t.closest('.pj-add-card')) return pjOpenAdd(t.closest('.pj-col'), true);
   if (t.closest('[data-pj-cancel]')) return pjCloseAdd(t.closest('.pj-col'));
   if (t.closest('[data-pj-save]')) return pjSaveAdd(t.closest('.pj-col'));
@@ -3797,6 +3823,19 @@ function pjRenderSheet() {
       <div class="pj-sub" style="margin:0 4px 14px">Tip: press &amp; hold a list header on the board, then drag to reorder.</div>
       <div class="pj-stack">${cnt || pjKind(l) === 'queue' ? `<div class="pj-sub" style="margin:0 4px 4px">${pjKind(l) === 'queue' ? 'To Do is where every task starts.' : 'Lists fill and empty themselves as task statuses change.'}</div>` : `<button class="pj-btn danger big" data-pj-dellist="${l.id}">Remove empty list</button>`}
       <button class="pj-btn soft big" data-pj-renameproj>Rename project…</button><button class="pj-btn ghost big" data-pj-delproj style="color:var(--danger)">Delete project</button></div></div>`;
+  } else if (pjMode === 'link') {
+    const t = tasks.find(x => x.lineIndex === pjArg); if (!t) return pjClose();
+    s.innerHTML = head('Add to a project', '<button class="pj-btn ghost" data-pj-close>Cancel</button>') + `<div class="pj-sh-body">
+      <div class="pj-act-title">${pjh(t.title)}</div><div class="pj-sub" style="margin:0 2px 14px">Becomes a card in the project’s To Do${t.today ? ' — it’s on Today, so it goes straight to In Progress' : ''}. Notes move onto the card.</div>
+      <div class="pj-acts">${pj.projects.map(p => `<button class="pj-act" data-pj-linkto="${p.id}"><span class="ai" style="background:var(--accent)">📁</span><span><b>${pjh(p.name)}</b><small>${p.cards.filter(c => !pjDone(c)).length} open card(s)</small></span></button>`).join('')}
+        <button class="pj-act" data-pj-linknew><span class="ai" style="background:var(--sub)">＋</span><span><b>New project…</b><small>Create one and add this task to it</small></span></button></div></div>`;
+  } else if (pjMode === 'pick') {
+    const p = pjProj(); if (!p) return pjClose();
+    const q = (pjPickQ || '').toLowerCase();
+    const cands = tasks.filter(t => !t.done && !t.cardId && (!q || t.title.toLowerCase().includes(q) || (t.tag || '').includes(q)));
+    s.innerHTML = head(`Add to ${pjh(p.name)}`) + `<div class="pj-sh-body">
+      <input class="pj-field" data-pj-pickq placeholder="Search your Backlog…" value="${pjh(pjPickQ)}">
+      <div class="pj-acts pj-picklist">${cands.slice(0, 60).map(t => `<button class="pj-act" data-pj-pickline="${t.lineIndex}"><span style="flex:1;min-width:0"><b style="font-weight:500">${pjh(t.title)}</b><small>${t.tag ? '#' + pjh(t.tag) : 'untagged'}${t.today ? ' · ☀ on Today' : ''}</small></span><span class="pj-hcount">＋</span></button>`).join('') || '<div class="pj-act"><small>No matching open tasks</small></div>'}</div></div>`;
   } else if (pjMode === 'projmenu') {
     const p = pjProj(); if (!p) return pjClose();
     const open = p.cards.filter(c => { const t = pjTask(c); return t && !t.done; }).length, done = p.cards.filter(pjDone).length;
@@ -3806,7 +3845,7 @@ function pjRenderSheet() {
     const p = pjProj(); if (!p) return pjClose();
     const open = p.cards.filter(c => { const t = pjTask(c); return t && !t.done; }), done = p.cards.filter(pjDone).length;
     const tagOpts = allTags().filter(g => g !== 'project');
-    open.forEach(c => { if (!pjDel.tags[c.id]) pjDel.tags[c.id] = pjGuessTag(c, p, tagOpts); });
+    open.forEach(c => { if (!pjDel.tags[c.id]) pjDel.tags[c.id] = (c.origTag && tagOpts.includes(c.origTag)) ? c.origTag : pjGuessTag(c, p, tagOpts); });
     const ch = pjDel.choice;
     s.innerHTML = head('Delete project', '<button class="pj-btn ghost" data-pj-close>Cancel</button>') + `<div class="pj-sh-body">
       <div class="pj-act-title">${pjh(p.name)}</div><div class="pj-sub" style="margin:0 2px 14px">${open.length} open task${open.length === 1 ? '' : 's'} · ${done} completed</div>
@@ -3904,6 +3943,9 @@ async function pjSheetClick(e) {
   if (t.closest('[data-pj-renameproj]')) { pjMode = 'renameproj'; pjRenderSheet(); setTimeout(() => s.querySelector('.pj-field').focus(), 50); return; }
   if (t.closest('[data-pj-delproj]')) { pjDel = { choice: null, tags: {} }; pjMode = 'delproj'; pjRenderSheet(); return; }
   if (t.closest('[data-pj-projmenu]')) { pjOpen('projmenu'); return; }
+  const lt = t.closest('[data-pj-linkto]'); if (lt) { const task = tasks.find(x => x.lineIndex === pjArg); const p = pj.projects.find(x => x.id === lt.dataset.pjLinkto); pjClose(); if (task && p) pjLinkTask(task, p); return; }
+  if (t.closest('[data-pj-linknew]')) { pjLinkPending = pjArg; pjOpen('project'); return; }
+  const pl = t.closest('[data-pj-pickline]'); if (pl) { const task = tasks.find(x => x.lineIndex === +pl.dataset.pjPickline); if (task) { await pjLinkTask(task, pjProj(), true); pl.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(30px)' }], { duration: 200 }).onfinish = () => pjRenderSheet(); } return; }
   const dc = t.closest('[data-pj-delchoice]'); if (dc) { pjDel.choice = dc.dataset.pjDelchoice; pjRenderSheet(); return; }
   if (t.closest('[data-pj-dodel]')) { pjDoDeleteProject(); return; }
   const kb = t.closest('[data-pj-kind]'); if (kb) { const p = pjProj(); p.lists.find(l => l.id === pjArg).kind = kb.dataset.pjKind; pjTouch(p); pjSave(); pjRenderSheet(); pjRefresh(); return; }
@@ -3976,6 +4018,7 @@ let pjNotesT = null, pjTitleT = null;
 function pjSheetInput(e) {
   const d = e.target.dataset;
   if (d.pjRename) { const p = pjProj(); p.lists.find(l => l.id === d.pjRename).name = e.target.value.trim() || 'Untitled'; pjTouch(p); pjSave(); pjRefresh(false); }
+  if ('pjPickq' in d) { pjPickQ = e.target.value; const pos = e.target.selectionStart; pjRenderSheet(); const i = document.querySelector('#pj-sheet [data-pj-pickq]'); i.focus(); i.setSelectionRange(pos, pos); return; }
   if ('pjProjrename' in d) { const p = pjProj(); p.name = e.target.value.trim() || 'Untitled'; pjTouch(p); pjSave(); pjRefresh(false); }
   if ('pjNotes' in d) { const [, c] = pjFind(pjArg); c.notes = e.target.value; pjTouch(c); pjSave();
     const sv = document.querySelector('#pj-sheet .pj-saved'); sv.classList.add('on'); clearTimeout(pjNotesT); pjNotesT = setTimeout(() => sv.classList.remove('on'), 1200);
@@ -4022,6 +4065,7 @@ function pjCreateProject() {
   const v = (document.querySelector('#pj-sheet [data-pj-projname]').value || '').trim(); if (!v) return;
   const p = { id: pjId('p'), name: v, lists: [{ id: pjId('l'), name: 'To Do', kind: 'queue' }], cards: [], upd: Date.now() };
   pj.projects.push(p); pjActive = p.id; localStorage.setItem('pj_active', p.id); pjSave(); pjClose();
+  if (pjLinkPending != null) { const task = tasks.find(x => x.lineIndex === pjLinkPending); pjLinkPending = null; if (task) { pjLinkTask(task, p); return; } }
   if (currentTab !== 'projects') switchTab('projects'); else render();
   const b = document.querySelector('.pj-board'); b && b.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: PJ_EASE });
 }
