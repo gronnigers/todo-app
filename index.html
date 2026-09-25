@@ -1059,7 +1059,7 @@
 
   /* glass cards are translucent — only reveal the red delete action while swiping/open */
   .swipe-wrap .delete-action { visibility: hidden; }
-  .swipe-wrap:has(.task-card.swiping) .delete-action, .swipe-wrap:has(.task-card[style*="translateX"]) .delete-action { visibility: visible; }
+  .swipe-wrap.swipe-live .delete-action { visibility: visible; }
   /* desktop: Projects board uses the full width right of the sidebar */
   @media (min-width: 860px) {
     body[data-tab="projects"] .header, body[data-tab="projects"] .content { padding-left: 268px; padding-right: 32px; }
@@ -2997,6 +2997,7 @@ function closeOpenSwipe() {
   if (!openSwipeWrap) return;
   const card = openSwipeWrap.querySelector('.task-card');
   if (card) { card.classList.remove('swiping'); card.style.transform=''; card.style.transition=''; }
+  openSwipeWrap.classList.remove('swipe-live');
   openSwipeWrap = null;
 }
 
@@ -3091,27 +3092,33 @@ function attachTaskEvents(el) {
   el.querySelectorAll('.swipe-wrap').forEach(wrap => {
     const card = wrap.querySelector('.task-card');
     if (!card) return;
-    let startX=0, startY=0, dx=0, tracking=false, startedOpen=false;
+    let startX=0, startY=0, dx=0, tracking=false, startedOpen=false, locked=false;
+    const LOCK = 14;   // px of clearly-horizontal travel before a swipe engages (kills accidental touches)
 
     card.addEventListener('touchstart', e => {
       if (openSwipeWrap && openSwipeWrap!==wrap) closeOpenSwipe();
       startX=e.touches[0].clientX; startY=e.touches[0].clientY;
       startedOpen = openSwipeWrap===wrap;
       dx = startedOpen ? -OPEN_X : 0;
-      tracking=true; card.classList.add('swiping');
+      tracking=true; locked=startedOpen;
+      if (locked) { card.classList.add('swiping'); wrap.classList.add('swipe-live'); }
     }, {passive:true});
 
     card.addEventListener('touchmove', e => {
       if (!tracking) return;
       const mx=e.touches[0].clientX-startX, my=e.touches[0].clientY-startY;
-      if (Math.abs(my)>Math.abs(mx)+8) { tracking=false; card.classList.remove('swiping'); return; }
-      dx=Math.max(-OPEN_X,Math.min(0,(startedOpen?-OPEN_X:0)+mx));
+      if (!locked) {
+        if (Math.abs(my) > 10 && Math.abs(my) >= Math.abs(mx)) { tracking=false; return; }   // it's a scroll
+        if (mx > -LOCK || Math.abs(mx) < Math.abs(my) * 1.6) return;                          // not a deliberate left swipe yet
+        locked=true; card.classList.add('swiping'); wrap.classList.add('swipe-live');
+      }
+      dx=Math.max(-OPEN_X,Math.min(0,(startedOpen?-OPEN_X:0)+mx+(startedOpen?0:LOCK)));
       card.style.transform=`translateX(${dx}px)`;
     }, {passive:true});
 
     card.addEventListener('touchend', () => {
-      if (!tracking) return;
-      tracking=false; card.classList.remove('swiping');
+      if (!tracking || !locked) { tracking=false; return; }
+      tracking=false; locked=false; card.classList.remove('swiping');
       if (dx < -THRESHOLD) {
         card.style.transition='transform .2s cubic-bezier(.25,.46,.45,.94)';
         card.style.transform=`translateX(-${OPEN_X}px)`;
@@ -3121,10 +3128,14 @@ function attachTaskEvents(el) {
         card.style.transform='';
         if (openSwipeWrap===wrap) openSwipeWrap=null;
       }
-      setTimeout(()=>{ card.style.transition=''; },220);
+      setTimeout(()=>{ card.style.transition=''; if (openSwipeWrap!==wrap) wrap.classList.remove('swipe-live'); },220);
     }, {passive:true});
   });
 
+  el.querySelectorAll('.swipe-wrap').forEach(wrap => wrap.querySelector('.task-card')?.addEventListener('touchcancel', () => {
+    const card = wrap.querySelector('.task-card'); card.classList.remove('swiping');
+    if (openSwipeWrap !== wrap) { card.style.transform=''; wrap.classList.remove('swipe-live'); }
+  }, {passive:true}));
   el.addEventListener('touchstart', e=>{
     if (openSwipeWrap&&!openSwipeWrap.contains(e.target)) closeOpenSwipe();
   },{passive:true});
@@ -3309,6 +3320,15 @@ async function pjCreateTaskLine(title, cardId) {
   rawMd = lines.join('\n');
   if (!created[title]) { created[title] = iso; saveCreated(); }
   parseTasks();
+}
+// Removing cards from the board: open tasks go away with them; COMPLETED tasks stay in
+// backlog.md as history (just unlinked) so Stats never loses a finished task.
+function pjReleaseTasks(ids) {
+  let kept = 0;
+  rawMd = rawMd.split('\n').flatMap(l => { const m = l.match(/\[card:([^\]]+)\]/); if (!m || !ids.has(m[1])) return [l];
+    if (/^- \[x\] /.test(l)) { kept++; return [l.replace(/\s*\[card:[^\]]+\]/, '')]; }
+    return []; }).join('\n');
+  parseTasks(); return kept;
 }
 function pjStripTodayFlags(c) {   // parking a card takes it off Today/Tomorrow — no bail guilt, it's legit waiting
   const i = pjLineIdx(c); if (i < 0) return false;
@@ -3653,7 +3673,7 @@ function pjRenderSheet() {
       <div class="pj-hist">${[...hs].reverse().map(h => `<div class="pj-hi"><span class="pj-hic">${pjh(h.ic || '•')}</span><span class="pj-hm">${pjh(h.m)}</span><span class="pj-ht">${pjRel(h.at)}</span></div>`).join('') || '<div class="pj-hi"><span class="pj-hm pj-sub">No history yet</span></div>'}</div>
       ${hs.length ? `<div class="pj-sub" style="margin:-6px 4px 14px">Open ${age} day${age === 1 ? '' : 's'}${c.waiting && c.waitSince ? ` · waiting ${pjDaysSince(c.waitSince)}d so far` : ''}${backs ? ` · came back ${backs}×` : ''}</div>` : ''}
       <div class="pj-note">${!t ? '<b>Linked task not found</b> — it may have been deleted from backlog.md. <a href="#" data-pj-relink>Recreate it</a>' : t.done ? '<b>✓ Completed</b> in Backlog. Uncheck it there to reopen this card.' : `<b>Linked Backlog task</b> · ${t.today ? '☀ on Today' : t.tomorrow ? '🌙 staged for tomorrow' : 'in your Backlog'}<br>Cards complete from the Backlog, not the board.`}</div>
-      <div class="pj-stack">${t && !t.done ? '<button class="pj-btn big" data-pj-openact>Update status…</button>' : ''}<button class="pj-btn danger big" data-pj-delcard>Delete card + task</button></div></div>`;
+      <div class="pj-stack">${t && !t.done ? '<button class="pj-btn big" data-pj-openact>Update status…</button>' : ''}<button class="pj-btn danger big" data-pj-delcard>${t && t.done ? 'Remove from board' : 'Delete card + task'}</button></div></div>`;
     pjLoadThumbs(s);
     const ta = s.querySelector('[data-pj-notes]'); if (ta) { ta.style.height = 'auto'; ta.style.height = Math.max(110, ta.scrollHeight + 2) + 'px'; }
   } else if (pjMode === 'act') {
@@ -3713,11 +3733,10 @@ async function pjSheetClick(e) {
   if (t.closest('[data-pj-openact]')) return pjOpen('act', pjArg);
   if (t.closest('[data-pj-renameproj]')) { pjMode = 'renameproj'; pjRenderSheet(); setTimeout(() => s.querySelector('.pj-field').focus(), 50); return; }
   if (t.closest('[data-pj-delproj]')) { const p = pjProj();
-    if (!confirm(`Delete project “${p.name}”? Its ${p.cards.length} card(s) and their Backlog tasks will be deleted.`)) return;
-    pjClose(); const lines = rawMd.split('\n'); const ids = new Set(p.cards.map(c => c.id));
-    rawMd = lines.filter(l => { const m = l.match(/\[card:([^\]]+)\]/); return !(m && ids.has(m[1])); }).join('\n'); parseTasks();
+    if (!confirm(`Delete project “${p.name}”? Its ${p.cards.length} card(s) and their open Backlog tasks will be deleted. Completed tasks stay in your history.`)) return;
+    pjClose(); const ids = new Set(p.cards.map(c => c.id)); const kept = pjReleaseTasks(ids);
     pj.tomb.push(p.id, ...ids); pj.projects = pj.projects.filter(x => x !== p); pjActive = pj.projects[0] ? pj.projects[0].id : null;
-    pjSave(); saveBacklog(); render(); showToast('Project deleted'); return; }
+    pjSave(); saveBacklog(); render(); showToast(kept ? `Project deleted · ${kept} completed task${kept > 1 ? 's' : ''} kept in your stats` : 'Project deleted'); return; }
   const kb = t.closest('[data-pj-kind]'); if (kb) { const p = pjProj(); p.lists.find(l => l.id === pjArg).kind = kb.dataset.pjKind; pjTouch(p); pjSave(); pjRenderSheet(); pjRefresh(); return; }
   const dl = t.closest('[data-pj-dellist]'); if (dl) { const p = pjProj(); if (p.lists.length < 2) return;
     const id = dl.dataset.pjDellist, idx = p.lists.findIndex(l => l.id === id), to = p.lists[idx === 0 ? 1 : idx - 1];
@@ -3767,13 +3786,12 @@ async function pjSheetClick(e) {
     return; }
   if (t.closest('[data-pj-relink]')) { e.preventDefault(); const [, c] = pjFind(pjArg); await pjCreateTaskLine(c.title, c.id); saveBacklog(); pjRenderSheet(); render(); return; }
   if (t.closest('[data-pj-delcard]')) { const [p, c] = pjFind(pjArg);
-    if (!confirm(`Delete “${c.title}” and its Backlog task?`)) return;
-    pjClose(); const tk = pjTask(c);
-    pjFlip(() => { p.cards = p.cards.filter(x => x !== c); pj.tomb.push(c.id); pjTouch(p);
-      if (tk) { const lines = rawMd.split('\n'); lines.splice(tk.lineIndex, 1); rawMd = lines.join('\n'); parseTasks(); }
-      render(); });
+    const tk = pjTask(c), wasDone = !!(tk && tk.done);
+    if (!confirm(wasDone ? `Remove “${c.title}” from the board? The completed task stays in your history and stats.` : `Delete “${c.title}” and its Backlog task?`)) return;
+    pjClose();
+    pjFlip(() => { p.cards = p.cards.filter(x => x !== c); pj.tomb.push(c.id); pjTouch(p); pjReleaseTasks(new Set([c.id])); render(); });
     pjSave(); saveBacklog(); (c.files || []).forEach(f => graphFetch(`/me/drive/items/${f.id}`, { method: 'DELETE' }));
-    showToast('Card and its task deleted'); return; }
+    showToast(wasDone ? 'Card removed · completion kept in stats' : 'Card and its task deleted'); return; }
 }
 let pjNotesT = null, pjTitleT = null;
 function pjSheetInput(e) {
