@@ -1096,6 +1096,8 @@
     .bl-col .task-card { padding: 12px 14px 12px 16px; }
     .bl-empty { color: var(--sub); padding: 18px 4px; }
   }
+  .pj-tagsel { flex: none; font: 600 13px var(--font-ui); color: var(--text); background: var(--tag-bg); border: 1px solid var(--card-hairline); border-radius: 9px; padding: 6px 8px; text-transform: capitalize; }
+  .pj-btn.ghost { color: var(--sub) !important; } .pj-btn.danger { color: var(--danger) !important; } .pj-btn.soft { color: var(--text) !important; }
 </style>
 </head>
 <body>
@@ -3330,6 +3332,63 @@ function pjReleaseTasks(ids) {
     return []; }).join('\n');
   parseTasks(); return kept;
 }
+// ---------- delete project ----------
+let pjDel = { choice: null, tags: {} };
+const PJ_TAG_WORDS = {
+  house: 'house home kitchen bath bathroom shower toilet garage yard lawn fence roof paint tile cabinet cabinets counter countertop sink faucet floor door window hvac plumb plumbing electric light lights fan pantry closet install mount contractor remodel permit backsplash appliance pool sprinkler gutter drywall patio deck furniture move moving mover',
+  finance: 'pay bill invoice bank loan mortgage insurance tax taxes 401k ira invest budget refund fee account credit chase escrow closing deposit transfer payment quote estimate appraisal',
+  health: 'doctor dentist derm dermatology appointment blood lab workout gym run running vitamin vitamins prescription medical therapy physical eye health dr',
+  shopping: 'buy order purchase amazon shop get new',
+  errand: 'pick_up drop_off return post_office dmv registration car_wash grocery groceries',
+  admin: 'email form sign register renew update password subscription cancel schedule paperwork document documents passport license utilities utility setup internet address',
+  gcs: 'gcs client clients tenant board deck team employee hire',
+  personal: 'guitar bike gift birthday travel flight flights book trip friend party hobby',
+};
+function pjGuessTag(c, p, opts) {
+  const words = s => (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean);
+  const text = words(c.title + ' ' + (c.notes || '')), ctx = words(p.name);
+  let best = null, bestScore = 0;
+  opts.forEach(g => {
+    const kw = new Set(words((PJ_TAG_WORDS[g] || '') + ' ' + g));
+    let sc = 0; const joined = ' ' + text.join(' ') + ' ';
+    kw.forEach(k => { if (k.includes('_') && joined.includes(' ' + k.replace(/_/g, ' ') + ' ')) sc += 3; });
+    text.forEach(w => { if (kw.has(w) || (w.length > 4 && [...kw].some(k => k.length > 4 && !k.includes('_') && (w.startsWith(k) || k.startsWith(w))))) sc += 2; });
+    ctx.forEach(w => { if (kw.has(w)) sc += 1; });
+    if (g === 'house' && /^\d+\s+\w+/.test(p.name)) sc += 1;   // address-named project leans house
+    if (sc > bestScore) { bestScore = sc; best = g; }
+  });
+  if (!best) {   // nothing matched: an address-like project name is a house project; else personal
+    if (/^\d+\s+\w+/.test(p.name) && opts.includes('house')) best = 'house';
+    else best = opts.includes('personal') ? 'personal' : opts[0];
+  }
+  return best;
+}
+async function pjDoDeleteProject() {
+  const p = pjProj(); if (!p) return;
+  const openCards = p.cards.filter(c => { const t = pjTask(c); return t && !t.done; });
+  if (openCards.length && !pjDel.choice) return;
+  const ids = new Set(p.cards.map(c => c.id)); let moved = 0, dropped = 0;
+  if (pjDel.choice === 'move') {
+    const lines = rawMd.split('\n');
+    openCards.forEach(c => { const t = pjTask(c); if (!t) return; let l = lines[t.lineIndex];
+      const tag = pjDel.tags[c.id] || 'personal';
+      l = l.replace(/\s*\[card:[^\]]+\]/, '').replace(/ \(project\)/, ` (${tag})`);
+      const extra = [(c.notes || '').trim(), (c.files || []).length ? `(files: Backlog/attachments/${c.id})` : ''].filter(Boolean).join(' ');
+      if (extra) { const m = l.match(/\[notes:([^\]]*)\]/);
+        l = m ? l.replace(m[0], `[notes:${encodeNotes((decodeNotes(m[1]) + ' ' + extra).trim())}]`) : l.replace(/(\([a-z0-9_-]+\))/i, `$1 [notes:${encodeNotes(extra)}]`); }
+      lines[t.lineIndex] = l; moved++; ids.delete(c.id); });
+    rawMd = lines.join('\n'); parseTasks();
+  } else {
+    dropped = openCards.length;
+    openCards.forEach(c => (c.files || []).forEach(f => graphFetch(`/me/drive/items/${f.id}`, { method: 'DELETE' })));
+  }
+  const kept = pjReleaseTasks(ids);   // removes remaining open linked lines, keeps + unlinks completed ones
+  pj.tomb.push(p.id, ...p.cards.map(c => c.id)); pj.projects = pj.projects.filter(x => x !== p);
+  pjActive = pj.projects[0] ? pj.projects[0].id : null; localStorage.setItem('pj_active', pjActive || '');
+  pjClose(); pjSave(); render(); await saveBacklog();
+  const bits = [moved && `${moved} moved to Backlog`, dropped && `${dropped} deleted`, kept && `${kept} completed kept`].filter(Boolean);
+  showToast('Project deleted' + (bits.length ? ' · ' + bits.join(' · ') : ''));
+}
 function pjStripTodayFlags(c) {   // parking a card takes it off Today/Tomorrow — no bail guilt, it's legit waiting
   const i = pjLineIdx(c); if (i < 0) return false;
   const lines = rawMd.split('\n'); const before = lines[i];
@@ -3418,7 +3477,7 @@ function renderProjects(el) {
   const tot = p.cards.length, dn = p.cards.filter(pjDone).length;
   el.innerHTML = `
     <div class="pj-top">${pj.projects.map(x => `<button class="pj-pill ${x.id === p.id ? 'on' : ''}" data-pj-proj="${x.id}">${pjh(x.name)}</button>`).join('')}
-      <button class="pj-pill" data-pj-newproj>＋ New</button></div>
+      <button class="pj-pill" data-pj-projmenu title="Project options">⋯</button><button class="pj-pill" data-pj-newproj>＋ New</button></div>
     <div class="pj-prog"><div class="bar"><i style="width:${tot ? dn / tot * 100 : 0}%"></i></div><span>${dn}/${tot} done</span></div>
     <div class="pj-board">${p.lists.map(l => {
       const cs = pjSorted(p, l.id), open = cs.filter(c => !pjDone(c)).length;
@@ -3469,7 +3528,8 @@ document.addEventListener('click', e => {
   const t = e.target;
   if (!t.closest || !t.closest('#content') || currentTab !== 'projects') return;
   const pp = t.closest('[data-pj-proj]');
-  if (pp) { if (pp.dataset.pjProj === pjActive) return; pjActive = pp.dataset.pjProj; localStorage.setItem('pj_active', pjActive);
+  if (t.closest('[data-pj-projmenu]')) return pjOpen('projmenu');
+  if (pp) { if (pp.dataset.pjProj === pjActive) return pjOpen('projmenu'); pjActive = pp.dataset.pjProj; localStorage.setItem('pj_active', pjActive);
     const b = document.querySelector('.pj-board');
     b.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(-12px)' }], { duration: 130, easing: 'ease-in' }).onfinish = () => {
       render(); const nb = document.querySelector('.pj-board'); nb && nb.animate([{ opacity: 0, transform: 'translateX(12px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: PJ_EASE }); };
@@ -3653,6 +3713,28 @@ function pjRenderSheet() {
       <div class="pj-sub" style="margin:0 4px 14px">Tip: press &amp; hold a list header on the board, then drag to reorder.</div>
       <div class="pj-stack"><button class="pj-btn danger big" data-pj-dellist="${l.id}" ${p.lists.length < 2 ? 'disabled style="opacity:.4"' : ''}>Delete list${cnt ? ` (moves ${cnt} card${cnt > 1 ? 's' : ''} to its neighbor)` : ''}</button>
       <button class="pj-btn soft big" data-pj-renameproj>Rename project…</button><button class="pj-btn ghost big" data-pj-delproj style="color:var(--danger)">Delete project</button></div></div>`;
+  } else if (pjMode === 'projmenu') {
+    const p = pjProj(); if (!p) return pjClose();
+    const open = p.cards.filter(c => { const t = pjTask(c); return t && !t.done; }).length, done = p.cards.filter(pjDone).length;
+    s.innerHTML = head(pjh(p.name)) + `<div class="pj-sh-body"><div class="pj-sub" style="margin:0 4px 14px">${p.lists.length} lists · ${open} open · ${done} completed</div>
+      <div class="pj-stack"><button class="pj-btn soft big" data-pj-renameproj>✎ Rename project</button><button class="pj-btn danger big" data-pj-delproj>🗑 Delete project…</button></div></div>`;
+  } else if (pjMode === 'delproj') {
+    const p = pjProj(); if (!p) return pjClose();
+    const open = p.cards.filter(c => { const t = pjTask(c); return t && !t.done; }), done = p.cards.filter(pjDone).length;
+    const tagOpts = allTags().filter(g => g !== 'project');
+    open.forEach(c => { if (!pjDel.tags[c.id]) pjDel.tags[c.id] = pjGuessTag(c, p, tagOpts); });
+    const ch = pjDel.choice;
+    s.innerHTML = head('Delete project', '<button class="pj-btn ghost" data-pj-close>Cancel</button>') + `<div class="pj-sh-body">
+      <div class="pj-act-title">${pjh(p.name)}</div><div class="pj-sub" style="margin:0 2px 14px">${open.length} open task${open.length === 1 ? '' : 's'} · ${done} completed</div>
+      ${done ? `<div class="pj-note">✓ <b>${done} completed task${done > 1 ? 's' : ''}</b> stay in your Backlog history and keep counting in Stats.</div>` : ''}
+      ${open.length ? `<div class="pj-lbl">What about the ${open.length} open task${open.length > 1 ? 's' : ''}?</div>
+        <div class="pj-kinds" style="grid-template-columns:1fr 1fr">
+          <button class="pj-kind ${ch === 'move' ? 'on' : ''}" data-pj-delchoice="move"><b>↩ Move to Backlog</b><small>Keeps them as regular tasks, re-tagged</small></button>
+          <button class="pj-kind ${ch === 'delete' ? 'on' : ''}" data-pj-delchoice="delete"><b>🗑 Delete them</b><small>Gone for good, with attachments</small></button></div>
+        ${ch === 'move' ? `<div class="pj-lbl">Suggested tags — tap to change</div>
+          <div class="pj-acts" style="margin-bottom:14px">${open.map(c => `<div class="pj-act" style="cursor:default"><span style="flex:1;min-width:0"><b style="font-weight:500">${pjh(c.title)}</b>${c.notes ? '<small>notes carried over</small>' : ''}</span>
+            <select class="pj-tagsel" data-pj-tagfor="${c.id}">${tagOpts.map(g => `<option value="${g}" ${pjDel.tags[c.id] === g ? 'selected' : ''}>${capFirst(g)}</option>`).join('')}</select></div>`).join('')}</div>` : ''}` : ''}
+      <div class="pj-stack"><button class="pj-btn danger big" data-pj-dodel ${open.length && !ch ? 'disabled style="opacity:.4"' : ''}>${open.length && ch === 'move' ? `Move ${open.length} & delete project` : open.length && ch === 'delete' ? `Delete project + ${open.length} task${open.length > 1 ? 's' : ''}` : open.length ? 'Choose an option above' : 'Delete project'}</button></div></div>`;
   } else if (pjMode === 'renameproj') {
     const p = pjProj();
     s.innerHTML = head('Rename project') + `<div class="pj-sh-body"><input class="pj-field" value="${pjh(p.name)}" data-pj-projrename enterkeyhint="done"></div>`;
@@ -3732,11 +3814,10 @@ async function pjSheetClick(e) {
   if (t.closest('[data-pj-createproj]')) return pjCreateProject();
   if (t.closest('[data-pj-openact]')) return pjOpen('act', pjArg);
   if (t.closest('[data-pj-renameproj]')) { pjMode = 'renameproj'; pjRenderSheet(); setTimeout(() => s.querySelector('.pj-field').focus(), 50); return; }
-  if (t.closest('[data-pj-delproj]')) { const p = pjProj();
-    if (!confirm(`Delete project “${p.name}”? Its ${p.cards.length} card(s) and their open Backlog tasks will be deleted. Completed tasks stay in your history.`)) return;
-    pjClose(); const ids = new Set(p.cards.map(c => c.id)); const kept = pjReleaseTasks(ids);
-    pj.tomb.push(p.id, ...ids); pj.projects = pj.projects.filter(x => x !== p); pjActive = pj.projects[0] ? pj.projects[0].id : null;
-    pjSave(); saveBacklog(); render(); showToast(kept ? `Project deleted · ${kept} completed task${kept > 1 ? 's' : ''} kept in your stats` : 'Project deleted'); return; }
+  if (t.closest('[data-pj-delproj]')) { pjDel = { choice: null, tags: {} }; pjMode = 'delproj'; pjRenderSheet(); return; }
+  if (t.closest('[data-pj-projmenu]')) { pjOpen('projmenu'); return; }
+  const dc = t.closest('[data-pj-delchoice]'); if (dc) { pjDel.choice = dc.dataset.pjDelchoice; pjRenderSheet(); return; }
+  if (t.closest('[data-pj-dodel]')) { pjDoDeleteProject(); return; }
   const kb = t.closest('[data-pj-kind]'); if (kb) { const p = pjProj(); p.lists.find(l => l.id === pjArg).kind = kb.dataset.pjKind; pjTouch(p); pjSave(); pjRenderSheet(); pjRefresh(); return; }
   const dl = t.closest('[data-pj-dellist]'); if (dl) { const p = pjProj(); if (p.lists.length < 2) return;
     const id = dl.dataset.pjDellist, idx = p.lists.findIndex(l => l.id === id), to = p.lists[idx === 0 ? 1 : idx - 1];
@@ -3808,6 +3889,7 @@ function pjSheetInput(e) {
       if (tk) editTask(tk.lineIndex, tk.title, v, 'project', tk.notes); else render(); }, 600); }
 }
 async function pjSheetChange(e) {
+  if (e.target.dataset.pjTagfor) { pjDel.tags[e.target.dataset.pjTagfor] = e.target.value; return; }
   if (!('pjUpload' in e.target.dataset)) return;
   const [, c] = pjFind(pjArg); const files = [...e.target.files]; e.target.value = '';
   for (const file of files) {
