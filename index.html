@@ -1206,7 +1206,8 @@ let currentTab = 'backlog';
 let laneView = 'today';   // Today tab sub-view: 'today' | 'tomorrow'
 let filterTag = null;
 let searchQ = '';
-let sortOrder = localStorage.getItem('sortOrder') || 'oldest'; // 'oldest' | 'newest' | 'tag'
+if (!localStorage.getItem('sort_default_newest')) { localStorage.setItem('sortOrder', 'newest'); localStorage.setItem('sort_default_newest', '1'); }  // one-time switch to the new default
+let sortOrder = localStorage.getItem('sortOrder') || 'newest'; // 'oldest' | 'newest' | 'tag'
 let doneExpanded = false;
 let statsView = 'focus'; // 'focus' | 'trends'
 let statsMonthOffset = 0;  // 0 = current month in the focus calendar; negative = past
@@ -2456,7 +2457,7 @@ function renderBacklog(el, activeTasks, doneTasks) {
     </button>`;
     if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
   }
-  const eeBlock = `<div class="pj-bighead pj-collapse-head" data-ee-collapse><span class="pj-chev ${eeCollapsed ? '' : 'open'}">›</span>Everything else <span class="pj-hcount">${filtered.length}</span></div>` + (eeCollapsed ? '' : html);
+  const eeBlock = `<div class="pj-bighead pj-collapse-head" data-ee-collapse><span class="pj-chev ${eeCollapsed ? '' : 'open'}">›</span>To Do List <span class="pj-hcount">${filtered.length}</span></div>` + (eeCollapsed ? '' : html);
   if (pjGrouped && blDesktop()) {
     const colE = `<div class="bl-col glass-panel"><div class="bl-col-inner">${eeBlock}</div></div>`;
     const colP = `<div class="bl-col glass-panel"><div class="bl-col-inner">${pjCheckinBar()}${pjHtml || '<div class="pj-bighead">Projects</div><div class="bl-empty">No open project tasks</div>'}</div></div>`;
