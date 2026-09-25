@@ -2439,12 +2439,13 @@ function renderBacklog(el, activeTasks, doneTasks) {
     </button>`;
     if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
   }
+  const eeBlock = `<div class="pj-bighead pj-collapse-head" data-ee-collapse><span class="pj-chev ${eeCollapsed ? '' : 'open'}">›</span>Everything else <span class="pj-hcount">${filtered.length}</span></div>` + (eeCollapsed ? '' : html);
   if (pjGrouped && blDesktop()) {
-    const colE = `<div class="bl-col glass-panel"><div class="bl-col-inner"><div class="pj-bighead">Everything else</div>${html}</div></div>`;
+    const colE = `<div class="bl-col glass-panel"><div class="bl-col-inner">${eeBlock}</div></div>`;
     const colP = `<div class="bl-col glass-panel"><div class="bl-col-inner">${pjCheckinBar()}${pjHtml || '<div class="pj-bighead">Projects</div><div class="bl-empty">No open project tasks</div>'}</div></div>`;
     html = blKpis(activeTasks) + `<div class="bl-dash">${pjOnTop ? colP + colE : colE + colP}</div>`;
   } else if (pjGrouped) {
-    html = pjCheckinBar() + (pjOnTop ? pjHtml + (pjHtml ? '<div class="pj-divider"></div>' : '') + html : html + (pjHtml ? '<div class="pj-divider"></div>' + pjHtml : ''));
+    html = pjCheckinBar() + (pjOnTop ? pjHtml + (pjHtml ? '<div class="pj-divider"></div>' : '') + eeBlock : eeBlock + (pjHtml ? '<div class="pj-divider"></div>' + pjHtml : ''));
   }
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
@@ -3994,6 +3995,7 @@ function pjCreateProject() {
 
 // ---------- BACKLOG integration ----------
 let pjCollapsed = localStorage.getItem('pj_collapsed') === '1';
+let eeCollapsed = localStorage.getItem('ee_collapsed') === '1';
 let pjOnTop = localStorage.getItem('pj_top') === '1';
 function pjCheckinBar() {
   const ci = pjCheckinItems().length;
@@ -4024,6 +4026,8 @@ document.addEventListener('click', e => {
   if (!e.target.closest) return;
   const mv = e.target.closest('[data-pj-move]');
   if (mv) { e.stopPropagation(); pjOnTop = !pjOnTop; localStorage.setItem('pj_top', pjOnTop ? '1' : '0'); pjRefresh(); return; }
+  const eh = e.target.closest('[data-ee-collapse]');
+  if (eh) { eeCollapsed = !eeCollapsed; localStorage.setItem('ee_collapsed', eeCollapsed ? '1' : '0'); pjRefresh(); return; }
   const hd = e.target.closest('[data-pj-collapse]');
   if (hd && !e.target.closest('button')) { pjCollapsed = !pjCollapsed; localStorage.setItem('pj_collapsed', pjCollapsed ? '1' : '0'); pjRefresh(); }
 });
