@@ -1157,6 +1157,13 @@
     body[data-tab="backlog"] .bl-kpis.stuck { border-bottom-color: var(--border); }
     body[data-tab="backlog"] .header { background: color-mix(in srgb, var(--bg) 86%, transparent); }
   }
+  /* native form controls follow the theme (fixes white dropdown lists in dark mode) */
+  :root { color-scheme: light; --opt-bg: #ffffff; --opt-fg: #16172b; }
+  @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) { color-scheme: dark; --opt-bg: #1b1f36; --opt-fg: #f3f4ff; } }
+  html[data-theme="dark"] { color-scheme: dark; --opt-bg: #1b1f36; --opt-fg: #f3f4ff; }
+  html[data-theme="light"] { color-scheme: light; --opt-bg: #ffffff; --opt-fg: #16172b; }
+  select, select option, select optgroup { color: var(--opt-fg); }
+  select option, select optgroup { background-color: var(--opt-bg); }
 </style>
 </head>
 <body>
