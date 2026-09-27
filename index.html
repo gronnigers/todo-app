@@ -4215,7 +4215,7 @@ function ageChip(t) {
 }
 function blKpis(activeTasks) {
   const U = todayUnfinishedCount(), Dn = todayDoneCount(), goal = TODAY_LIMIT;
-  const pct = Math.min(1, Dn / goal), C = 2 * Math.PI * 15;
+  const pct = Math.min(1, Dn / goal), planPct = Math.min(1, (U + Dn) / goal), C = 2 * Math.PI * 15, slots = Math.max(0, goal - U - Dn);
   let ready = 0, waiting = 0, due = 0;
   pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t || t.done) return;
     if (c.ready || pjDue(c)) ready++; if (c.waiting) { waiting++; if (pjDue(c)) due++; } }));
@@ -4223,8 +4223,8 @@ function blKpis(activeTasks) {
   const old = dated[0], oldD = old ? Math.floor((Date.now() - createdMsOf(old)) / 864e5) : 0;
   return `<div class="bl-kpis">
     <div class="bl-kpi glass-panel bl-kpi-ring" onclick="switchTab('today')"><svg width="70" height="70" viewBox="0 0 36 36"><defs><linearGradient id="blgr" x1="0" x2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs>
-      <circle cx="18" cy="18" r="15" fill="none" stroke="var(--tag-bg)" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="url(#blgr)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${pct * C} ${C}" transform="rotate(-90 18 18)"/></svg>
-      <div><div class="l">Today’s focus</div><div class="v">${Dn} / ${goal}</div><div class="s">${U ? `${U} still open` : Dn >= goal ? 'Set complete 🤙' : 'Open slots — add some'}</div></div></div>
+      <circle cx="18" cy="18" r="15" fill="none" stroke="var(--tag-bg)" stroke-width="4"/>${planPct > pct ? `<circle cx="18" cy="18" r="15" fill="none" stroke="var(--accent)" stroke-opacity=".3" stroke-width="4" stroke-linecap="round" stroke-dasharray="${planPct * C} ${C}" transform="rotate(-90 18 18)"/>` : ''}${Dn ? `<circle cx="18" cy="18" r="15" fill="none" stroke="url(#blgr)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${pct * C} ${C}" transform="rotate(-90 18 18)"/>` : ''}</svg>
+      <div><div class="l">Today’s focus</div><div class="v">${Dn} / ${goal}</div><div class="s">${Dn >= goal && !U ? 'Set complete 🤙' : [U + Dn ? `${U + Dn} on Today` : 'Nothing on Today yet', slots ? `${slots} slot${slots > 1 ? 's' : ''} open` : ''].filter(Boolean).join(' · ')}</div></div></div>
     <div class="bl-kpi glass-panel" ${ready ? 'data-pj-checkin' : ''}><div class="l">⚡ Ready for you</div><div class="v" style="color:var(--green)">${ready}</div><div class="s">${ready ? 'your move — tap to check in' : 'nothing came back yet'}</div></div>
     <div class="bl-kpi glass-panel"><div class="l">⏳ Waiting on others</div><div class="v" style="color:var(--orange)">${waiting}</div><div class="s">${due ? `<span style="color:var(--danger)">${due} follow-up${due > 1 ? 's' : ''} due</span>` : 'no follow-ups due'}</div></div>
     <div class="bl-kpi glass-panel" ${old ? `data-bl-open="${old.lineIndex}"` : ''}><div class="l">Oldest open</div><div class="v">${old ? oldD + 'd' : '—'}</div><div class="s bl-trunc">${old ? old.title.replace(/</g, '&lt;') : 'nothing dated'}</div></div>
