@@ -61,7 +61,7 @@
   /* === TAG COLORS === */
   .tag-gcs      { background: rgba(180,80,20,.14);   color: rgb(180,80,20); }
   .tag-finance  { background: rgba(200,40,40,.13);   color: rgb(200,40,40); }
-  .tag-house    { background: rgba(0,100,200,.13);   color: rgb(0,100,200); }
+  .tag-around-the-house    { background: rgba(0,100,200,.13);   color: rgb(0,100,200); }
   .tag-personal { background: rgba(40,150,70,.13);   color: rgb(40,150,70); }
   .tag-health   { background: rgba(50,160,160,.13);  color: rgb(50,160,160); }
   .tag-shopping { background: rgba(130,60,200,.13);  color: rgb(130,60,200); }
@@ -71,7 +71,7 @@
   @media (prefers-color-scheme: dark) {
     html:not([data-theme="light"]) .tag-gcs      { background: rgba(220,110,40,.18); color: rgb(230,130,60); }
     html:not([data-theme="light"]) .tag-finance  { background: rgba(220,60,60,.18);  color: rgb(230,90,90); }
-    html:not([data-theme="light"]) .tag-house    { background: rgba(40,130,230,.18); color: rgb(80,160,240); }
+    html:not([data-theme="light"]) .tag-around-the-house    { background: rgba(40,130,230,.18); color: rgb(80,160,240); }
     html:not([data-theme="light"]) .tag-personal { background: rgba(50,180,90,.18);  color: rgb(70,200,100); }
     html:not([data-theme="light"]) .tag-health   { background: rgba(60,190,190,.18); color: rgb(80,210,210); }
     html:not([data-theme="light"]) .tag-shopping { background: rgba(160,90,230,.18); color: rgb(180,130,240); }
@@ -80,7 +80,7 @@
   }
   html[data-theme="dark"] .tag-gcs      { background: rgba(220,110,40,.18); color: rgb(230,130,60); }
   html[data-theme="dark"] .tag-finance  { background: rgba(220,60,60,.18);  color: rgb(230,90,90); }
-  html[data-theme="dark"] .tag-house    { background: rgba(40,130,230,.18); color: rgb(80,160,240); }
+  html[data-theme="dark"] .tag-around-the-house    { background: rgba(40,130,230,.18); color: rgb(80,160,240); }
   html[data-theme="dark"] .tag-personal { background: rgba(50,180,90,.18);  color: rgb(70,200,100); }
   html[data-theme="dark"] .tag-health   { background: rgba(60,190,190,.18); color: rgb(80,210,210); }
   html[data-theme="dark"] .tag-shopping { background: rgba(160,90,230,.18); color: rgb(180,130,240); }
@@ -1556,7 +1556,7 @@ migrateStorageKeys();
 const TAG_COLORS = {
   gcs:      { light: 'rgb(180,80,20)',   dark: 'rgb(230,130,60)',  dot: '#b45014' },
   finance:  { light: 'rgb(200,40,40)',   dark: 'rgb(230,90,90)',   dot: '#c82828' },
-  house:    { light: 'rgb(0,100,200)',   dark: 'rgb(80,160,240)',  dot: '#0064c8' },
+  'around the house': { light: 'rgb(0,100,200)', dark: 'rgb(80,160,240)', dot: '#0064c8' },
   personal: { light: 'rgb(40,150,70)',   dark: 'rgb(70,200,100)',  dot: '#289646' },
   health:   { light: 'rgb(50,160,160)',  dark: 'rgb(80,210,210)',  dot: '#32a0a0' },
   shopping: { light: 'rgb(130,60,200)',  dark: 'rgb(180,130,240)', dot: '#8230c8' },
@@ -1564,7 +1564,7 @@ const TAG_COLORS = {
   admin:    { light: 'rgb(90,90,100)',   dark: 'rgb(170,170,185)', dot: '#5a5a64' },
 };
 const TAG_DOT_COLORS = {
-  gcs: '#b45014', finance: '#c82828', house: '#0064c8',
+  gcs: '#b45014', finance: '#c82828', 'around the house': '#0064c8', house: '#0064c8',
   personal: '#289646', health: '#32a0a0', shopping: '#8230c8',
   errand: '#b47800', admin: '#5a5a64', untagged: '#8e8e93'
 };
@@ -1572,12 +1572,12 @@ const TAG_DOT_COLORS = {
 function tagClass(tag) {
   if (!tag) return '';
   const t = tag.toLowerCase();
-  return TAG_COLORS[t] ? `tag-${t}` : 'tag-default';
+  return TAG_COLORS[t] ? `tag-${t.replace(/\s+/g, '-')}` : 'tag-default';
 }
 function tagHTML(tag) {
   if (!tag) return '';
   const t = tag.toLowerCase();
-  if (TAG_COLORS[t]) return `<span class="task-tag tag-${t}">${tag}</span>`;
+  if (TAG_COLORS[t]) return `<span class="task-tag tag-${t.replace(/\s+/g, '-')}">${tag}</span>`;
   const c = customTagColor(t);
   return `<span class="task-tag" style="background:color-mix(in srgb, ${c} 15%, transparent);color:${c}">${tag}</span>`;
 }
@@ -1603,7 +1603,7 @@ const CHEV_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" st
 // exist (be added/removed) even when no task currently uses them.
 // ============================================================
 const REGISTRY_RE = /<!--\s*tags:\s*([^>]*?)\s*-->/i;
-function defaultTags(){ return Object.keys(TAG_COLORS); }
+function defaultTags(){ return Object.keys(TAG_COLORS).filter(t => t !== 'personal'); }
 function readTagRegistry(){
   const m = rawMd.match(REGISTRY_RE);
   if (!m) return null;
@@ -1853,7 +1853,7 @@ function taskKeyOf(line) {
   if (!/^- \[[ x]\] /.test(line)) return null;         // not a task line
   return line.replace(/^- \[[ x]\] /, '')
              .replace(/\s*\[[^\]]*\]/g, '')            // strip bracket flags
-             .replace(/\s*\([A-Za-z]+\)\s*$/, '')      // strip trailing (tag)
+             .replace(/\s*\([A-Za-z][\w -]*\)\s*$/, '')      // strip trailing (tag)
              .trim();
 }
 function _keyCounts(lines) {
@@ -1979,7 +1979,10 @@ function parseTasks() {
       .replace(/\s*\[card:[^\]]+\]/g, '')
       .replace(/\s*\[focus\]/g, '');
 
-    const m = cleanLine.match(/^- \[( |x)\] (.+?)(?:\s+\((\w+)\))?(\s+\[today(?::([^\]]+))?\])?$/);
+    let m = cleanLine.match(/^- \[( |x)\] (.+?)(?:\s+\(([A-Za-z0-9][\w -]*)\))?(\s+\[today(?::([^\]]+))?\])?$/);
+    if (m && m[3] && /\s/.test(m[3]) && !(readTagRegistry() || []).includes(m[3].toLowerCase()) && !TAG_COLORS[m[3].toLowerCase()]) {   // "(Function Health)" etc. is part of the title, not a tag
+      m = [...m]; m[2] = m[2] + ' (' + m[3] + ')'; m[3] = undefined;
+    }
     if (m) {
       const title = m[2];
       // Store inline created timestamp
@@ -3322,6 +3325,7 @@ async function boot() {
     await Promise.all([loadBacklog(), loadFocusHistory(), loadProjects()]);
     await maybeRolloverToday();
     render();
+    if (!syncError) await migrateTags();
     // Handle iOS Shortcut: ?action=add → open Add Task modal.
     // Guard on accessToken: a 401 during load calls signOut() which sets
     // accessToken = null before we reach here, so we must not open the modal
@@ -3458,7 +3462,8 @@ async function pjLinkTask(task, p, stay) {
   const c = { id: pjId('c'), listId: pjEnsureList(p, task.today ? 'active' : 'queue').id, title: task.title, notes: task.notes || '', files: [], history: [], ready: false, waiting: null, origTag: task.tag || null };
   pjLog(c, `Added from Backlog${task.tag ? ' (was #' + task.tag + ')' : ''}`, '↳');
   l = l.replace(/\s*\[notes:[^\]]*\]/, '');
-  if (/^- \[[ x]\] .+? \([A-Za-z0-9_-]+\)/.test(l)) l = l.replace(/^(- \[[ x]\] .+?) \([A-Za-z0-9_-]+\)/, '$1 (project)');
+  const tagRe = task.tag ? new RegExp(`\\(${escapeRe(task.tag)}\\)(?=(?:\\s*\\[[^\\]]*\\])*\\s*$)`, 'i') : null;
+  if (tagRe && tagRe.test(l)) l = l.replace(tagRe, '(project)');
   else l = l.replace(/^(- \[[ x]\] )(.+?)((?:\s+\[[^\]]*\])*)$/, '$1$2 (project)$3');
   l = l.trimEnd() + ` [card:${c.id}]`;
   lines[task.lineIndex] = l; rawMd = lines.join('\n'); parseTasks();
@@ -3470,7 +3475,7 @@ async function pjLinkTask(task, p, stay) {
 // ---------- delete project ----------
 let pjDel = { choice: null, tags: {} };
 const PJ_TAG_WORDS = {
-  house: 'house home kitchen bath bathroom shower toilet garage yard lawn fence roof paint tile cabinet cabinets counter countertop sink faucet floor door window hvac plumb plumbing electric light lights fan pantry closet install mount contractor remodel permit backsplash appliance pool sprinkler gutter drywall patio deck furniture move moving mover',
+  'around the house': 'house home kitchen bath bathroom shower toilet garage yard lawn fence roof paint tile cabinet cabinets counter countertop sink faucet floor door window hvac plumb plumbing electric light lights fan pantry closet install mount contractor remodel permit backsplash appliance pool sprinkler gutter drywall patio deck furniture move moving mover',
   finance: 'pay bill invoice bank loan mortgage insurance tax taxes 401k ira invest budget refund fee account credit chase escrow closing deposit transfer payment quote estimate appraisal',
   health: 'doctor dentist derm dermatology appointment blood lab workout gym run running vitamin vitamins prescription medical therapy physical eye health dr',
   shopping: 'buy order purchase amazon shop get new',
@@ -3489,11 +3494,11 @@ function pjGuessTag(c, p, opts) {
     kw.forEach(k => { if (k.includes('_') && joined.includes(' ' + k.replace(/_/g, ' ') + ' ')) sc += 3; });
     text.forEach(w => { if (kw.has(w) || (w.length > 4 && [...kw].some(k => k.length > 4 && !k.includes('_') && (w.startsWith(k) || k.startsWith(w))))) sc += 2; });
     ctx.forEach(w => { if (kw.has(w)) sc += 1; });
-    if (g === 'house' && /^\d+\s+\w+/.test(p.name)) sc += 1;   // address-named project leans house
+    if (g === 'around the house' && /^\d+\s+\w+/.test(p.name)) sc += 1;   // address-named project leans house
     if (sc > bestScore) { bestScore = sc; best = g; }
   });
   if (!best) {   // nothing matched: an address-like project name is a house project; else personal
-    if (/^\d+\s+\w+/.test(p.name) && opts.includes('house')) best = 'house';
+    if (/^\d+\s+\w+/.test(p.name) && opts.includes('around the house')) best = 'around the house';
     else best = opts.includes('personal') ? 'personal' : opts[0];
   }
   return best;
@@ -4288,6 +4293,16 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) auto
 window.addEventListener('focus', () => autoSync());
 window.addEventListener('online', () => autoSync(true));
 setInterval(() => autoSync(), 45000);
+
+// ---------- one-time tag cleanup (Sept 2026): house → "around the house", drop "personal" ----------
+async function migrateTags() {
+  const reg = readTagRegistry() || [];
+  const hasTag = t => reg.includes(t) || tasks.some(x => (x.tag || '').toLowerCase() === t);
+  let did = false;
+  if (hasTag('house')) { await renameTag('house', 'around the house'); did = true; }
+  if (hasTag('personal')) { await removeTag('personal'); did = true; }
+  if (did) showToast('Tags updated: House → Around the house · Personal removed');
+}
 
 boot();
 </script>
