@@ -3414,6 +3414,7 @@ function pjSave() {
   clearTimeout(pjSaveT); pjSaveT = setTimeout(pjFlush, 700);
 }
 async function pjFlush() {
+  pjSaveT = null;
   if (pjSaving) { pjSaveT = setTimeout(pjFlush, 400); return; }
   pjSaving = true;
   try {
@@ -4247,6 +4248,46 @@ document.addEventListener('click', e => {
 function blSyncHeader() { const h = document.querySelector('.header'); if (h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px'); }
 window.addEventListener('resize', blSyncHeader);
 window.addEventListener('scroll', () => { const k = document.querySelector('.bl-kpis'); if (k) k.classList.toggle('stuck', window.scrollY > 20); }, { passive: true });
+
+// ============================================================
+// LIVE SYNC — pull changes made on other devices (or by the backlog assistant)
+// Runs when the app comes back to the foreground, on focus/online, and every 45s while visible.
+// Never interrupts: skips while you're typing, dragging, have a sheet/modal open, or a save is in flight.
+// ============================================================
+let blSaving = 0;
+const _blSaveBacklog = saveBacklog;
+saveBacklog = async function (...a) { blSaving++; try { return await _blSaveBacklog(...a); } finally { blSaving--; } };
+let syncBusy = false, lastAutoSync = 0;
+function syncUiBusy() {
+  const ae = document.activeElement;
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT')) return true;
+  const m = document.getElementById('modal'); if (m && !m.classList.contains('hidden')) return true;
+  if (document.querySelector('.pj-sheet.open, .pop-scrim, .pj-lightbox, .modal-overlay:not(.hidden)')) return true;
+  if (typeof pjDrag !== 'undefined' && (pjDrag || pjPending)) return true;
+  if (typeof openSwipeWrap !== 'undefined' && openSwipeWrap) return true;
+  return false;
+}
+async function autoSync(force) {
+  if (!accessToken || document.hidden || syncBusy) return;
+  if (!force && Date.now() - lastAutoSync < 8000) return;
+  if (blSaving || pjSaving || pjSaveT || syncUiBusy()) return;
+  syncBusy = true; lastAutoSync = Date.now();
+  try {
+    let changed = false;
+    const [rb, rp] = await Promise.all([graphFetch(CONFIG.FILE_PATH), graphFetch(PJ_PATH)]);
+    if (blSaving || pjSaving || pjSaveT) return;                      // a local edit started meanwhile — try next tick
+    if (rb && rb.ok) { const txt = await rb.text(); if (txt !== backlogBase && txt !== rawMd) { rawMd = txt; backlogBase = txt; parseTasks(); changed = true; } }
+    if (rp && rp.ok) { const txt = await rp.text(); if (txt !== pjBase) { try { const d = JSON.parse(txt); if (d && Array.isArray(d.projects)) { pj = Object.assign({ tomb: [] }, d); pjBase = txt; localStorage.setItem('pj_cache', txt); changed = true; } } catch {} } }
+    await loadFocusHistory();
+    lastSynced = new Date(); syncError = null;
+    if (changed) { await maybeRolloverToday(); if (!syncUiBusy()) { const y = window.scrollY; pjFlip(render); window.scrollTo(0, y); } }
+  } catch (e) { /* offline — try again later */ }
+  finally { syncBusy = false; }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) autoSync(true); });
+window.addEventListener('focus', () => autoSync());
+window.addEventListener('online', () => autoSync(true));
+setInterval(() => autoSync(), 45000);
 
 boot();
 </script>
