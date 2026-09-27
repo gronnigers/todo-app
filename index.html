@@ -1378,6 +1378,10 @@ async function loadFocusHistory() {
   localStorage.setItem('focus_history', JSON.stringify(focusLog));
 }
 async function saveFocusHistory() {
+  try { const cur = await graphFetch(CONFIG.FOCUS_PATH); if (cur && cur.ok) { const d = await cur.json();
+    if (d && d.days) Object.entries(d.days).forEach(([k, v]) => { if (k < FOCUS_CUTOVER) focusLog[k] = Math.max(focusLog[k] || 0, v); }); } } catch(e) {}
+  Object.entries(focusDerived()).forEach(([k, v]) => { focusLog[k] = k < FOCUS_CUTOVER ? Math.max(focusLog[k] || 0, v) : v; });
+  Object.entries(FOCUS_REPAIRS).forEach(([k, v]) => { focusLog[k] = Math.max(focusLog[k] || 0, v); });
   localStorage.setItem('focus_history', JSON.stringify(focusLog));
   try {
     await graphFetch(CONFIG.FOCUS_PATH, {
@@ -1954,6 +1958,7 @@ function parseTasks() {
     const notesMatch = line.match(/\s*\[notes:([^\]]*)\]/);
     if (notesMatch) notesRaw = notesMatch[1];
     const cardMatch = line.match(/\[card:([^\]]+)\]/);
+    const isFocus = /\[focus\]/.test(line);
     const isTomorrow = /\[tomorrow\]/.test(line);
     const isBonus = /\[bonus\]/.test(line);
 
@@ -1964,7 +1969,8 @@ function parseTasks() {
       .replace(/\s*\[notes:[^\]]*\]/g, '')
       .replace(/\s*\[tomorrow\]/g, '')
       .replace(/\s*\[bonus\]/g, '')
-      .replace(/\s*\[card:[^\]]+\]/g, '');
+      .replace(/\s*\[card:[^\]]+\]/g, '')
+      .replace(/\s*\[focus\]/g, '');
 
     const m = cleanLine.match(/^- \[( |x)\] (.+?)(?:\s+\((\w+)\))?(\s+\[today(?::([^\]]+))?\])?$/);
     if (m) {
@@ -1982,7 +1988,8 @@ function parseTasks() {
         todayAt: m[5] ? new Date(m[5]) : null,
         lineIndex: i,
         notes: notesRaw !== null ? decodeNotes(notesRaw) : null,
-        cardId: cardMatch ? cardMatch[1] : null
+        cardId: cardMatch ? cardMatch[1] : null,
+        focus: isFocus, doneAt: doneTs || null
       });
     }
   });
@@ -2029,10 +2036,11 @@ async function toggleDone(title, lineIndex) {
     line = line.replace('- [ ]','- [x]');
     // Persist the completion timestamp INTO the file so stats are durable & sync.
     if (!/\[done:/.test(line)) line = line.trimEnd() + ` [done:${ts}]`;
+    if (wasToday && !/\[focus\]/.test(line)) line = line.trimEnd() + ' [focus]';   // durable: survives rollover + syncs via backlog.md
     completions[title] = ts;
     if (wasToday) bumpFocusToday(1);        // counts toward "days you hit your 3"
   } else {
-    line = line.replace('- [x]','- [ ]').replace(/\s*\[done:[^\]]*\]/,'');
+    line = line.replace('- [x]','- [ ]').replace(/\s*\[done:[^\]]*\]/,'').replace(/\s*\[focus\]/,'');
     delete completions[title];
     if (wasToday) bumpFocusToday(-1);
   }
@@ -2083,7 +2091,7 @@ async function editTask(lineIndex, oldTitle, newTitle, newTag, newNotes) {
   const isDone = line.includes('- [x]');
   // Preserve ALL existing bracket metadata (created/done/today/tomorrow/bonus);
   // only the title, tag, and notes are being rewritten here.
-  const keptFlags = (line.match(/\s*\[(?:created|done|today|tomorrow|bonus|card)(?::[^\]]*)?\]/g) || []).join('');
+  const keptFlags = (line.match(/\s*\[(?:created|done|today|tomorrow|bonus|card|focus)(?::[^\]]*)?\]/g) || []).join('');
   const notesFlag = newNotes ? ` [notes:${encodeNotes(newNotes)}]` : '';
   const box = isDone ? '- [x]' : '- [ ]';
   const tagPart = newTag ? ` (${newTag})` : '';
@@ -2740,8 +2748,9 @@ function renderFocus(activeTasks, doneTasks) {
   const flame = streak.current >= 7 ? '🔥' : streak.current >= 3 ? '⚡' : streak.current >= 1 ? '✨' : '💤';
   const todayCount   = focusCountForDay(localDayKey());
   const hitThisMonth = daysHitThisMonth();
-  const totalHitDays = Object.values(focusLog).filter(c => c >= FOCUS_GOAL).length;
-  const hasHistory   = Object.keys(focusLog).length > 0;
+  const FD = focusDays();
+  const totalHitDays = Object.values(FD).filter(c => c >= FOCUS_GOAL).length;
+  const hasHistory   = Object.keys(FD).length > 0;
 
   let out = `
     <div class="streak-hero">
@@ -2858,7 +2867,24 @@ function renderTrends(activeTasks, doneTasks) {
 }
 
 // ---- FOCUS STATS HELPERS ----
-function focusCountForDay(key) { return focusLog[key] || 0; }
+// Focus days are DERIVED from backlog.md ([focus] + [done:] on each line), so completions made on any
+// device always count. focus-history.json is kept only as the record for days before this fix.
+const FOCUS_CUTOVER = '2026-09-26';
+const FOCUS_REPAIRS = { '2026-09-25': 4 };   // restores the day lost to the old cross-device overwrite (3 core + 1 stretch, per backlog.md done stamps)
+function focusDerived() {
+  const m = {};
+  tasks.forEach(t => { if (!t.done || !t.focus) return; const iso = t.doneAt || completions[t.title]; if (!iso) return;
+    const k = dayKeyFromDate(new Date(iso)); m[k] = (m[k] || 0) + 1; });
+  return m;
+}
+function focusDays() {
+  const d = focusDerived(), out = {};
+  Object.entries(focusLog).forEach(([k, v]) => { if (k < FOCUS_CUTOVER) out[k] = v; });
+  Object.entries(FOCUS_REPAIRS).forEach(([k, v]) => { out[k] = Math.max(out[k] || 0, v); });
+  Object.entries(d).forEach(([k, v]) => { out[k] = k < FOCUS_CUTOVER ? Math.max(out[k] || 0, v) : v; });
+  return out;
+}
+function focusCountForDay(key) { return focusDays()[key] || 0; }
 // "All-time completed" was reset to start Aug 31, 2026 — count completions on/after that
 // (older bulk-imported checkoffs are excluded).
 const ALLTIME_START = new Date(2026, 7, 31).getTime();
@@ -2874,7 +2900,7 @@ function dayKeyFromDate(d) {
 function daysHitThisMonth() {
   const now = new Date();
   const pre = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-`;
-  return Object.entries(focusLog).filter(([k,c]) => k.startsWith(pre) && c >= FOCUS_GOAL).length;
+  return Object.entries(focusDays()).filter(([k,c]) => k.startsWith(pre) && c >= FOCUS_GOAL).length;
 }
 function computeFocusStreak() {
   const dayMs = 86400000;
@@ -2885,7 +2911,7 @@ function computeFocusStreak() {
   if (!hit(cursor)) cursor = new Date(cursor.getTime() - dayMs);
   while (hit(cursor)) { current++; cursor = new Date(cursor.getTime() - dayMs); }
   // best run across all recorded hit-days
-  const keys = Object.keys(focusLog).filter(k => focusLog[k] >= FOCUS_GOAL).sort();
+  const FD = focusDays(); const keys = Object.keys(FD).filter(k => FD[k] >= FOCUS_GOAL).sort();
   let best = 0, run = 0, prev = null;
   keys.forEach(k => {
     if (prev && (new Date(k+'T12:00:00') - new Date(prev+'T12:00:00')) === dayMs) run++; else run = 1;
