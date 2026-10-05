@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dwellness · Sites.Selected proof test</title>
+<style>
+:root{--bg:#F2F4EF;--card:#FBFCFA;--ink:#243129;--mute:#5F6D63;--line:#E1E7DD;--acc:#4F6B5A;--ok:#2F6B45;--okb:#DDEEE2;--bad:#B3261E;--badb:#F7DEDB;--warn:#A9531F;--warnb:#F6E6DA}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+h1{font-weight:500;font-size:26px;margin:0 0 4px}p{color:var(--mute);margin:4px 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mute);margin-bottom:10px}
+input{height:42px;border-radius:10px;border:1px solid var(--line);padding:0 12px;font-size:15px;background:#fff;color:var(--ink)}
+button{height:42px;padding:0 18px;border-radius:99px;border:0;background:var(--acc);color:#fff;font-weight:600;font-size:14px;cursor:pointer}
+button.q{background:#E6ECE3;color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.p{background:var(--okb);color:var(--ok)}.f{background:var(--badb);color:var(--bad)}.i{background:var(--warnb);color:var(--warn)}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-weight:700;font-size:12px}
+code{font:12px ui-monospace,Menlo,monospace;word-break:break-all;color:var(--mute)}
+.verdict{font-size:18px;font-weight:600;padding:14px 16px;border-radius:12px}
+</style>
+</head>
+<body>
+<main>
+<h1>Sites.Selected proof test</h1>
+<p>Checks that a test app can read/write <b>only</b> the Dwellness SharePoint site and nothing else. Uses a throwaway test app registration — the real Dwellness app is untouched.</p>
+
+<div class="card" id="cfg">
+  <label>Test app (client) ID<input id="cid" placeholder="from the 'Dwellness Test' app registration"></label>
+  <label>Dwellness site URL<input id="site" placeholder="https://gronnigers.sharepoint.com/sites/Dwellness"></label>
+  <label>Email to test in-app sharing (optional — no email is sent, access is removed right after)<input id="email" placeholder="krista@…"></label>
+  <div class="row"><button id="signin">1 · Sign in</button><button id="run" class="q">2 · Run tests</button><span id="who" style="color:var(--mute);font-size:13px"></span></div>
+</div>
+
+<div class="card" id="out" hidden>
+  <div id="verdict" class="verdict"></div>
+  <div style="margin:10px 0 6px;font-size:13px;color:var(--mute)">Token scopes: <code id="scp"></code></div>
+  <table><thead><tr><th>#</th><th>Check</th><th>Expect</th><th>Result</th></tr></thead><tbody id="rows"></tbody></table>
+</div>
+</main>
+<script>
+const TENANT = "0ae860f2-b1e0-4222-b0e1-37314eddf4df";
+const SCOPES = "User.Read Sites.Selected offline_access";
+const AUTH = `https://login.microsoftonline.com/${TENANT}/oauth2/v2.0`, G = "https://graph.microsoft.com/v1.0";
+const REDIRECT = location.origin + location.pathname;
+const $ = s => document.querySelector(s);
+const save = () => ["cid", "site", "email"].forEach(k => localStorage.setItem("spt_" + k, $("#" + k).value.trim()));
+["cid", "site", "email"].forEach(k => $("#" + k).value = localStorage.getItem("spt_" + k) || "");
+const b64 = b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+let TOKEN = sessionStorage.getItem("spt_tok");
+
+$("#signin").onclick = async () => {
+  save(); const cid = $("#cid").value.trim(); if (!cid) return alert("Enter the test app client ID");
+  const v = b64(crypto.getRandomValues(new Uint8Array(48))), ch = b64(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v)));
+  sessionStorage.setItem("spt_v", v);
+  location.assign(`${AUTH}/authorize?` + new URLSearchParams({ client_id: cid, response_type: "code", redirect_uri: REDIRECT, scope: SCOPES, code_challenge: ch, code_challenge_method: "S256", prompt: "select_account" }));
+};
+(async () => {
+  const q = new URLSearchParams(location.search);
+  if (q.get("error")) { $("#who").textContent = "Sign-in error: " + (q.get("error_description") || q.get("error")); history.replaceState(null, "", REDIRECT); return; }
+  if (!q.get("code")) { if (TOKEN) showWho(); return; }
+  history.replaceState(null, "", REDIRECT);
+  const r = await fetch(`${AUTH}/token`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: localStorage.getItem("spt_cid"), grant_type: "authorization_code", code: q.get("code"), redirect_uri: REDIRECT, code_verifier: sessionStorage.getItem("spt_v"), scope: SCOPES }) });
+  const j = await r.json(); if (!r.ok) { $("#who").textContent = "Token error: " + (j.error_description || j.error); return; }
+  TOKEN = j.access_token; sessionStorage.setItem("spt_tok", TOKEN); showWho();
+})();
+function claims() { try { return JSON.parse(atob(TOKEN.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); } catch { return {}; } }
+function showWho() { const c = claims(); $("#who").textContent = `Signed in as ${c.name || c.upn || "?"}`; }
+const call = (path, opt = {}) => fetch(path.startsWith("http") ? path : G + path, { ...opt, headers: { Authorization: "Bearer " + TOKEN, ...(opt.headers || {}) } });
+
+$("#run").onclick = async () => {
+  save(); if (!TOKEN) return alert("Sign in first");
+  $("#out").hidden = false; $("#rows").innerHTML = ""; $("#scp").textContent = claims().scp || "(none)";
+  let n = 0, fails = 0, info = 0; const ctx = {};
+  const row = (name, expect, status, detail) => { n++; const cls = status === "PASS" ? "p" : status === "FAIL" ? "f" : "i"; if (status === "FAIL") fails++; if (status === "INFO") info++; $("#rows").insertAdjacentHTML("beforeend", `<tr><td>${n}</td><td>${name}<br><code>${detail || ""}</code></td><td>${expect}</td><td><span class="tag ${cls}">${status}</span></td></tr>`); };
+  const expectOK = async (name, fn) => { try { const r = await fn(); const t = r.ok ? "" : (await r.text()).slice(0, 180); row(name, "allowed", r.ok ? "PASS" : "FAIL", `HTTP ${r.status} ${t}`); return r.ok ? r : null; } catch (e) { row(name, "allowed", "FAIL", e.message); return null; } };
+  const expectBlocked = async (name, fn) => { try { const r = await fn(); row(name, "blocked", r.ok ? "FAIL" : "PASS", `HTTP ${r.status}`); } catch (e) { row(name, "blocked", "PASS", e.message); } };
+
+  // token sanity
+  const scp = (claims().scp || "").split(" ");
+  row("Token has Sites.Selected and no broad file/site scopes", "only Selected", scp.includes("Sites.Selected") && !scp.some(s => /^(Files|Sites)\.(Read|ReadWrite|Manage|FullControl)/.test(s)) ? "PASS" : "FAIL", claims().scp);
+
+  // ---- inside the Dwellness site: should work
+  const u = new URL($("#site").value.trim());
+  const siteR = await expectOK("Read the Dwellness site", () => call(`/sites/${u.hostname}:${u.pathname.replace(/\/$/, "")}`));
+  if (!siteR) { $("#verdict").className = "verdict f"; $("#verdict").textContent = "Couldn't reach the site — the app grant (Step 3) probably isn't in place yet."; return; }
+  ctx.site = await siteR.json();
+  const drvR = await expectOK("Open the site's document library", () => call(`/sites/${ctx.site.id}/drive`));
+  if (drvR) ctx.drive = await drvR.json();
+  const name = `Dwellness/_proof-${Date.now()}.json`;
+  const putR = await expectOK("Create a file in the site", () => call(`/sites/${ctx.site.id}/drive/root:/${name}:/content`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, at: new Date().toISOString() }) }));
+  if (putR) {
+    ctx.item = await putR.json();
+    await expectOK("Read it back", () => call(`/sites/${ctx.site.id}/drive/items/${ctx.item.id}/content`));
+    await expectOK("Overwrite it with If-Match (sync-safe save)", () => call(`/sites/${ctx.site.id}/drive/items/${ctx.item.id}/content`, { method: "PUT", headers: { "Content-Type": "application/json", "If-Match": ctx.item.eTag }, body: '{"ok":2}' }));
+    const photo = await expectOK("Upload a photo-sized binary", () => call(`/sites/${ctx.site.id}/drive/root:/Dwellness/photos/_proof.jpg:/content`, { method: "PUT", headers: { "Content-Type": "image/jpeg" }, body: new Uint8Array(200000) }));
+    if (photo) { const p = await photo.json(); await expectOK("Get a photo download URL", () => call(`/sites/${ctx.site.id}/drive/items/${p.id}`)); await call(`/sites/${ctx.site.id}/drive/items/${p.id}`, { method: "DELETE" }); }
+    // in-app sharing (needs owner/fullcontrol grant)
+    const email = $("#email").value.trim();
+    if (email) {
+      const folder = await (await call(`/sites/${ctx.site.id}/drive/root:/Dwellness`)).json();
+      try {
+        const r = await call(`/sites/${ctx.site.id}/drive/items/${folder.id}/invite`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ recipients: [{ email }], requireSignIn: true, sendInvitation: false, roles: ["write"] }) });
+        const t = r.ok ? "" : (await r.text()).slice(0, 180);
+        row("In-app sharing: invite to the house folder", "allowed (owner grant)", r.ok ? "PASS" : "INFO", `HTTP ${r.status} ${t}${r.ok ? "" : " → sharing would fall back to the SharePoint page"}`);
+        if (r.ok) { const perms = (await r.json()).value || []; for (const pm of perms) await call(`/sites/${ctx.site.id}/drive/items/${folder.id}/permissions/${pm.id}`, { method: "DELETE" }); row("Cleanup: removed the test invite", "—", "PASS", `${perms.length} permission(s) removed`); }
+      } catch (e) { row("In-app sharing: invite to the house folder", "allowed (owner grant)", "INFO", e.message); }
+      await expectOK("In-app sharing: list who has access", () => call(`/sites/${ctx.site.id}/drive/items/${folder.id}/permissions`));
+    }
+    await expectOK("Delete the test file", () => call(`/sites/${ctx.site.id}/drive/items/${ctx.item.id}`, { method: "DELETE" }));
+  }
+
+  // ---- everything else: must be blocked
+  await expectBlocked("Your OneDrive (list files)", () => call(`/me/drive/root/children`));
+  await expectBlocked("Your OneDrive (Life OS folder)", () => call(`/me/drive/root:/0 - Data/AI/Life OS`));
+  await expectBlocked("Files shared with you", () => call(`/me/drive/sharedWithMe`));
+  await expectBlocked("The tenant's root SharePoint site", () => call(`/sites/root/drive/root/children`));
+  await expectBlocked("Search across all sites", () => call(`/sites?search=*`));
+  await expectBlocked("Change the Dwellness site's own permissions", () => call(`/sites/${ctx.site.id}/permissions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roles: ["read"], grantedToIdentities: [{ application: { id: "00000000-0000-0000-0000-000000000000", displayName: "x" } }] }) }));
+  await expectBlocked("Your mailbox", () => call(`/me/messages?$top=1`));
+  await expectBlocked("Your calendar", () => call(`/me/events?$top=1`));
+
+  const v = $("#verdict");
+  if (!fails) { v.className = "verdict p"; v.textContent = `All ${n - info} checks passed${info ? ` (${info} informational)` : ""} — the app can reach the Dwellness site and nothing else.`; }
+  else { v.className = "verdict f"; v.textContent = `${fails} check(s) failed — screenshot this and send it over.`; }
+};
+</script>
+</body>
+</html>
