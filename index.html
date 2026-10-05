@@ -1400,6 +1400,90 @@
   :root[data-skin="cork"] .modal, :root[data-skin="cork"] .pop-panel { border-radius: 3px; }
 
   @media (prefers-reduced-motion: reduce) { :root[data-skin] body::after { animation: none; } }
+  /* === STATS v2: today rings · year in squares · ring calendar · trophy case === */
+  .fx { --fxd: var(--font-ui); --fxw: 800; --fxs: 1; --fxls: -.02em; }
+  :root[data-skin="vinyl"] .fx { --fxd: var(--font-display); --fxw: 400; --fxs: 1.15; --fxls: .04em; }
+  :root[data-skin="moleskine"] .fx { --fxd: var(--font-pen); --fxw: 400; --fxs: 1.4; --fxls: 0; }
+  :root[data-skin="cork"] .fx { --fxd: var(--font-marker); --fxw: 400; --fxs: .9; --fxls: .01em; }
+  .fx .chart-card { position: relative; }
+  .fx-num { font-family: var(--fxd); font-weight: var(--fxw); letter-spacing: var(--fxls); line-height: .95; color: var(--text); }
+  .fx-lbl { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--sub); }
+  .fx-sub { font-size: 13px; color: var(--sub); line-height: 1.45; }
+  .fx-g2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; margin-bottom: 16px; }
+  .fx-g2 > .chart-card { margin-bottom: 0; }
+  .fx-span2 { grid-column: 1 / -1; }
+  .fx-hero { display: flex; align-items: center; gap: 22px; }
+  .fx-ringwrap { position: relative; flex: 0 0 auto; }
+  .fx-ringwrap .fx-mid { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .fx-ring { display: block; overflow: visible; }
+  .fx-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 99px; background: var(--tag-bg); color: var(--text); font-size: 12.5px; font-weight: 600; }
+  .fx-pill.acc { background: var(--accent-light); color: var(--accent); }
+  .fx-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .fx-dots { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 14px; }
+  .fx-dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--progress-bg); }
+  .fx-dots i.on { background: var(--accent); }
+  .fx-dots i.part { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .fx-week { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 6px; margin-top: 12px; }
+  .fx-week .d { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--sub); }
+  .fx-week .d.today { color: var(--accent); font-weight: 700; }
+  .fx-week .d b { color: var(--text); font-size: 13px; }
+  .fx-week .fx-ring { width: 100%; max-width: 62px; height: auto; }
+  .xtra-c { color: var(--green); }
+  .fx-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 12px; }
+  .fx-kpis > .chart-card { margin-bottom: 0; padding: 14px 16px; }
+  .fx-kpis .fx-num { font-size: calc(36px * var(--fxs)); margin: 6px 0 4px; }
+  .fx-scroll { overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .fx-legend { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 11.5px; color: var(--sub); margin-top: 8px; }
+  .fx-legend i { width: 11px; height: 11px; border-radius: 3px; }
+  .fx-cal { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 8px; }
+  .fx-cal .dow { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--sub); }
+  .fx-cell { position: relative; height: clamp(54px, 8vw, 92px); border-radius: 12px; background: var(--tag-bg); display: grid; place-items: center; }
+  .fx-cell.blank { background: none; }
+  .fx-cell.future { background: none; border: 1.5px dashed var(--border); }
+  .fx-cell.pre { opacity: .45; }
+  .fx-cell.today { box-shadow: inset 0 0 0 2px var(--accent); }
+  .fx-cell .fx-ring { width: clamp(28px, 58%, 50px); height: auto; }
+  .fx-cell .dn { position: absolute; top: 5px; left: 8px; font-size: 11px; font-weight: 600; color: var(--sub); }
+  .fx-cell .cnt { position: absolute; font-size: 12px; font-weight: 700; color: var(--text); }
+  .fx-cell .star { position: absolute; top: 3px; right: 6px; color: var(--accent); font-size: 15px; rotate: 12deg; }
+  .fx-cell .xtra { position: absolute; bottom: 4px; right: 6px; font-size: 10.5px; font-weight: 700; color: var(--green); }
+  .fx-lvl { display: flex; align-items: center; gap: 18px; }
+  .fx-lvl-badge { flex: 0 0 auto; width: 78px; height: 78px; border-radius: 22px; background: var(--accent); color: #fff; display: grid; place-content: center; text-align: center; rotate: -4deg; }
+  html[data-skin="glass"][data-theme="dark"] .fx-lvl-badge { color: #0a0d1c; }
+  .fx-lvl-badge small { font-size: 10px; font-weight: 700; letter-spacing: .1em; opacity: .85; font-family: var(--font-ui); }
+  .fx-lvl-badge .fx-num { color: inherit; font-size: calc(36px * var(--fxs)); }
+  .fx-xp { height: 12px; border-radius: 6px; background: var(--progress-bg); overflow: hidden; margin: 8px 0 6px; }
+  .fx-xp i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--orange))); }
+  .fx-xprow { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .fx-badges { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 12px 0 16px; }
+  .fx-badges > .chart-card { margin-bottom: 0; text-align: center; padding: 16px 12px 14px; }
+  .fx-bdg .ic { width: 56px; height: 56px; margin: 0 auto 10px; border-radius: 50%; display: grid; place-items: center; font-size: 27px;
+    background: var(--accent-light); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+  .fx-bdg.locked .ic { filter: grayscale(1); opacity: .45; background: var(--tag-bg); box-shadow: inset 0 0 0 2px var(--border); }
+  .fx-bdg h4 { font-size: 13.5px; font-weight: 700; color: var(--text); margin: 0 0 3px; }
+  .fx-bdg p { font-size: 11.5px; color: var(--sub); line-height: 1.35; margin: 0; }
+  .fx-bdg .ok { color: var(--green); font-weight: 700; margin-top: 7px; }
+  .fx-bar { height: 5px; border-radius: 3px; background: var(--progress-bg); overflow: hidden; margin-top: 9px; }
+  .fx-bar i { display: block; height: 100%; border-radius: 3px; background: var(--sub); }
+  .fx-bdg .prog { font-size: 10.5px; margin-top: 4px; }
+  .fx-calhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .fx-calhead .fx-num { font-size: calc(22px * var(--fxs)); }
+  :root[data-skin="cork"] .fx .chart-card::before { content: ""; position: absolute; top: -6px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; z-index: 2;
+    background: radial-gradient(circle at 35% 35%, #ef9a9a, #c62828 60%, #6d1010); box-shadow: 1px 3px 3px rgba(0,0,0,.35); }
+  :root[data-skin="cork"] .fx .chart-card:nth-child(3n+2)::before { background: radial-gradient(circle at 35% 35%, #90caf9, #1565c0 60%, #0d2c5e); }
+  :root[data-skin="cork"] .fx .chart-card:nth-child(3n)::before { background: radial-gradient(circle at 35% 35%, #fff59d, #f9a825 60%, #8d5d00); }
+  :root[data-skin="cork"] .fx .chart-card:nth-child(odd) { rotate: -.35deg; }
+  :root[data-skin="cork"] .fx .chart-card:nth-child(even) { rotate: .3deg; }
+  @media (max-width: 700px) {
+    .fx-g2 { grid-template-columns: minmax(0,1fr); }
+    .fx-hero { flex-direction: column; text-align: center; }
+    .fx-kpis, .fx-badges { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .fx-week { gap: 2px; } .fx-week .d { font-size: 10.5px; }
+    .fx-cal { gap: 4px; } .fx-cell { border-radius: 8px; }
+    .fx-cell .xtra, .fx-cell .cnt { display: none; }
+    .fx-cell .star { font-size: 10px; top: 1px; right: 3px; } .fx-cell .dn { top: 2px; left: 4px; font-size: 9.5px; }
+  }
+
   /* === IN-APP UPDATES (ported from Dwellness) === */
   .upd {
     position: fixed; z-index: 85; left: 50%; transform: translateX(-50%);
@@ -3196,60 +3280,126 @@ function renderStats(el, activeTasks, doneTasks) {
 }
 
 // ---- FOCUS TAB ----
+function fxRing(size, sw, done, goal) {
+  goal = goal || FOCUS_GOAL; done = Math.min(done, goal);
+  const r = (size - sw) / 2, c = 2 * Math.PI * r, h = size / 2, gap = Math.max(4, size / 22);
+  const seg = Math.max(.1, c / goal - gap - sw), off = (gap + sw) / 2 / c * 360;
+  let s = `<svg class="fx-ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">`;
+  for (let i = 0; i < goal; i++)
+    s += `<circle cx="${h}" cy="${h}" r="${r}" fill="none" stroke="${i < done ? 'var(--accent)' : 'var(--progress-bg)'}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${seg.toFixed(2)} ${c.toFixed(2)}" transform="rotate(${(-90 + i * 360 / goal + off).toFixed(2)} ${h} ${h})"/>`;
+  return s + '</svg>';
+}
+const fxAdd = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const fxFmt = (d, o) => d.toLocaleDateString('en-US', o);
+
 function renderFocus(activeTasks, doneTasks) {
-  const now = new Date();
-  const monthShort = now.toLocaleDateString('en-US',{month:'short'});
-  const monthName  = now.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+  const G = FOCUS_GOAL, FD = focusDays(), now = new Date();
+  const T = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const cnt = d => FD[dayKeyFromDate(d)] || 0;
   const streak = computeFocusStreak();
+  const t = cnt(T), deck = ondeckQueue().length;
+  const keys = Object.keys(FD).filter(k => FD[k] > 0).sort();
+  const firstKey = keys[0] || dayKeyFromDate(T);
+  setTimeout(() => document.querySelectorAll('.fx-scroll').forEach(e => { e.scrollLeft = e.scrollWidth; }), 0);
+
+  // ---------- 1 · today, front and center ----------
   const flame = streak.current >= 7 ? '🔥' : streak.current >= 3 ? '⚡' : streak.current >= 1 ? '✨' : '💤';
-  const todayCount   = focusCountForDay(localDayKey());
-  const hitThisMonth = daysHitThisMonth();
-  const FD = focusDays();
-  const totalHitDays = Object.values(FD).filter(c => c >= FOCUS_GOAL).length;
-  const hasHistory   = Object.keys(FD).length > 0;
-
-  let out = `
-    <div class="streak-hero">
-      <div class="streak-flame">${flame}</div>
-      <div class="streak-value">${streak.current}</div>
-      <div class="streak-label">day focus streak</div>
-      <div class="streak-best">Best ever: ${streak.best} day${streak.best===1?'':'s'}</div>
-    </div>
-    <div class="gamify-grid">
-      <div class="gamify-card">
-        <div class="gamify-card-icon">🎯</div>
-        <div class="gamify-card-value">${todayCount}<span style="font-size:16px;color:var(--sub);font-weight:600">/${FOCUS_GOAL}</span></div>
-        <div class="gamify-card-label">Completed today</div>
+  const msg = t >= G
+    ? `All ${G} done${t > G ? `, plus <b style="color:var(--text)">${t - G} extra</b>` : ''}. Streak's safe 🤙`
+    : `Finish <b style="color:var(--text)">${G - t} more</b> to ${streak.current ? `push your streak to ${streak.current + 1} day${streak.current ? 's' : ''}` : 'start a streak'}.`;
+  const trail = []; for (let i = 20; i >= 0; i--) trail.push(fxAdd(T, -i));
+  const week = []; for (let i = 6; i >= 0; i--) week.push(fxAdd(T, -i));
+  let out = `<div class="fx">
+    <div class="fx-g2">
+      <div class="chart-card fx-hero">
+        <div class="fx-ringwrap">${fxRing(170, 17, t)}<div class="fx-mid"><div class="fx-num" style="font-size:calc(54px * var(--fxs))">${t}<span style="font-size:.45em;color:var(--sub)">/${G}</span></div><div class="fx-sub">today</div></div></div>
+        <div><div class="fx-num" style="font-size:calc(24px * var(--fxs));line-height:1.1">${fxFmt(T, { weekday: 'long' })},<br>${fxFmt(T, { month: 'short', day: 'numeric' })}</div>
+          <p class="fx-sub" style="margin:8px 0 12px">${msg}</p>
+          ${deck ? `<span class="fx-pill acc">⏭ ${deck} on deck</span>` : ''}</div>
       </div>
-      <div class="gamify-card">
-        <div class="gamify-card-icon">✅</div>
-        <div class="gamify-card-value">${hitThisMonth}</div>
-        <div class="gamify-card-label">Days you hit ${FOCUS_GOAL} · ${monthShort}</div>
+      <div class="chart-card">
+        <div class="fx-lbl">Focus streak</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:10px">
+          <div class="fx-num" style="font-size:calc(68px * var(--fxs));color:var(--accent)">${streak.current}</div>
+          <div><div style="font-size:24px;line-height:1">${flame}</div><div class="fx-sub">day${streak.current === 1 ? '' : 's'} in a row<br>Best ever: <b style="color:var(--text)">${streak.best}</b></div></div>
+        </div>
+        <div class="fx-dots">${trail.map(d => { const n = cnt(d); return `<i class="${n >= G ? 'on' : n > 0 ? 'part' : ''}" title="${fxFmt(d, { month: 'short', day: 'numeric' })}: ${n}"></i>`; }).join('')}</div>
+        <div class="fx-sub" style="margin-top:6px;font-size:11.5px">Last 3 weeks</div>
       </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Tasks completed each day</div>
-      <div class="hm-head">
-        <button class="hm-nav" onclick="statsMonthOffset--;render()">‹</button>
-        <div class="hm-month">${heatmapMonthName(statsMonthOffset)}</div>
-        <button class="hm-nav ${statsMonthOffset>=0?'disabled':''}" onclick="if(statsMonthOffset<0){statsMonthOffset++;render();}">›</button>
-      </div>
-      ${buildMonthHeatmap(statsMonthOffset)}
-      <div class="hm-legend">
-        <span class="hm-key"><span class="hm-swatch none"></span>0</span>
-        <span class="hm-key"><span class="hm-swatch partial"></span>1–${FOCUS_GOAL-1}</span>
-        <span class="hm-key"><span class="hm-swatch hit"></span>${FOCUS_GOAL}+</span>
+      <div class="chart-card fx-span2"><div class="fx-lbl">Last 7 days</div>
+        <div class="fx-week">${week.map(d => { const n = cnt(d), isT = d.getTime() === T.getTime();
+          return `<div class="d ${isT ? 'today' : ''}">${fxRing(62, 8, n)}<span>${isT ? 'Today' : fxFmt(d, { weekday: 'short' })}</span><b>${n}${n > G ? ` <span class="xtra-c">+${n - G}</span>` : ''}</b></div>`; }).join('')}</div>
       </div>
     </div>`;
 
-  if (!hasHistory) {
-    out += `<div class="today-empty" style="padding:24px 20px"><span class="emoji">🔥</span>Your focus history starts today.<br>Finish your ${FOCUS_GOAL} to light the streak.</div>`;
-  } else {
-    out += `<div class="gamify-card" style="text-align:center;margin-bottom:16px">
-      <div class="gamify-card-label" style="margin-bottom:4px">ALL-TIME DAYS YOU HIT YOUR ${FOCUS_GOAL}</div>
-      <div class="gamify-card-value" style="font-size:32px">${totalHitDays}</div>
-    </div>`;
+  // ---------- 2 · year in squares ----------
+  const yStart = fxAdd(T, -364), gStart = fxAdd(yStart, -yStart.getDay());
+  let yrTotal = 0, yrHits = 0, bestD = null, bestN = 0;
+  for (let d = new Date(yStart); d <= T; d = fxAdd(d, 1)) { const n = cnt(d); yrTotal += n; if (n >= G) yrHits++; if (n > bestN) { bestN = n; bestD = new Date(d); } }
+  const lvl = n => n <= 0 ? 0 : n < G ? 1 : n === G ? 2 : 3;
+  const heat = l => ['var(--progress-bg)', 'color-mix(in srgb, var(--accent) 32%, transparent)', 'color-mix(in srgb, var(--accent) 68%, transparent)', 'var(--accent)'][l];
+  const cell = 13, step = 16; let svg = '', col = 0, lastM = -1;
+  for (let w = new Date(gStart); w <= T; w = fxAdd(w, 7), col++) {
+    if (w.getMonth() !== lastM && w.getDate() <= 7) { svg += `<text x="${col * step}" y="-6" font-size="10.5" fill="var(--sub)">${fxFmt(w, { month: 'short' })}</text>`; lastM = w.getMonth(); }
+    for (let i = 0; i < 7; i++) {
+      const d = fxAdd(w, i); if (d > T || d < yStart) continue;
+      const k = dayKeyFromDate(d), n = FD[k] || 0, isT = d.getTime() === T.getTime();
+      svg += `<rect x="${col * step}" y="${i * step}" width="${cell}" height="${cell}" rx="3" fill="${heat(lvl(n))}"${k < firstKey ? ' opacity=".45"' : ''}${isT ? ' stroke="var(--text)" stroke-width="1.5"' : ''}><title>${fxFmt(d, { weekday: 'short', month: 'short', day: 'numeric' })}: ${n} done</title></rect>`;
+    }
   }
+  const W = col * step;
+  out += `<div class="fx-kpis">
+      <div class="chart-card"><div class="fx-lbl">Past year</div><div class="fx-num">${yrTotal}</div><div class="fx-sub">tasks done</div></div>
+      <div class="chart-card"><div class="fx-lbl">Hit your ${G}</div><div class="fx-num">${yrHits}</div><div class="fx-sub">day${yrHits === 1 ? '' : 's'}</div></div>
+      <div class="chart-card"><div class="fx-lbl">Longest streak</div><div class="fx-num">${streak.best}</div><div class="fx-sub">days · now ${streak.current}</div></div>
+      <div class="chart-card"><div class="fx-lbl">Best day</div><div class="fx-num">${bestN || '—'}</div><div class="fx-sub">${bestD ? fxFmt(bestD, { month: 'short', day: 'numeric' }) : 'no tasks yet'}</div></div>
+    </div>
+    <div class="chart-card"><div class="fx-scroll"><svg class="fx-ring" width="${W + 28}" height="${7 * step + 20}" viewBox="-28 -18 ${W + 28} ${7 * step + 20}" style="width:100%;min-width:${W + 28}px;height:auto" font-family="var(--font-ui)">
+      ${['Mon', 'Wed', 'Fri'].map((x, i) => `<text x="-28" y="${(i * 2 + 1) * step + 10}" font-size="10" fill="var(--sub)">${x}</text>`).join('')}${svg}</svg></div>
+      <div class="fx-legend">Less ${[0, 1, 2, 3].map(l => `<i style="background:${heat(l)}"></i>`).join('')} More</div></div>`;
+
+  // ---------- 3 · ring calendar ----------
+  const ref = new Date(T.getFullYear(), T.getMonth() + statsMonthOffset, 1), y = ref.getFullYear(), m = ref.getMonth();
+  const isCur = statsMonthOffset === 0, dim = new Date(y, m + 1, 0).getDate();
+  let cells = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="dow">${d}</div>`).join('') + '<div class="fx-cell blank"></div>'.repeat(ref.getDay());
+  let mHits = 0, mTot = 0, mDays = 0;
+  for (let i = 1; i <= dim; i++) {
+    const d = new Date(y, m, i), k = dayKeyFromDate(d), n = FD[k] || 0, fut = d > T, isT = d.getTime() === T.getTime();
+    if (!fut) { mDays++; mTot += n; if (n >= G) mHits++; }
+    cells += `<div class="fx-cell ${fut ? 'future' : ''} ${isT ? 'today' : ''} ${!fut && k < firstKey ? 'pre' : ''}" title="${k}: ${n} done"><span class="dn">${i}</span>` +
+      (fut ? '' : fxRing(50, 6, n) + `<span class="cnt">${n}</span>`) + (!fut && n >= G ? '<span class="star">★</span>' : '') + (n > G ? `<span class="xtra">+${n - G}</span>` : '') + '</div>';
+  }
+  out += `<div class="chart-card">
+    <div class="fx-calhead"><button class="hm-nav" onclick="statsMonthOffset--;render()">‹</button>
+      <div class="fx-num">${fxFmt(ref, { month: 'long', year: 'numeric' })}</div>
+      <button class="hm-nav ${statsMonthOffset >= 0 ? 'disabled' : ''}" onclick="if(statsMonthOffset<0){statsMonthOffset++;render();}">›</button></div>
+    <div class="fx-cal">${cells}</div>
+    <div class="fx-pills"><span class="fx-pill acc">★ ${mHits} of ${mDays} day${mDays === 1 ? '' : 's'} hit</span><span class="fx-pill">✓ ${mTot} task${mTot === 1 ? '' : 's'}</span>
+      ${isCur ? `<span class="fx-pill">${flame} ${streak.current}-day streak</span>${mDays ? `<span class="fx-pill">📈 on pace for ${Math.round(mTot / mDays * dim)}</span>` : ''}` : ''}</div>
+  </div>`;
+
+  // ---------- 9 · trophy case ----------
+  const total = allTimeCompleted(), hitDays = Object.values(FD).filter(c => c >= G).length;
+  const xp = total * 10 + hitDays * 25, lv = Math.floor(Math.sqrt(xp / 120)), lo = 120 * lv * lv, hi = 120 * (lv + 1) * (lv + 1);
+  const TITLES = ['Rookie', 'Warming up', 'Getting rolling', 'Task tamer', 'Steady hand', 'Closer', 'Seasoned closer', 'Machine', 'Finisher', 'Legend', 'Mythic'];
+  const done = Object.entries(completions).map(([title, iso]) => [title, Date.parse(iso)]).filter(([, ts]) => !isNaN(ts) && ts >= ALLTIME_START);
+  const early = done.filter(([, ts]) => new Date(ts).getHours() < 9).length;
+  const night = done.filter(([, ts]) => new Date(ts).getHours() >= 22).length;
+  const buster = done.filter(([title, ts]) => { const c = Date.parse(created[title]); return !isNaN(c) && ts - c >= 30 * 864e5; }).length;
+  const maxDay = Math.max(0, ...Object.values(FD));
+  const B = [['🎯', 'Hat trick', `Hit your ${G} for the first time`, hitDays, 1], ['⚡', 'Week warrior', '7-day focus streak', streak.best, 7],
+    ['🔥', 'Unstoppable', '30-day focus streak', streak.best, 30], ['💯', 'Century', '100 tasks done', total, 100],
+    ['🌅', 'Early bird', '25 tasks done before 9 AM', early, 25], ['🦉', 'Night owl', '25 tasks done after 10 PM', night, 25],
+    ['🚀', 'Overachiever', '6 tasks in a single day', maxDay, 6], ['🧹', 'Backlog buster', 'Close 10 tasks that sat 30+ days', buster, 10]];
+  out += `<div class="chart-card" style="margin-top:16px">
+      <div class="fx-lvl"><div class="fx-lvl-badge"><small>LEVEL</small><div class="fx-num">${lv}</div></div>
+        <div style="flex:1;min-width:0"><div class="fx-num" style="font-size:calc(24px * var(--fxs));line-height:1.1">${TITLES[Math.min(lv, TITLES.length - 1)]}</div>
+          <div class="fx-xp"><i style="width:${Math.max(2, (xp - lo) / (hi - lo) * 100).toFixed(1)}%"></i></div>
+          <div class="fx-xprow"><span class="fx-sub">${(xp - lo).toLocaleString()} / ${(hi - lo).toLocaleString()} XP to level ${lv + 1}</span><span class="fx-sub">+10 per task · +25 for hitting ${G}</span></div></div></div>
+    </div>
+    <div class="fx-badges">${B.map(([ic, n, d, v, goal]) => { const ok = v >= goal;
+      return `<div class="chart-card fx-bdg ${ok ? '' : 'locked'}"><div class="ic">${ic}</div><h4>${n}</h4><p>${d}</p>${ok ? '<p class="ok">Unlocked</p>' : `<div class="fx-bar"><i style="width:${Math.max(3, v / goal * 100).toFixed(0)}%"></i></div><p class="prog">${Math.min(v, goal)} / ${goal}</p>`}</div>`; }).join('')}</div>
+  </div>`;
   return out;
 }
 
@@ -3759,8 +3909,14 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.04-1"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.04-2"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.04-2", date: "Oct 4, 2026", items: [
+    ["new", "Stats glow-up: today's 3-part ring, your streak trail and a 7-day row of rings"],
+    ["new", "Year in squares: a heatmap of every day for the past year"],
+    ["new", "Trophy case: earn XP, level up and unlock badges"],
+    ["improved", "The monthly calendar now shows a mini ring per day, a star when you hit your 3 and +N for extras"],
+  ]},
   { v: "2026.10.04-1", date: "Oct 4, 2026", items: [
     ["new", "Update notifications: when a new version is out you'll get an “Update ready” card, one tap to update"],
     ["new", "What's new: release notes pop up after an update, and you can re-read them any time from Stats"],
