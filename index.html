@@ -1400,6 +1400,48 @@
   :root[data-skin="cork"] .modal, :root[data-skin="cork"] .pop-panel { border-radius: 3px; }
 
   @media (prefers-reduced-motion: reduce) { :root[data-skin] body::after { animation: none; } }
+  /* === SKIN TYPE: nav, segmented controls + projects speak the skin's font === */
+  /* Moleskine — pen script */
+  :root[data-skin="moleskine"] .nav-item span { font-family: var(--font-pen); font-weight: 400; font-size: 17px; line-height: 1; letter-spacing: 0; }
+  :root[data-skin="moleskine"] .seg-btn { font-family: var(--font-pen); font-weight: 400; font-size: 22px; line-height: 1; letter-spacing: 0; }
+  :root[data-skin="moleskine"] .pj-pill { font-family: var(--font-pen); font-weight: 400; font-size: 23px; line-height: 1; padding: 5px 15px 6px; }
+  :root[data-skin="moleskine"] .pj-col-head { font-family: var(--font-pen); font-weight: 400; font-size: 27px; line-height: 1; }
+  :root[data-skin="moleskine"] .pj-card .ct { font-family: var(--font-pen); font-size: 23px; line-height: 1.05; }
+  :root[data-skin="moleskine"] .pj-add-card, :root[data-skin="moleskine"] .pj-new-col { font-family: var(--font-pen); font-weight: 400; font-size: 22px; line-height: 1.05; }
+  :root[data-skin="moleskine"] .pj-prog span { font-family: var(--font-pen); font-size: 20px; }
+  :root[data-skin="moleskine"] .pj-count { font-family: var(--font-pen); font-size: 17px; font-weight: 400; padding: 0 8px; }
+  /* Vinyl — Bebas headings, Space Mono details */
+  :root[data-skin="vinyl"] .nav-item span { font-family: var(--font-display); font-weight: 400; font-size: 13px; letter-spacing: .12em; }
+  :root[data-skin="vinyl"] .seg-btn { font-family: var(--font-display); font-weight: 400; font-size: 17px; letter-spacing: .12em; }
+  :root[data-skin="vinyl"] .pj-pill { font-family: var(--font-display); font-weight: 400; font-size: 18px; letter-spacing: .1em; padding: 6px 15px 4px; }
+  :root[data-skin="vinyl"] .pj-col-head { font-family: var(--font-display); font-weight: 400; font-size: 21px; letter-spacing: .1em; }
+  :root[data-skin="vinyl"] .pj-count, :root[data-skin="vinyl"] .pj-prog span { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 400; letter-spacing: .04em; }
+  :root[data-skin="vinyl"] .pj-add-card, :root[data-skin="vinyl"] .pj-new-col { font: 400 12px 'Space Mono', ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+  :root[data-skin="vinyl"] .pj-card .ct { font-weight: 500; letter-spacing: .01em; }
+  /* Corkboard — marker + handwriting, active things become paper tags */
+  :root[data-skin="cork"] .nav-item span { font-family: var(--font-marker); font-weight: 400; font-size: 11px; letter-spacing: .3px; }
+  :root[data-skin="cork"] .seg-ctrl { background: rgba(255,250,235,.55); box-shadow: var(--shadow-sm); }
+  :root[data-skin="cork"] .seg-btn { font-family: var(--font-marker); font-weight: 400; font-size: 14px; letter-spacing: .3px; }
+  :root[data-skin="cork"] .pj-pill { font-family: var(--font-marker); font-weight: 400; font-size: 14px; letter-spacing: .3px; background: #fffdf5; color: var(--text); border-radius: 2px; box-shadow: var(--shadow-sm); }
+  :root[data-skin="cork"] .pj-pill.on { background: var(--accent); color: #fff; rotate: -1.5deg; }
+  :root[data-skin="cork"] .pj-col-head { font-family: var(--font-marker); font-weight: 400; font-size: 17px; letter-spacing: .3px; }
+  :root[data-skin="cork"] .pj-card .ct { font-family: var(--font-marker); font-size: 15px; line-height: 1.3; letter-spacing: .3px; }
+  :root[data-skin="cork"] .pj-card:nth-child(odd) { rotate: -.5deg; } :root[data-skin="cork"] .pj-card:nth-child(even) { rotate: .4deg; }
+  :root[data-skin="cork"] .pj-add-card, :root[data-skin="cork"] .pj-new-col { font-family: 'Caveat', cursive; font-weight: 700; font-size: 21px; line-height: 1.05; }
+  :root[data-skin="cork"] .pj-prog span, :root[data-skin="cork"] .pj-count { font-family: 'Caveat', cursive; font-weight: 700; font-size: 17px; }
+  :root[data-skin="moleskine"] .pj-add-card.pj-add-existing { font-size: 17px !important; }
+  :root[data-skin="vinyl"] .pj-add-card.pj-add-existing { font-size: 10.5px !important; }
+  :root[data-skin="cork"] .pj-add-card.pj-add-existing { font-size: 17px !important; }
+  @media (min-width: 860px) {
+    :root[data-skin="moleskine"] .nav-item span { font-size: 26px; }
+    :root[data-skin="moleskine"] .nav-item.active span { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+    :root[data-skin="vinyl"] .nav-item span { font-size: 21px; }
+    :root[data-skin="vinyl"] .nav-item.active { box-shadow: inset 3px 0 0 var(--accent); border-radius: 4px; }
+    :root[data-skin="cork"] .nav-item span { font-size: 16px; }
+    :root[data-skin="cork"] .nav-item.active, :root[data-skin="cork"] .nav-item.active:hover { background: #fffdf5; color: var(--text); rotate: -1.2deg; border-radius: 2px; box-shadow: var(--shadow-sm); }
+    :root[data-skin="cork"] .nav-item.active svg { color: var(--accent); }
+  }
+
   /* === STATS v2: today rings · year in squares · ring calendar · trophy case === */
   .fx { --fxd: var(--font-ui); --fxw: 800; --fxs: 1; --fxls: -.02em; }
   :root[data-skin="vinyl"] .fx { --fxd: var(--font-display); --fxw: 400; --fxs: 1.15; --fxls: .04em; }
@@ -1482,6 +1524,39 @@
     .fx-cal { gap: 4px; } .fx-cell { border-radius: 8px; }
     .fx-cell .xtra, .fx-cell .cnt { display: none; }
     .fx-cell .star { font-size: 10px; top: 1px; right: 3px; } .fx-cell .dn { top: 2px; left: 4px; font-size: 9.5px; }
+  }
+
+  /* === TRENDS v2: in vs out · forecast · ticker · pace race · project pulse === */
+  .tr-ax { font: 10.5px var(--font-ui); fill: var(--sub); }
+  .tr-chart { display: block; width: 100%; height: auto; overflow: visible; }
+  .tr-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tr-big { font-size: calc(44px * var(--fxs)); margin: 6px 0 2px; }
+  .tr-delta { font-size: 13px; font-weight: 700; margin-top: 4px; }
+  .tr-delta.up { color: var(--green); } .tr-delta.dn { color: var(--orange); }
+  .tr-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--sub); margin-top: 10px; }
+  .tr-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .tr-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .tr-kv { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 14px; }
+  .tr-kv > div { background: var(--tag-bg); border-radius: 12px; padding: 10px 12px; }
+  .tr-kv b { display: block; font-family: var(--fxd); font-weight: var(--fxw); letter-spacing: var(--fxls); font-size: calc(23px * var(--fxs)); line-height: 1; margin-top: 4px; color: var(--text); }
+  .tr-tick { display: grid; grid-template-columns: minmax(0,1.3fr) 84px minmax(0,1.6fr) 70px; gap: 14px; align-items: center; padding: 11px 2px; border-top: 1px solid var(--border); }
+  .tr-tick:first-of-type { border-top: 0; }
+  .tr-tick .nm { font-weight: 600; font-size: 14px; color: var(--text); } .tr-tick .nm small { display: block; font-weight: 400; color: var(--sub); font-size: 12px; margin-top: 2px; }
+  .tr-tick .v { font-family: var(--fxd); font-weight: var(--fxw); letter-spacing: var(--fxls); font-size: calc(26px * var(--fxs)); text-align: right; color: var(--text); }
+  .tr-chip { display: inline-block; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; background: var(--tag-bg); color: var(--sub); }
+  .tr-chip.up { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
+  .tr-chip.dn { background: color-mix(in srgb, var(--orange) 18%, transparent); color: var(--orange); }
+  .tr-pp { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .tr-pp > .chart-card { margin-bottom: 0; }
+  .tr-pbar { height: 8px; border-radius: 4px; background: var(--progress-bg); overflow: hidden; margin: 10px 0 6px; }
+  .tr-pbar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+  .tr-empty { color: var(--sub); font-size: 13.5px; padding: 18px 0 6px; text-align: center; }
+  .tr-sec { margin: 22px 2px 10px; }
+  @media (max-width: 700px) {
+    .tr-tick { grid-template-columns: minmax(0,1fr) 70px 62px; }
+    .tr-ax { font-size: 22px; } .tr-chart text[style*='font-size:13px'] { font-size: 26px !important; }
+    .tr-tick svg { display: none; }
+    .tr-kv { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; } .tr-kv > div { padding: 8px 9px; }
   }
 
   /* === IN-APP UPDATES (ported from Dwellness) === */
@@ -1628,6 +1703,7 @@ const SKINS = [
 function currentSkin() { return document.documentElement.getAttribute('data-skin') || 'glass'; }
 function setSkin(k) {
   try { localStorage.setItem('skin', k); } catch (e) {}
+  prefsTouch();
   const go = () => document.documentElement.setAttribute('data-skin', k);
   document.startViewTransition ? document.startViewTransition(go) : go();
 }
@@ -1647,6 +1723,7 @@ function openGlassMenu(ev) {
     const k = b.dataset.glassPick; localStorage.setItem('glassTheme', k);
     const go = () => { document.documentElement.setAttribute('data-glass', k); document.documentElement.setAttribute('data-skin', 'glass'); };
     try { localStorage.setItem('skin', 'glass'); } catch (e) {}
+    prefsTouch();
     document.startViewTransition ? document.startViewTransition(go) : go();
     ov.querySelectorAll('.glass-sw').forEach(x => x.classList.toggle('on', x === b));
     syncOn('glass');
@@ -1669,7 +1746,52 @@ function applyTheme() {
   document.documentElement.setAttribute('data-theme', themeMode);
   localStorage.setItem('themeMode', themeMode);
 }
-function setTheme(t) { themeMode = t; applyTheme(); render(); }
+function setTheme(t) { themeMode = t; applyTheme(); prefsTouch(); render(); }
+
+// ============================================================
+// PREFS SYNC — your look (style, glass color, light/dark) follows you to every device.
+// Stored in OneDrive next to backlog.md as prefs.json; newest change wins.
+// ============================================================
+const PREFS_PATH = '/me/drive/root:/0 - Data/Backlog/prefs.json:/content';
+const PREF_KEYS = ['skin', 'glassTheme', 'themeMode'];
+let prefsBase = null, prefsT = null;
+const prefsUpd = () => { try { return +localStorage.getItem('prefs_upd') || 0; } catch (e) { return 0; } };
+function prefsLocal() { const o = {}; PREF_KEYS.forEach(k => { try { const v = localStorage.getItem(k); if (v) o[k] = v; } catch (e) {} }); return o; }
+function prefsTouch() {
+  try { localStorage.setItem('prefs_upd', String(Date.now())); } catch (e) {}
+  clearTimeout(prefsT); prefsT = setTimeout(prefsPush, 800);
+}
+async function prefsPush() {
+  prefsT = null;
+  if (!accessToken) return;
+  const body = JSON.stringify(Object.assign(prefsLocal(), { upd: prefsUpd() || Date.now() }), null, 1);
+  try { const r = await graphFetch(PREFS_PATH, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body }); if (r && r.ok) prefsBase = body; } catch (e) {}
+}
+// apply a prefs object to this device without re-uploading it; returns true if anything changed
+function prefsApply(o) {
+  const el = document.documentElement; let changed = false;
+  try {
+    if (o.glassTheme && o.glassTheme !== el.getAttribute('data-glass')) { localStorage.setItem('glassTheme', o.glassTheme); el.setAttribute('data-glass', o.glassTheme); changed = true; }
+    if (o.skin && o.skin !== el.getAttribute('data-skin')) { localStorage.setItem('skin', o.skin); el.setAttribute('data-skin', o.skin); changed = true; }
+    if (o.themeMode && o.themeMode !== themeMode) { themeMode = o.themeMode; applyTheme(); changed = true; }
+  } catch (e) {}
+  return changed;
+}
+async function loadPrefs(pre) {
+  try {
+    const r = pre || await graphFetch(PREFS_PATH);
+    if (r && r.ok) {
+      const txt = await r.text(); if (txt === prefsBase) return false;
+      const d = JSON.parse(txt), ru = +d.upd || 0, lu = prefsUpd();
+      if (ru > lu) { prefsBase = txt; try { localStorage.setItem('prefs_upd', String(ru)); } catch (e) {} return prefsApply(d); }
+      if (lu > ru) prefsPush();      // changed here while offline / before this file existed → send it up
+      else prefsBase = txt;
+    } else if (r && r.status === 404) prefsPush();   // first device on the new version seeds the file
+  } catch (e) {}
+  return false;
+}
+// other tabs on this same device
+window.addEventListener('storage', e => { if (PREF_KEYS.includes(e.key) && e.newValue) { if (prefsApply({ [e.key]: e.newValue }) && accessToken) render(); } });
 
 // ============================================================
 // COMPLETIONS STORAGE
@@ -2442,7 +2564,7 @@ async function saveBacklog() {
 
 async function manualRefresh() {
   showToast('Refreshing…');
-  await Promise.all([loadBacklog(), loadFocusHistory(), loadProjects()]);
+  await Promise.all([loadBacklog(), loadFocusHistory(), loadProjects(), loadPrefs()]);
   await maybeRolloverToday();
   if (maybeBackfillFromDeck()) await saveBacklog();
   render();
@@ -3292,6 +3414,13 @@ function fxRing(size, sw, done, goal) {
 const fxAdd = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const fxFmt = (d, o) => d.toLocaleDateString('en-US', o);
 
+function fxMonth(d) {
+  if (d > 0 && statsMonthOffset >= 0) return;
+  const h = document.querySelector('.fx-calhead'), top = h ? h.getBoundingClientRect().top : null;
+  statsMonthOffset += d; render();
+  const h2 = document.querySelector('.fx-calhead');
+  if (h2 && top !== null) window.scrollTo(0, window.scrollY + h2.getBoundingClientRect().top - top);
+}
 function renderFocus(activeTasks, doneTasks) {
   const G = FOCUS_GOAL, FD = focusDays(), now = new Date();
   const T = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -3370,9 +3499,9 @@ function renderFocus(activeTasks, doneTasks) {
       (fut ? '' : fxRing(50, 6, n) + `<span class="cnt">${n}</span>`) + (!fut && n >= G ? '<span class="star">★</span>' : '') + (n > G ? `<span class="xtra">+${n - G}</span>` : '') + '</div>';
   }
   out += `<div class="chart-card">
-    <div class="fx-calhead"><button class="hm-nav" onclick="statsMonthOffset--;render()">‹</button>
+    <div class="fx-calhead"><button class="hm-nav" onclick="fxMonth(-1)">‹</button>
       <div class="fx-num">${fxFmt(ref, { month: 'long', year: 'numeric' })}</div>
-      <button class="hm-nav ${statsMonthOffset >= 0 ? 'disabled' : ''}" onclick="if(statsMonthOffset<0){statsMonthOffset++;render();}">›</button></div>
+      <button class="hm-nav ${statsMonthOffset >= 0 ? 'disabled' : ''}" onclick="fxMonth(1)">›</button></div>
     <div class="fx-cal">${cells}</div>
     <div class="fx-pills"><span class="fx-pill acc">★ ${mHits} of ${mDays} day${mDays === 1 ? '' : 's'} hit</span><span class="fx-pill">✓ ${mTot} task${mTot === 1 ? '' : 's'}</span>
       ${isCur ? `<span class="fx-pill">${flame} ${streak.current}-day streak</span>${mDays ? `<span class="fx-pill">📈 on pace for ${Math.round(mTot / mDays * dim)}</span>` : ''}` : ''}</div>
@@ -3406,70 +3535,138 @@ function renderFocus(activeTasks, doneTasks) {
 // ---- TRENDS TAB ----
 const TRENDS_CHEV = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
+// ---- TRENDS TAB (v2: in vs out · forecast · ticker · pace race · project pulse) ----
+const TR_WEEKS = { '4w': 4, '12w': 12, '6m': 26, '1y': 52 };
+const TR_DAY = 864e5;
+const trMedian = a => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const trPath = pts => pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+function trSpark(vals, w, h, col) {
+  if (vals.length < 2) return `<svg class="tr-chart" viewBox="0 0 ${w} ${h}"></svg>`;
+  const mx = Math.max(...vals), mn = Math.min(...vals, 0), sx = w / (vals.length - 1), sy = v => h - (v - mn) / ((mx - mn) || 1) * h;
+  const pts = vals.map((v, i) => [i * sx, sy(v)]);
+  return `<svg class="tr-chart" viewBox="0 0 ${w} ${h}" style="max-height:${h + 4}px"><path d="${trPath(pts)} L${w} ${h} L0 ${h}Z" fill="color-mix(in srgb, ${col} 14%, transparent)"/><path d="${trPath(pts)}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="3" fill="${col}"/></svg>`;
+}
+function trData() {
+  const items = new Map();
+  tasks.forEach(t => items.set(t.title, { c: Date.parse(created[t.title]), d: t.done ? (Date.parse(t.doneAt || completions[t.title]) || 0) : NaN }));
+  Object.entries(completions).forEach(([title, iso]) => { if (!items.has(title)) items.set(title, { c: Date.parse(created[title]), d: Date.parse(iso) || 0 }); });
+  const all = [...items.values()];
+  const done = all.filter(x => x.d >= ALLTIME_START).map(x => x.d);
+  const added = Object.values(created).map(Date.parse).filter(x => !isNaN(x) && x >= ALLTIME_START);
+  const openAt = ts => { let n = 0; for (const x of all) if (!isNaN(x.c) && x.c <= ts && !(x.d <= ts)) n++; return n; };
+  const openAges = ts => all.filter(x => !isNaN(x.c) && x.c <= ts && !(x.d <= ts)).map(x => (ts - x.c) / TR_DAY);
+  const waits = (a, b) => all.filter(x => x.d >= a && x.d < b && !isNaN(x.c) && x.c <= x.d).map(x => (x.d - x.c) / TR_DAY);
+  const count = (arr, a, b) => { let n = 0; for (const v of arr) if (v >= a && v < b) n++; return n; };
+  return { all, done, added, openAt, openAges, waits, count };
+}
+
 function renderTrends(activeTasks, doneTasks) {
-  const totalDone = allTimeCompleted();
-  const series = getRangeSeries(trendsRange);
+  const D = trData(), now = new Date(), T = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const W0 = fxAdd(T, -T.getDay());                                  // Sunday of this week
+  const ds0 = new Date(ALLTIME_START), DS = fxAdd(new Date(ds0.getFullYear(), ds0.getMonth(), ds0.getDate()), -ds0.getDay());
+  const n = TR_WEEKS[trendsRange] || 12, cfg = TRENDS_RANGES[trendsRange] || TRENDS_RANGES['12w'];
+  const W = 760, short = d => fxFmt(d, { month: 'short', day: 'numeric' });
+  let out = `<div class="fx tr">`;
 
-  // Completed-by-category donut (from real completed tasks with tags)
-  const donutByTag = {};
-  tasks.filter(t=>t.done).forEach(t => { const k=t.tag||'untagged'; donutByTag[k]=(donutByTag[k]||0)+1; });
-  const donutSegs = Object.entries(donutByTag).map(([tag,count])=>({label:tag,count,color:tagDotColor(tag)})).sort((a,b)=>b.count-a.count);
+  // ---------- 1 · in vs out ----------
+  const ws = []; for (let i = n - 1; i >= 0; i--) { const w = fxAdd(W0, -7 * i); if (w >= DS) ws.push(w); }
+  const rows = ws.map(w => { const e = fxAdd(w, 7); return { w, out: D.count(D.done, +w, +e), inn: D.count(D.added, +w, +e) }; });
+  const tOut = rows.reduce((a, r) => a + r.out, 0), tIn = rows.reduce((a, r) => a + r.inn, 0), net = tOut - tIn;
+  {
+    const mx = Math.max(1, ...rows.map(r => Math.max(r.out, r.inn))), H = 220, mid = 110, bw = W / Math.max(rows.length, 1), sc = v => v / mx * (mid - 18);
+    const every = Math.ceil(rows.length / 6);
+    let g = `<line x1="0" x2="${W}" y1="${mid}" y2="${mid}" stroke="var(--border)" stroke-width="1.5"/>`;
+    rows.forEach((r, i) => { const x = i * bw + bw * .2, w = bw * .6, nt = r.out - r.inn, last = i === rows.length - 1;
+      g += `<rect x="${x}" y="${mid - sc(r.out)}" width="${w}" height="${sc(r.out)}" rx="${Math.min(4, w / 3)}" fill="var(--accent)"><title>${short(r.w)}: ${r.out} done</title></rect>`;
+      g += `<rect x="${x}" y="${mid + 2}" width="${w}" height="${sc(r.inn)}" rx="${Math.min(4, w / 3)}" fill="var(--progress-bg)"><title>${short(r.w)}: ${r.inn} added</title></rect>`;
+      g += `<circle cx="${x + w / 2}" cy="${mid - sc(nt) * .9}" r="${Math.min(4.5, w / 2.2)}" fill="${nt >= 0 ? 'var(--green)' : 'var(--orange)'}" stroke="var(--card)" stroke-width="1.5"/>`;
+      if ((rows.length - 1 - i) % every === 0) g += `<text class="tr-ax" x="${x + w / 2}" y="${H + 14}" text-anchor="middle">${last ? 'This wk' : short(r.w)}</text>`; });
+    out += `<div class="chart-card"><div class="tr-hdr"><div><div class="fx-lbl">In vs. out · ${cfg.label.toLowerCase()}</div>
+        <div class="fx-num tr-big" style="color:${net >= 0 ? 'var(--green)' : 'var(--orange)'}">${net > 0 ? '−' : net < 0 ? '+' : ''}${Math.abs(net)}</div>
+        <div class="fx-sub">${net > 0 ? 'Backlog is shrinking 🤙 You closed more than you added.' : net < 0 ? 'Backlog is growing. You added more than you closed.' : 'Holding steady. Closed exactly what you added.'}</div></div>
+        <button class="rng-drop" onclick="openTrendsRangeMenu(event)">${cfg.label} ${TRENDS_CHEV}</button></div>
+      ${rows.length ? `<svg class="tr-chart" viewBox="0 -4 ${W} 246">${g}</svg>` : '<div class="tr-empty">No history yet.</div>'}
+      <div class="tr-legend"><span><i style="background:var(--accent)"></i>Done</span><span><i style="background:var(--progress-bg)"></i>Added</span><span><i style="background:var(--green);border-radius:50%"></i>Net (green = shrinking)</span></div>
+      <div class="tr-kv"><div><span class="fx-lbl">Done</span><b>${tOut}</b></div><div><span class="fx-lbl">Added</span><b>${tIn}</b></div><div><span class="fx-lbl">Close rate</span><b>${tIn ? Math.round(tOut / tIn * 100) + '%' : '—'}</b></div></div></div>`;
+  }
 
-  // Active-by-category
-  const tagCounts = {};
-  activeTasks.forEach(t => { const k=t.tag||'untagged'; tagCounts[k]=(tagCounts[k]||0)+1; });
+  // ---------- 2 · backlog forecast ----------
+  {
+    const span = Math.max(7, Math.min(90, Math.round((T - new Date(ALLTIME_START)) / TR_DAY) + 1));
+    const days = []; for (let i = span - 1; i >= 0; i--) days.push(fxAdd(T, -i));
+    const vals = days.map((d, i) => i === days.length - 1 ? D.openAt(Date.now()) : D.openAt(+fxAdd(d, 1) - 1));
+    const k = Math.min(28, vals.length - 1), slope = k ? (vals.at(-1) - vals.at(-1 - k)) / k : 0, cur = vals.at(-1);
+    const fut = 45, tot = days.length + fut, H = 200, sx = W / (tot - 1), zeroIn = slope < 0 ? Math.ceil(cur / -slope) : null, endI = Math.min(fut, zeroIn ?? fut), endV = Math.max(0, cur + slope * endI);
+    const mx = Math.max(4, endV, ...vals) * 1.12, sy = v => H - v / mx * H;
+    const pts = vals.map((v, i) => [i * sx, sy(v)]);
+    let g = [0, .5, 1].map(f => { const v = Math.round(mx / 1.12 * f); return `<line x1="0" x2="${W}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--border)" stroke-dasharray="3 5"/><text class="tr-ax" x="${W + 6}" y="${sy(v) + 4}">${v}</text>`; }).join('');
+    g += `<path d="${trPath(pts)} L${pts.at(-1)[0]} ${H} L0 ${H}Z" fill="color-mix(in srgb, var(--accent) 16%, transparent)"/><path d="${trPath(pts)}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>`;
+    g += `<path d="M${pts.at(-1)[0]} ${pts.at(-1)[1]} L${(days.length - 1 + endI) * sx} ${sy(endV)}" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="6 6" fill="none"/>`;
+    g += `<circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="5" fill="var(--accent)" stroke="var(--card)" stroke-width="2"/>`;
+    g += `<text class="tr-ax" x="0" y="${H + 16}">${short(days[0])}</text><text class="tr-ax" x="${pts.at(-1)[0]}" y="${H + 16}" text-anchor="middle">Today</text><text class="tr-ax" x="${W}" y="${H + 16}" text-anchor="end">${short(fxAdd(T, fut))}</text>`;
+    const eta = zeroIn !== null ? fxAdd(T, zeroIn) : null, back = Math.min(30, vals.length - 1), ch = cur - vals.at(-1 - back);
+    out += `<div class="chart-card"><div class="tr-hdr"><div><div class="fx-lbl">Open right now</div><div class="fx-num tr-big">${cur}</div>
+        <div class="tr-delta ${ch <= 0 ? 'up' : 'dn'}">${ch === 0 ? '— no change' : (ch < 0 ? '▼ ' : '▲ ') + Math.abs(ch)} in the last ${back} days</div></div>
+        <div style="text-align:right"><div class="fx-lbl">At this pace</div><div class="fx-num" style="font-size:calc(28px * var(--fxs));margin-top:6px;color:var(--accent)">${eta ? (cur === 0 ? 'Done 🎉' : short(eta)) : 'Not yet'}</div><div class="fx-sub">${eta ? 'inbox zero, roughly' : 'backlog isn\'t shrinking yet'}</div></div></div>
+      <svg class="tr-chart" viewBox="0 -6 ${W + 30} ${H + 24}">${g}</svg>
+      <div class="tr-kv"><div><span class="fx-lbl">Burn rate</span><b>${slope < 0 ? (-slope * 7).toFixed(1) + '/wk' : '—'}</b></div><div><span class="fx-lbl">Peak · ${span}d</span><b>${Math.max(...vals)}</b></div><div><span class="fx-lbl">Low · ${span}d</span><b>${Math.min(...vals)}</b></div></div></div>`;
+  }
 
-  // Trend card: headline + delta + retimeable chart (line by default, bars optional)
-  const flip = `
-    <div class="chart-card">
-      <div class="kpi-head">
-        <div>
-          <div class="kpi-num">${series.total}</div>
-          <div class="kpi-sub">completed · ${series.cfg.label.toLowerCase()}</div>
-          ${trendsDeltaHTML(series.total, series.prevTotal, series.cfg)}
-        </div>
-        <button class="rng-drop" onclick="openTrendsRangeMenu(event)">${series.cfg.label} ${TRENDS_CHEV}</button>
-      </div>
-      ${trendsView==='bars' ? buildTrendBars(series.points) : buildTrendLine(series.points)}
-      <div class="flip-seg" style="margin-top:14px;margin-bottom:0">
-        <button class="${trendsView==='line'?'on':''}" onclick="trendsView='line';localStorage.setItem('trendsView','line');render()">Line</button>
-        <button class="${trendsView==='bars'?'on':''}" onclick="trendsView='bars';localStorage.setItem('trendsView','bars');render()">Bars</button>
-      </div>
-    </div>`;
-
-  let out = flip + `
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-value">${totalDone}</div><div class="stat-label">All-time completed</div></div>
-      <div class="stat-card"><div class="stat-value">${activeTasks.length}</div><div class="stat-label">Open tasks</div></div>
-    </div>`;
-
-  if (donutSegs.length > 0) {
-    out += `<div class="chart-card">
-      <div class="chart-title">Completed by category</div>
-      <div class="donut-row">
-        ${buildDonutChart(donutSegs)}
-        <div class="donut-legend">
-          ${donutSegs.map(s=>`<div class="legend-item">
-            <div class="legend-dot" style="background:${s.color}"></div>
-            <span class="legend-label">${s.label}</span>
-            <span class="legend-count">${s.count}</span>
-          </div>`).join('')}
-        </div>
-      </div>
+  // ---------- 6 · the ticker ----------
+  {
+    const cws = ws.filter(w => w < W0);              // complete weeks only
+    const per = f => cws.map(w => f(+w, +fxAdd(w, 7)));
+    const done = per((a, b) => D.count(D.done, a, b)), added = per((a, b) => D.count(D.added, a, b));
+    const open = per((a, b) => D.openAt(b - 1)), rate = done.map((d, i) => added[i] ? d / added[i] * 100 : (d ? 100 : 0));
+    const wait = per((a, b) => trMedian(D.waits(a, b))), age = per((a, b) => trMedian(D.openAges(b - 1)));
+    const R = [['Tasks done', 'per week', done, v => Math.round(v), false], ['Tasks added', 'per week', added, v => Math.round(v), true],
+      ['Open backlog', 'end of week', open, v => Math.round(v), true], ['Close rate', 'done ÷ added', rate, v => Math.round(v) + '%', false],
+      ['Median wait', 'days to done', wait, v => v.toFixed(1) + 'd', true], ['Median age', 'of open tasks', age, v => Math.round(v) + 'd', true]];
+    out += `<div class="chart-card"><div class="tr-hdr" style="margin-bottom:4px"><div class="fx-lbl">Last full week · vs. your average before it</div></div>
+      ${cws.length ? R.map(([nm, sb, a, f, lowGood]) => {
+        const last = a.at(-1), prev = a.slice(0, -1), avg = prev.length ? prev.reduce((x, y) => x + y, 0) / prev.length : null;
+        const ch0 = avg ? (last - avg) / avg * 100 : null, ch = ch0 !== null && Math.abs(ch0) < .5 ? 0 : ch0, good = ch === null || ch === 0 ? null : (lowGood ? ch < 0 : ch > 0), col = good === false ? 'var(--orange)' : good ? 'var(--green)' : 'var(--accent)';
+        return `<div class="tr-tick"><div class="nm">${nm}<small>${sb}</small></div><div class="v">${f(last)}</div>${trSpark(a, 260, 34, col)}<span class="tr-chip ${good === null ? '' : good ? 'up' : 'dn'}">${ch === null ? '—' : ch === 0 ? '≈ 0%' : (ch > 0 ? '▲ ' : '▼ ') + Math.abs(ch).toFixed(0) + '%'}</span></div>`; }).join('')
+        : '<div class="tr-empty">Check back after your first full week.</div>'}
     </div>`;
   }
 
-  if (Object.keys(tagCounts).length > 0) {
-    out += `<div class="chart-card">
-      <div class="chart-title">Active by category</div>
-      ${Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).map(([tag,count])=>`
-        <div class="tag-stat">
-          <span class="task-tag ${tagClass(tag)}" style="font-size:12px">${tag}</span>
-          <span style="font-size:15px;font-weight:600;color:var(--accent)">${count}</span>
-        </div>`).join('')}
-    </div>`;
+  // ---------- 7 · pace race ----------
+  {
+    const cum = start => { const a = []; let c = 0; for (let i = 0; i < 7; i++) { const d = fxAdd(start, i); c += D.count(D.done, +d, +fxAdd(d, 1)); a.push(c); } return a; };
+    const tw = cum(W0), lw = cum(fxAdd(W0, -7));
+    const prior = [1, 2, 3, 4].map(k => fxAdd(W0, -7 * k)).filter(w => w >= DS).map(cum);
+    const avg = [0, 1, 2, 3, 4, 5, 6].map(i => prior.length ? prior.reduce((s, a) => s + a[i], 0) / prior.length : 0);
+    const ti = T.getDay(), H = 200, mx = Math.max(3, ...lw, ...avg, ...tw) * 1.12, sx = W / 6, sy = v => H - v / mx * H;
+    const line = (a, k, col, dash, wd) => `<path d="${trPath(a.slice(0, k).map((v, i) => [i * sx, sy(v)]))}" fill="none" stroke="${col}" stroke-width="${wd}" ${dash ? 'stroke-dasharray="6 6"' : ''} stroke-linecap="round" stroke-linejoin="round"/>`;
+    let g = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => `<line x1="${i * sx}" x2="${i * sx}" y1="0" y2="${H}" stroke="var(--border)" stroke-dasharray="2 6"/><text class="tr-ax" x="${i * sx}" y="${H + 16}" text-anchor="middle" ${i === ti ? 'style="fill:var(--accent);font-weight:700"' : ''}>${d}</text>`).join('');
+    if (prior.length) g += line(avg, 7, 'var(--sub)', true, 2);
+    g += line(lw, 7, 'color-mix(in srgb, var(--accent) 40%, transparent)', false, 3) + (ti ? line(tw, ti + 1, 'var(--accent)', false, 4) : '');
+    g += `<circle cx="${ti * sx}" cy="${sy(tw[ti])}" r="6" fill="var(--accent)" stroke="var(--card)" stroke-width="2.5"/><text x="${ti * sx + (ti > 5 ? -12 : 10)}" y="${sy(tw[ti]) - 10}" text-anchor="${ti > 5 ? 'end' : 'start'}" class="tr-ax" style="font-weight:700;font-size:13px;fill:var(--accent)">${tw[ti]}</text>`;
+    const diff = tw[ti] - lw[ti], proj = Math.round(tw[ti] / (ti + Math.max(.25, now.getHours() / 24)) * 7);
+    out += `<div class="chart-card"><div class="tr-hdr"><div><div class="fx-lbl">Pace race · this week so far</div><div class="fx-num tr-big">${tw[ti]}</div>
+        <div class="tr-delta ${diff >= 0 ? 'up' : 'dn'}">${diff > 0 ? '▲ ' + diff + ' ahead of' : diff < 0 ? '▼ ' + -diff + ' behind' : 'Even with'} last week's pace</div></div>
+        <div style="text-align:right"><div class="fx-lbl">Projected</div><div class="fx-num" style="font-size:calc(28px * var(--fxs));margin-top:6px;color:var(--accent)">${proj}</div><div class="fx-sub">vs ${lw[6]} last week</div></div></div>
+      <svg class="tr-chart" viewBox="-14 -12 ${W + 28} ${H + 30}">${g}</svg>
+      <div class="tr-legend"><span><i style="background:var(--accent)"></i>This week</span><span><i style="background:color-mix(in srgb, var(--accent) 40%, transparent)"></i>Last week</span>${prior.length ? '<span><i style="background:var(--sub)"></i>' + prior.length + '-week avg</span>' : ''}</div></div>`;
   }
-  return out;
+
+  // ---------- 10 · project pulse ----------
+  if (pj.projects.length) {
+    const doneAt = c => { const t = pjTask(c); return t && t.done ? (Date.parse(t.doneAt || completions[t.title]) || 0) : null; };
+    out += `<div class="fx-lbl tr-sec">Project pulse</div><div class="tr-pp">${pj.projects.map(p => {
+      const tot = p.cards.length, times = p.cards.map(doneAt).filter(x => x !== null), dn = times.length, pct = tot ? dn / tot * 100 : 0;
+      const wait = p.cards.filter(c => !pjDone(c) && pjKind(pjListOf(p, c)) === 'waiting').length;
+      const burn = []; for (let i = 9; i >= 0; i--) { const e = +fxAdd(W0, 7 - 7 * i); burn.push(times.filter(x => x < e).length); }
+      const recent = times.filter(x => x >= Date.now() - 28 * TR_DAY).length, left = tot - dn;
+      const eta = !tot ? '—' : !left ? 'Done 🎉' : recent ? short(fxAdd(T, Math.ceil(left / (recent / 28)))) : '—';
+      return `<div class="chart-card" style="cursor:pointer" onclick="pjActive='${p.id}';switchTab('projects')"><div class="fx-num" style="font-size:calc(21px * var(--fxs));line-height:1.1">${pjh(p.name)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><div class="fx-num" style="font-size:calc(34px * var(--fxs))">${dn}<span style="font-size:.5em;color:var(--sub)">/${tot}</span></div><span class="fx-pill ${pct >= 70 ? 'acc' : ''}">${Math.round(pct)}%</span></div>
+        <div class="tr-pbar"><i style="width:${pct.toFixed(1)}%"></i></div>
+        <div style="margin:10px 0 4px">${trSpark(burn, 260, 44, 'var(--accent)')}</div><div class="fx-sub" style="font-size:11.5px">Cards done · last 10 weeks</div>
+        <div class="tr-kv" style="grid-template-columns:1fr 1fr;margin-top:10px"><div><span class="fx-lbl">Waiting</span><b>${wait}</b></div><div><span class="fx-lbl">ETA</span><b>${eta}</b></div></div></div>`; }).join('')}</div>`;
+  }
+  return out + `</div>`;
 }
 
 // ---- FOCUS STATS HELPERS ----
@@ -3672,7 +3869,7 @@ function openTrendsRangeMenu(ev) {
   const html = Object.entries(TRENDS_RANGES).map(([v,c]) =>
     `<button class="pop-row ${trendsRange===v?'on':''}" data-v="${v}"><span>${c.label}</span>${trendsRange===v?'<span class="tick">✓</span>':''}</button>`).join('');
   const { ov, close } = popoverMenu(ev.currentTarget, html);
-  ov.querySelectorAll('[data-v]').forEach(b => b.onclick = () => { trendsRange = b.dataset.v; localStorage.setItem('trendsRange', trendsRange); close(); render(); });
+  ov.querySelectorAll('[data-v]').forEach(b => b.onclick = () => { trendsRange = b.dataset.v; localStorage.setItem('trendsRange', trendsRange); close(); const y = window.scrollY; render(); window.scrollTo(0, y); });
 }
 
 // ---- TASK CARD (backlog) ----
@@ -3909,8 +4106,22 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.04-2"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.04-5"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.04-5", date: "Oct 4, 2026", items: [
+    ["new", "Your look follows you: style, glass color and light/dark now sync to every device you sign in on"],
+  ]},
+  { v: "2026.10.04-4", date: "Oct 4, 2026", items: [
+    ["new", "Trends rebuilt: In vs. out shows whether your backlog is shrinking or growing"],
+    ["new", "Backlog forecast projects when you'll hit inbox zero at your current pace"],
+    ["new", "The ticker: every key number with a sparkline and how last week compares"],
+    ["new", "Pace race: this week's running total vs. last week and your recent average"],
+    ["new", "Project pulse: progress, waiting cards and a rough finish date for each project"],
+  ]},
+  { v: "2026.10.04-3", date: "Oct 4, 2026", items: [
+    ["improved", "Nav, tabs and the Projects board now use your style's fonts, so every skin feels like one piece"],
+    ["fixed", "Flipping months on the Stats calendar keeps you right where you were instead of jumping to the top"],
+  ]},
   { v: "2026.10.04-2", date: "Oct 4, 2026", items: [
     ["new", "Stats glow-up: today's 3-part ring, your streak trail and a 7-day row of rings"],
     ["new", "Year in squares: a heatmap of every day for the past year"],
@@ -4083,7 +4294,7 @@ async function boot() {
   }
 
   try {
-    await Promise.all([loadBacklog(), loadFocusHistory(), loadProjects()]);
+    await Promise.all([loadBacklog(), loadFocusHistory(), loadProjects(), loadPrefs()]);
     await maybeRolloverToday();
     if (maybeBackfillFromDeck()) await saveBacklog();
     render();
@@ -5042,7 +5253,8 @@ async function autoSync(force) {
   syncBusy = true; lastAutoSync = Date.now();
   try {
     let changed = false;
-    const [rb, rp] = await Promise.all([graphFetch(CONFIG.FILE_PATH), graphFetch(PJ_PATH)]);
+    const [rb, rp, rf] = await Promise.all([graphFetch(CONFIG.FILE_PATH), graphFetch(PJ_PATH), graphFetch(PREFS_PATH)]);
+    if (await loadPrefs(rf)) changed = true;
     if (blSaving || pjSaving || pjSaveT) return;                      // a local edit started meanwhile — try next tick
     if (rb && rb.ok) { const txt = await rb.text(); if (txt !== backlogBase && txt !== rawMd) { rawMd = txt; backlogBase = txt; parseTasks(); changed = true; } }
     if (rp && rp.ok) { const txt = await rp.text(); if (txt !== pjBase) { try { const d = JSON.parse(txt); if (d && Array.isArray(d.projects)) { pj = Object.assign({ tomb: [] }, d); pjBase = txt; localStorage.setItem('pj_cache', txt); changed = true; } } catch {} } }

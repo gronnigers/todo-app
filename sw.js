@@ -2,7 +2,7 @@
    Bump VERSION on every release and keep it in sync with APP_VERSION in index.html.
    A new worker installs and WAITS; the page shows "Update ready" and sends
    SKIP_WAITING when you tap Update. Never caches Graph / login calls. */
-const VERSION = "2026.10.04-2";
+const VERSION = "2026.10.04-5";
 const PREFIX = "donezo-";
 const CACHE = PREFIX + VERSION;
 const SHELL = ["./", "index.html", "manifest.json", "icon-180.png", "icon-192.png", "icon-512.png", "icon-add-96.png"];
