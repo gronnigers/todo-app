@@ -1400,6 +1400,72 @@
   :root[data-skin="cork"] .modal, :root[data-skin="cork"] .pop-panel { border-radius: 3px; }
 
   @media (prefers-reduced-motion: reduce) { :root[data-skin] body::after { animation: none; } }
+  /* === IN-APP UPDATES (ported from Dwellness) === */
+  .upd {
+    position: fixed; z-index: 85; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom) + 80px);
+    width: calc(100% - 32px); max-width: 420px;
+    display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px;
+    background: var(--sheet, var(--card)); color: var(--text);
+    border: 1.5px solid var(--accent); border-radius: 16px;
+    backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    font-family: var(--font-ui, inherit);
+    animation: updIn .45s cubic-bezier(.32,1.2,.54,1) both, updGlow 2.6s ease-in-out .5s infinite;
+  }
+  @media (min-width: 860px) { .upd { bottom: 24px; left: calc(50% + 116px); } }
+  .upd.out { animation: updOut .25s ease forwards; }
+  @keyframes updIn { from { opacity: 0; transform: translate(-50%, 24px) scale(.96); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+  @keyframes updOut { to { opacity: 0; transform: translate(-50%, 18px) scale(.97); } }
+  @keyframes updGlow {
+    0%,100% { box-shadow: 0 10px 30px rgba(0,0,0,.25), 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+    50%     { box-shadow: 0 10px 30px rgba(0,0,0,.25), 0 0 22px 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+  }
+  .upd-ic {
+    flex: 0 0 auto; width: 38px; height: 38px; border-radius: 11px;
+    display: grid; place-items: center; background: var(--accent-light); color: var(--accent);
+  }
+  .upd-ic svg { width: 20px; height: 20px; }
+  .upd-t { flex: 1; min-width: 0; line-height: 1.25; }
+  .upd-t b { display: block; font-size: 15px; font-weight: 700; }
+  .upd-t span { font-size: 12.5px; color: var(--sub); }
+  .upd button {
+    flex: 0 0 auto; border: none; border-radius: 10px; padding: 9px 13px;
+    font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .upd .later { background: none; color: var(--sub); padding: 9px 8px; }
+  .upd .go { background: var(--accent); color: #fff; }
+  html[data-skin="glass"][data-theme="dark"] .upd .go { color: #0a0d1c; }
+  .upd .go:disabled { opacity: .7; cursor: default; }
+  @media (prefers-reduced-motion: reduce) { .upd, .upd.out { animation: none; } }
+
+  .wn-hero { text-align: center; margin: 2px 0 14px; }
+  .wn-hero .wn-ic {
+    width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 16px;
+    display: grid; place-items: center; background: var(--accent-light); color: var(--accent);
+  }
+  .wn-hero .wn-ic svg { width: 26px; height: 26px; }
+  .wn-hero h2 { margin-bottom: 4px !important; }
+  .wn-hero p { font-size: 13.5px; color: var(--sub); }
+  .wn-body { max-height: 52vh; overflow-y: auto; margin: 0 -4px 14px; padding: 0 4px; }
+  .wn-group { margin-bottom: 12px; }
+  .wn-group h4 {
+    display: flex; align-items: center; gap: 7px; margin: 0 0 7px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sub);
+  }
+  .wn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .wn-dot.improved { background: var(--green); }
+  .wn-dot.fixed { background: var(--orange); }
+  .wn-item {
+    background: var(--tag-bg); border-radius: 10px; padding: 9px 12px; margin-bottom: 6px;
+    font-size: 14px; line-height: 1.4;
+  }
+  .wn-item small { display: block; font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+  .about-row { flex-wrap: wrap; gap: 10px; }
+  .about-l { display: flex; flex-direction: column; gap: 2px; }
+  .about-v { font-size: 12.5px; color: var(--sub); }
+  .about-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .about-btns .theme-btn { background: var(--tag-bg); color: var(--text); padding: 7px 11px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -3116,6 +3182,13 @@ function renderStats(el, activeTasks, doneTasks) {
         <button class="theme-btn ${themeMode==='dark'?'active':''}" onclick="setTheme('dark')">Dark</button>
       </div>
     </div>
+    <div class="theme-row about-row">
+      <div class="about-l"><span class="theme-label">Donezo</span><span class="about-v">Version ${APP_VERSION}</span></div>
+      <div class="about-btns">
+        <button class="theme-btn" onclick="checkForUpdate(true)">Check for updates</button>
+        <button class="theme-btn" onclick="showWhatsNew(null,true)">What's new</button>
+      </div>
+    </div>
     <button class="signout-link" onclick="signOut()">Sign out</button>
     <div style="height:16px"></div>`;
 
@@ -3682,7 +3755,144 @@ document.addEventListener('keydown', e => {
 // ============================================================
 // BOOT
 // ============================================================
+// ============================================================
+// IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
+// Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
+// ============================================================
+const APP_VERSION = "2026.10.04-1"; // keep in sync with VERSION in sw.js
+const CHANGELOG = [
+  { v: "2026.10.04-1", date: "Oct 4, 2026", items: [
+    ["new", "Update notifications: when a new version is out you'll get an “Update ready” card, one tap to update"],
+    ["new", "What's new: release notes pop up after an update, and you can re-read them any time from Stats"],
+    ["new", "Styles: switch between Glass, Vinyl, Moleskine and Corkboard from the palette button"],
+    ["new", "On Deck: queue extra tasks for a busy day; they slide into Today once your 3 focus tasks are done"],
+    ["improved", "Every task you finish counts toward the day's stats, even if it wasn't on Today"],
+  ]},
+];
+const LS_SEEN = 'dz_seen_version';
+const IC_REFRESH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 4v5h-5"/></svg>';
+const IC_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>';
+
+let swReg = null, updWorker = null, swReloading = false;
+
+function askVersion(w) {
+  return new Promise(res => {
+    try {
+      const ch = new MessageChannel();
+      ch.port1.onmessage = e => res(e.data);
+      w.postMessage("GET_VERSION", [ch.port2]);
+      setTimeout(() => res(null), 1500);
+    } catch { res(null); }
+  });
+}
+async function onWaiting(w) {
+  if (!w || !navigator.serviceWorker.controller) return; // first install: nothing to swap
+  const v = await askVersion(w);
+  if (v && v === APP_VERSION) { w.postMessage("SKIP_WAITING"); return; } // page already newer than the old worker
+  updWorker = w;
+  showUpdateBanner(v);
+}
+function showUpdateBanner(v) {
+  if (document.querySelector('.upd')) return;
+  const el = document.createElement('div');
+  el.className = 'upd';
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<div class="upd-ic">${IC_REFRESH}</div>
+    <div class="upd-t"><b>Update ready</b><span>${v ? 'Version ' + esc(v) : 'A new version of Donezo is ready'}</span></div>
+    <button class="later">Later</button><button class="go">Update</button>`;
+  el.querySelector('.later').onclick = () => { el.classList.add('out'); setTimeout(() => el.remove(), 260); };
+  el.querySelector('.go').onclick = e => applyUpdate(e.currentTarget);
+  document.body.appendChild(el);
+}
+async function applyUpdate(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Updating…'; }
+  // don't lose anything mid-save
+  try {
+    if (pjSaveT) { clearTimeout(pjSaveT); await pjFlush(); }
+    const t0 = Date.now();
+    while ((blSaving || pjSaving) && Date.now() - t0 < 3000) await new Promise(r => setTimeout(r, 100));
+  } catch {}
+  if (updWorker) updWorker.postMessage("SKIP_WAITING"); else location.reload();
+  setTimeout(() => { if (!swReloading) location.reload(); }, 4000); // safety net
+}
+async function checkForUpdate(manual) {
+  if (!swReg) { if (manual) showToast("Updates aren't available in this browser"); return; }
+  try { await swReg.update(); } catch {}
+  if (swReg.waiting) onWaiting(swReg.waiting);
+  else if (manual) setTimeout(() => {
+    if (swReg.waiting) onWaiting(swReg.waiting);
+    else if (!swReg.installing) showToast(`You're up to date · ${APP_VERSION}`);
+    else showToast('Downloading update…');
+  }, 1200);
+}
+function initUpdates() {
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (swReloading || !updWorker) return; // only reload when you tapped Update (not on first install)
+    swReloading = true; location.reload();
+  });
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    swReg = reg;
+    if (reg.waiting) onWaiting(reg.waiting);
+    reg.addEventListener('updatefound', () => {
+      const w = reg.installing; if (!w) return;
+      w.addEventListener('statechange', () => { if (w.state === 'installed') onWaiting(w); });
+    });
+    setInterval(() => checkForUpdate(false), 15 * 60e3);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(false); });
+  }).catch(() => {});
+}
+
+const verKey = v => String(v || '').split(/[.\-]/).map(n => parseInt(n, 10) || 0);
+function cmpVer(a, b) {
+  const x = verKey(a), y = verKey(b);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+  return 0;
+}
+function showWhatsNew(fromVer, manual) {
+  const entries = CHANGELOG
+    .filter(e => cmpVer(e.v, APP_VERSION) <= 0 && (fromVer ? cmpVer(e.v, fromVer) > 0 : true))
+    .slice(0, fromVer ? undefined : (manual ? 3 : 1));
+  if (!entries.length) { if (manual) showToast(`You're up to date · ${APP_VERSION}`); return; }
+  const LABEL = { new: 'New', improved: 'Improved', fixed: 'Fixed' };
+  const groups = { new: [], improved: [], fixed: [] };
+  entries.forEach(e => e.items.forEach(([t, txt]) => (groups[t] || groups.new).push({ txt, v: e.v, date: e.date })));
+  const multi = entries.length > 1;
+  const body = Object.keys(groups).filter(k => groups[k].length).map(k => `
+    <div class="wn-group"><h4><span class="wn-dot ${k}"></span>${LABEL[k]}</h4>
+      ${groups[k].map(i => `<div class="wn-item">${esc(i.txt)}${multi ? `<small>${esc(i.date || i.v)}</small>` : ''}</div>`).join('')}
+    </div>`).join('');
+  const sub = fromVer && multi ? `${entries.length} updates since you last looked` : `Version ${APP_VERSION}`;
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.innerHTML = `<div class="modal">
+    <div class="wn-hero"><div class="wn-ic">${IC_SPARK}</div>
+      <h2>${manual ? "You're up to date" : "What's new"}</h2><p>${sub}</p></div>
+    <div class="wn-body">${body}</div>
+    <div class="modal-btns"><button class="btn-primary">Got it</button></div>
+  </div>`;
+  const close = () => { ov.classList.remove('visible'); setTimeout(() => ov.remove(), 200); };
+  ov.querySelector('.btn-primary').onclick = close;
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  document.body.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('visible'));
+}
+function maybeShowWhatsNew() {
+  let seen = null;
+  try { seen = localStorage.getItem(LS_SEEN); } catch {}
+  if (!seen) {
+    // brand-new install: don't greet with release notes
+    const used = localStorage.getItem('ms_token') || localStorage.getItem('completions');
+    if (!used) { try { localStorage.setItem(LS_SEEN, APP_VERSION); } catch {} return; }
+    seen = CHANGELOG[1] ? CHANGELOG[1].v : null; // existing user: show this release
+  }
+  if (seen && cmpVer(seen, APP_VERSION) >= 0) return;
+  try { localStorage.setItem(LS_SEEN, APP_VERSION); } catch {}
+  setTimeout(() => showWhatsNew(seen), 700);
+}
+
 async function boot() {
+  initUpdates();
   const app = document.getElementById('app');
   app.innerHTML = `<div class="loading-screen"><div class="spinner"></div></div>`;
 
@@ -3721,6 +3931,7 @@ async function boot() {
     await maybeRolloverToday();
     if (maybeBackfillFromDeck()) await saveBacklog();
     render();
+    maybeShowWhatsNew();
     if (!syncError) await migrateTags();
     // Handle iOS Shortcut: ?action=add → open Add Task modal.
     // Guard on accessToken: a 401 during load calls signOut() which sets
