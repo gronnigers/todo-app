@@ -1442,6 +1442,84 @@
     :root[data-skin="cork"] .nav-item.active svg { color: var(--accent); }
   }
 
+  /* === SKIN TYPE: dialogs + sheets (task editor, project card sheet, pickers) === */
+  /* Moleskine — write on the ruled line */
+  :root[data-skin="moleskine"] .modal input, :root[data-skin="moleskine"] .modal select, :root[data-skin="moleskine"] .pj-field {
+    font-family: var(--font-pen); font-size: 26px; line-height: 1.1; padding: 8px 6px 6px; color: var(--text);
+    background: transparent; border: 0; border-bottom: 1.5px solid var(--rule); border-radius: 0; }
+  :root[data-skin="moleskine"] .modal input:focus, :root[data-skin="moleskine"] .modal select:focus, :root[data-skin="moleskine"] .pj-field:focus { border-bottom-color: var(--accent); }
+  :root[data-skin="moleskine"] .modal textarea, :root[data-skin="moleskine"] .pj-notes {
+    font-family: var(--font-pen); font-size: 23px; line-height: 28px; padding: 4px 8px; border-radius: 0; border: 0; border-left: 1.5px solid var(--margin);
+    background: repeating-linear-gradient(transparent 0 27px, var(--rule) 27px 28px); background-attachment: local; }
+  :root[data-skin="moleskine"] .modal input::placeholder, :root[data-skin="moleskine"] .modal textarea::placeholder, :root[data-skin="moleskine"] .pj-field::placeholder, :root[data-skin="moleskine"] .pj-notes::placeholder { color: #8a93ad; }
+  :root[data-skin="moleskine"] .modal-btns button, :root[data-skin="moleskine"] .btn-danger-outline, :root[data-skin="moleskine"] .pj-link-btn,
+  :root[data-skin="moleskine"] .pj-btn, :root[data-skin="moleskine"] .pj-chip, :root[data-skin="moleskine"] .pj-act { font-family: var(--font-pen); font-weight: 400; font-size: 25px; line-height: 1; }
+  :root[data-skin="moleskine"] .pj-act-title, :root[data-skin="moleskine"] .wn-item, :root[data-skin="moleskine"] .pj-lbl { font-family: var(--font-pen); font-weight: 400; }
+  :root[data-skin="moleskine"] .pj-act-title { font-size: 30px; } :root[data-skin="moleskine"] .wn-item { font-size: 21px; line-height: 1.15; } :root[data-skin="moleskine"] .pj-lbl { font-size: 19px; text-transform: none; letter-spacing: 0; }
+  :root[data-skin="moleskine"] .modal-btns button { padding: 12px 14px 10px; }
+  :root[data-skin="moleskine"] .pj-sh-head h2 { font-family: var(--font-pen); font-weight: 400; font-size: 32px; }
+  :root[data-skin="moleskine"] .pj-note, :root[data-skin="moleskine"] .pj-hist { font-family: var(--font-pen); font-size: 20px; line-height: 1.15; }
+  :root[data-skin="vinyl"] .pj-sh-head h2 { font-family: var(--font-display); font-weight: 400; letter-spacing: .08em; font-size: 26px; }
+  :root[data-skin="cork"] .pj-sh-head h2 { font-family: var(--font-marker); font-weight: 400; letter-spacing: .3px; font-size: 21px; }
+  :root[data-skin="cork"] .pj-lbl { font-family: var(--font-marker); font-weight: 400; letter-spacing: .4px; }
+  :root[data-skin="cork"] .pj-note, :root[data-skin="cork"] .pj-hist { font-family: 'Caveat', cursive; font-size: 19px; font-weight: 600; line-height: 1.2; }
+  /* Vinyl — Bebas buttons, mono details */
+  :root[data-skin="vinyl"] .modal input, :root[data-skin="vinyl"] .modal select, :root[data-skin="vinyl"] .pj-field { font-weight: 500; letter-spacing: .01em; border-radius: 8px; }
+  :root[data-skin="vinyl"] .modal textarea, :root[data-skin="vinyl"] .pj-notes { font: 14px/1.5 'Space Mono', ui-monospace, monospace; border-radius: 8px; }
+  :root[data-skin="vinyl"] .modal-btns button, :root[data-skin="vinyl"] .btn-danger-outline, :root[data-skin="vinyl"] .pj-link-btn, :root[data-skin="vinyl"] .pj-btn {
+    font-family: var(--font-display); font-weight: 400; font-size: 21px; letter-spacing: .12em; border-radius: 8px; }
+  :root[data-skin="vinyl"] .pj-act-title { font-family: var(--font-display); font-weight: 400; letter-spacing: .06em; font-size: 26px; }
+  :root[data-skin="vinyl"] .pj-lbl { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 400; letter-spacing: .1em; }
+  /* Corkboard — handwritten on an index card, marker buttons */
+  :root[data-skin="cork"] .modal input, :root[data-skin="cork"] .modal select, :root[data-skin="cork"] .pj-field {
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 25px; line-height: 1.1; padding: 8px 12px 6px; border-radius: 2px; background: #fff; }
+  :root[data-skin="cork"] .modal textarea, :root[data-skin="cork"] .pj-notes {
+    font-family: 'Caveat', cursive; font-weight: 500; font-size: 22px; line-height: 24px; border-radius: 2px;
+    background: repeating-linear-gradient(#fff 0 23px, #e3eefa 23px 24px); background-attachment: local; }
+  :root[data-skin="cork"] .modal-btns button, :root[data-skin="cork"] .btn-danger-outline, :root[data-skin="cork"] .pj-link-btn, :root[data-skin="cork"] .pj-btn {
+    font-family: var(--font-marker); font-weight: 400; font-size: 16px; letter-spacing: .4px; border-radius: 2px; }
+  :root[data-skin="cork"] .modal-btns .btn-primary { box-shadow: var(--shadow-sm); rotate: -.6deg; }
+  :root[data-skin="cork"] .pj-act-title { font-family: var(--font-marker); font-weight: 400; letter-spacing: .3px; }
+  :root[data-skin="cork"] .wn-item, :root[data-skin="cork"] .pj-chip { font-family: 'Caveat', cursive; font-weight: 700; font-size: 19px; line-height: 1.15; }
+
+  /* === PARKING (waiting room) === */
+  .bl-park-seg { margin-bottom: 12px; }
+  .pk-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); margin-left: 6px; vertical-align: 2px; }
+  .park-action { position: absolute; left: 0; top: 0; bottom: 0; width: 96px; background: var(--orange); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 18px; font-weight: 700; border-radius: 13px 0 0 13px; visibility: hidden; transition: filter .15s; }
+  .park-action span { font-size: 12px; }
+  .swipe-wrap.swipe-park .park-action { visibility: visible; }
+  .swipe-wrap.park-armed .park-action { filter: brightness(1.12) saturate(1.2); }
+  .swipe-wrap[data-park="unpark"] .park-action { background: var(--accent); }
+  .check-ring.pk-started { border-color: var(--orange); background: linear-gradient(90deg, var(--orange) 50%, transparent 50%); }
+  .check-ring.pk-waiting { border-color: var(--orange); border-style: dashed; }
+  .pk-note { font-size: 12.5px; color: var(--sub); font-style: italic; margin-top: 2px; }
+  .pk-chips { margin-top: 4px; }
+  .pk-chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: color-mix(in srgb, var(--orange) 15%, transparent); color: var(--orange); }
+  .pk-chip.due { background: var(--orange); color: #fff; }
+  .pk-head { display: flex; align-items: center; gap: 8px; }
+  .pk-ping { margin-left: auto; border: 0; cursor: pointer; font: 700 11.5px var(--font-ui); letter-spacing: 0; text-transform: none; padding: 4px 9px; border-radius: 8px; background: var(--accent-light); color: var(--accent); }
+  .pk-hint { text-align: center; font-size: 12px; color: var(--sub); margin: 14px 0 4px; }
+  .pk-modal h2 { line-height: 1.15; } .pk-tt { color: var(--sub); }
+  .pk-sub { font-size: 13px; color: var(--sub); margin: -8px 0 12px; line-height: 1.45; }
+  .pk-opts { display: grid; gap: 8px; margin-bottom: 10px; }
+  .pk-opt { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-radius: 12px; border: 1.5px solid var(--border); background: none; color: var(--text); text-align: left; cursor: pointer; font: 600 15px var(--font-ui); }
+  .pk-opt .ic { font-size: 20px; width: 24px; text-align: center; } .pk-opt small { display: block; font-weight: 400; font-size: 12px; color: var(--sub); }
+  .pk-opt.on { border-color: var(--accent); background: var(--accent-light); }
+  .pk-lbl { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 8px 2px 6px; }
+  .pk-chips2 { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .pk-c { border: 0; cursor: pointer; padding: 7px 12px; border-radius: 99px; background: var(--tag-bg); color: var(--text); font: 600 13px var(--font-ui); }
+  .pk-c.on { background: var(--accent); color: #fff; }
+  html[data-skin="glass"][data-theme="dark"] .pk-c.on { color: #0a0d1c; }
+  .pk-quote { font-size: 14px; font-style: italic; color: var(--text); background: var(--tag-bg); border-radius: 10px; padding: 9px 12px; margin: -2px 0 14px; }
+  .pk-acts { display: grid; gap: 6px; margin-top: 10px; }
+  .pk-acts button { text-align: left; padding: 11px 13px; border-radius: 11px; border: 1px solid var(--card-hairline); background: var(--tag-bg); color: var(--text); font: 600 14.5px var(--font-ui); cursor: pointer; }
+  :root[data-skin="moleskine"] .pk-opt, :root[data-skin="moleskine"] .pk-acts button, :root[data-skin="moleskine"] .pk-c { font-family: var(--font-pen); font-weight: 400; font-size: 21px; }
+  :root[data-skin="moleskine"] .pk-opt small { font-size: 16px; } :root[data-skin="moleskine"] .pk-note, :root[data-skin="moleskine"] .pk-quote { font-family: var(--font-pen); font-style: normal; font-size: 18px; }
+  :root[data-skin="vinyl"] .pk-opt, :root[data-skin="vinyl"] .pk-acts button { letter-spacing: .01em; } :root[data-skin="vinyl"] .pk-chip, :root[data-skin="vinyl"] .pk-c { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 400; }
+  :root[data-skin="cork"] .pk-opt, :root[data-skin="cork"] .pk-acts button { font-family: var(--font-marker); font-weight: 400; font-size: 14px; border-radius: 2px; }
+  :root[data-skin="cork"] .pk-opt small { font-family: 'Caveat', cursive; font-size: 16px; } :root[data-skin="cork"] .pk-c { font-family: 'Caveat', cursive; font-weight: 700; font-size: 17px; border-radius: 3px; }
+  :root[data-skin="cork"] .pk-note, :root[data-skin="cork"] .pk-quote { font-family: 'Caveat', cursive; font-style: normal; font-size: 17px; font-weight: 600; }
+
   /* === STATS v2: today rings · year in squares · ring calendar · trophy case === */
   .fx { --fxd: var(--font-ui); --fxw: 800; --fxs: 1; --fxls: -.02em; }
   :root[data-skin="vinyl"] .fx { --fxd: var(--font-display); --fxw: 400; --fxs: 1.15; --fxls: .04em; }
@@ -1646,6 +1724,7 @@
       <button class="btn-primary" id="modal-submit-btn" onclick="submitModal()">Add Task</button>
     </div>
     <button class="pj-link-btn hidden" id="modal-link-btn" onclick="pjLinkFromModal()">📁 Add to a project…</button>
+    <button class="pj-link-btn hidden" id="modal-park-btn" onclick="parkFromModal()">⏸ Park…</button>
     <button class="btn-danger-outline hidden" id="modal-delete-btn" onclick="deleteFromModal()">Delete Task</button>
   </div>
 </div>
@@ -2592,6 +2671,8 @@ function parseTasks() {
     const isTomorrow = /\[tomorrow\]/.test(line);
     const isBonus = /\[bonus\]/.test(line);
     const isOnDeck = /\[ondeck\]/.test(line);
+    const parkM = line.match(/\[park:(started|waiting):([^\]]+)\]/), waitM = line.match(/\[waiton:([^\]]*)\]/),
+          nudgeM = line.match(/\[nudge:(\d+)\]/), pnoteM = line.match(/\[pnote:([^\]]*)\]/), pingM = line.match(/\[pinged:([^\]]+)\]/);
 
     // Strip [created:...], [done:...], [notes:...], [tomorrow], [bonus], [ondeck] before main parse
     const cleanLine = line
@@ -2602,7 +2683,8 @@ function parseTasks() {
       .replace(/\s*\[bonus\]/g, '')
       .replace(/\s*\[card:[^\]]+\]/g, '')
       .replace(/\s*\[focus\]/g, '')
-      .replace(/\s*\[ondeck\]/g, '');
+      .replace(/\s*\[ondeck\]/g, '')
+      .replace(/\s*\[(?:park|waiton|nudge|pnote|pinged):[^\]]*\]/g, '');
 
     let m = cleanLine.match(/^- \[( |x)\] (.+?)(?:\s+\(([A-Za-z0-9][\w -]*)\))?(\s+\[today(?::([^\]]+))?\])?$/);
     if (m && m[3] && /\s/.test(m[3]) && !(readTagRegistry() || []).includes(m[3].toLowerCase()) && !TAG_COLORS[m[3].toLowerCase()]) {   // "(Function Health)" etc. is part of the title, not a tag
@@ -2625,7 +2707,10 @@ function parseTasks() {
         lineIndex: i,
         notes: notesRaw !== null ? decodeNotes(notesRaw) : null,
         cardId: cardMatch ? cardMatch[1] : null,
-        focus: isFocus, doneAt: doneTs || null
+        focus: isFocus, doneAt: doneTs || null,
+        parked: parkM ? parkM[1] : null, parkedAt: parkM ? new Date(parkM[2]) : null,
+        waitOn: waitM ? decodeNotes(waitM[1]) : '', nudge: nudgeM ? +nudgeM[1] : 5,
+        pnote: pnoteM ? decodeNotes(pnoteM[1]) : '', pingedAt: pingM ? new Date(pingM[1]) : null
       });
     }
   });
@@ -2730,7 +2815,7 @@ async function editTask(lineIndex, oldTitle, newTitle, newTag, newNotes) {
   const isDone = line.includes('- [x]');
   // Preserve ALL existing bracket metadata (created/done/today/tomorrow/bonus);
   // only the title, tag, and notes are being rewritten here.
-  const keptFlags = (line.match(/\s*\[(?:created|done|today|tomorrow|bonus|card|focus)(?::[^\]]*)?\]/g) || []).join('');
+  const keptFlags = (line.match(/\s*\[(?:created|done|today|tomorrow|bonus|card|focus|ondeck|park|waiton|nudge|pnote|pinged)(?::[^\]]*)?\]/g) || []).join('');
   const notesFlag = newNotes ? ` [notes:${encodeNotes(newNotes)}]` : '';
   const box = isDone ? '- [x]' : '- [ ]';
   const tagPart = newTag ? ` (${newTag})` : '';
@@ -2793,6 +2878,7 @@ function openAddModal() {
   document.getElementById('modal-task-notes').value = '';
   document.getElementById('modal-delete-btn').classList.add('hidden');
   document.getElementById('modal-link-btn').classList.add('hidden');
+  document.getElementById('modal-park-btn').classList.add('hidden');
   populateTagSelect(null);
   showModal();
 }
@@ -2804,6 +2890,8 @@ function openEditModal(task) {
   document.getElementById('modal-task-notes').value = task.notes || '';
   document.getElementById('modal-delete-btn').classList.remove('hidden');
   document.getElementById('modal-link-btn').classList.toggle('hidden', !!(task.done || task.cardId));
+  const pkb = document.getElementById('modal-park-btn');
+  pkb.classList.toggle('hidden', !!(task.done || task.cardId)); pkb.textContent = task.parked ? '⏸ Edit park…' : '⏸ Park…';
   populateTagSelect(task.tag || null);
   showModal();
 }
@@ -3060,6 +3148,9 @@ function navItem(tab, icon, label) {
 // ---- BACKLOG TAB ----
 function renderBacklog(el, activeTasks, doneTasks) {
   const pjGrouped = !searchQ && !filterTag;
+  const parkedAll = activeTasks.filter(t => t.parked);
+  if (!parkedAll.length && blView === 'parked') blView = 'active';
+  activeTasks = activeTasks.filter(t => !t.parked);
   let filtered = pjGrouped ? activeTasks.filter(t => !(t.cardId && pjFind(t.cardId)[1])) : activeTasks;
   if (filterTag) filtered = filtered.filter(t => (t.tag||'').toLowerCase() === filterTag);
   if (searchQ) filtered = filtered.filter(t=>t.title.toLowerCase().includes(searchQ.toLowerCase()));
@@ -3079,6 +3170,15 @@ function renderBacklog(el, activeTasks, doneTasks) {
   let html = '';
   // Active task count header
   const countLabel = (searchQ || filterTag) ? `${filtered.length} of ${activeTasks.length}` : `${activeTasks.length}`;
+  if (parkedAll.length) html += `<div class="seg-ctrl bl-park-seg">
+      <button class="seg-btn ${blView==='active'?'active':''}" onclick="blSetView('active')">Active · ${activeTasks.length}</button>
+      <button class="seg-btn ${blView==='parked'?'active':''}" onclick="blSetView('parked')">Parked · ${parkedAll.length}${parkedAll.some(parkDue) ? '<span class="pk-dot"></span>' : ''}</button></div>`;
+  if (blView === 'parked') {
+    let P = parkedAll;
+    if (filterTag) P = P.filter(t => (t.tag||'').toLowerCase() === filterTag);
+    if (searchQ) P = P.filter(t => t.title.toLowerCase().includes(searchQ.toLowerCase()));
+    html += parkedViewHTML(P);
+  } else {
   html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 2px;">
     <span style="font-size:13px;font-weight:600;color:var(--sub);letter-spacing:.3px;">${countLabel} active task${activeTasks.length===1?'':'s'}</span>
   </div>`;
@@ -3104,6 +3204,7 @@ function renderBacklog(el, activeTasks, doneTasks) {
     </button>`;
     if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
   }
+  }
   const eeBlock = `<div class="pj-bighead pj-collapse-head" data-ee-collapse><span class="pj-chev ${eeCollapsed ? '' : 'open'}">›</span>To Do List <span class="pj-hcount">${filtered.length}</span></div>` + (eeCollapsed ? '' : html);
   if (pjGrouped && blDesktop()) {
     const colE = `<div class="bl-col glass-panel"><div class="bl-col-inner">${eeBlock}</div></div>`;
@@ -3115,6 +3216,141 @@ function renderBacklog(el, activeTasks, doneTasks) {
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
   attachTaskEvents(el);
+  el.querySelectorAll('[data-pk-ping]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); parkPinged(b.dataset.pkPing.split(',').map(Number)); }));
+}
+
+// ============================================================
+// PARKING — the Waiting room. A task can be parked as "started" (partway done) or
+// "waiting" on someone/something. Parked tasks leave Today/Tomorrow/On Deck and live
+// in Backlog → Parked, grouped by who you're waiting on, with a nudge after N days.
+// Stored inline on the backlog.md line: [park:kind:ISO] [waiton:x] [nudge:n] [pnote:x] [pinged:ISO]
+// ============================================================
+let blView = 'active';
+function blSetView(v) { blView = v; const y = window.scrollY; render(); window.scrollTo(0, y); }
+function parkDays(t) { const from = t.pingedAt || t.parkedAt; return from && !isNaN(from) ? Math.max(0, Math.floor((Date.now() - from) / 864e5)) : 0; }
+function parkAge(t) { return t.parkedAt && !isNaN(t.parkedAt) ? Math.max(0, Math.floor((Date.now() - t.parkedAt) / 864e5)) : 0; }
+function parkDue(t) { return !t.done && t.parked === 'waiting' && t.nudge > 0 && parkDays(t) >= t.nudge; }
+function parkLine(t) {
+  const d = parkAge(t), age = d === 0 ? 'today' : d + 'd';
+  const chip = t.parked === 'waiting' ? `⏳ ${t.waitOn ? 'Waiting on ' + pjh(t.waitOn) : 'Waiting'} · ${age}` : `🚧 Started · ${age}`;
+  return `${t.pnote ? `<div class="pk-note">${pjh(t.pnote)}</div>` : ''}<div class="pk-chips"><span class="pk-chip ${parkDue(t) ? 'due' : ''}">${chip}</span></div>`;
+}
+function parkedViewHTML(P) {
+  if (!P.length) return `<div class="bl-empty" style="padding:40px 16px;text-align:center;color:var(--sub)">Nothing parked here.</div>`;
+  const groups = new Map();
+  P.forEach(t => { const k = t.parked === 'started' ? '\u0000started' : (t.waitOn || '').toLowerCase();
+    if (!groups.has(k)) groups.set(k, { label: t.parked === 'started' ? 'Started' : (t.waitOn || 'something'), kind: t.parked, items: [] }); groups.get(k).items.push(t); });
+  const arr = [...groups.values()].sort((a, b) => (a.kind === 'started') - (b.kind === 'started') || Math.max(...b.items.map(parkDays)) - Math.max(...a.items.map(parkDays)));
+  return arr.map(g => { g.items.sort((a, b) => (a.parkedAt || 0) - (b.parkedAt || 0));
+    const due = g.items.filter(parkDue), d = Math.max(...g.items.map(parkDays));
+    return `<div class="section-label pk-head"><span>${g.kind === 'started' ? '🚧 Started' : '⏳ ' + pjh(g.label)}</span>${due.length ? `<button class="pk-ping" data-pk-ping="${due.map(t => t.lineIndex).join(',')}" title="Tap once you've followed up — resets the nudge">${d}d · ping?</button>` : ''}</div>` + g.items.map(taskCard).join(''); }).join('')
+    + `<div class="pk-hint">${matchMedia('(hover: none)').matches ? 'Swipe right on a parked task to unpark it, or tap it for options.' : 'Click a parked task for options.'}</div>`;
+}
+function parkRecent() {
+  const s = new Map(); const add = x => { if (x && !s.has(x.toLowerCase())) s.set(x.toLowerCase(), x); };
+  tasks.filter(t => !t.done && t.parked === 'waiting').forEach(t => add(t.waitOn));
+  try { JSON.parse(localStorage.getItem('dz_waiton_recent') || '[]').forEach(add); } catch (e) {}
+  return [...s.values()].slice(0, 8);
+}
+function parkRemember(w) { try { const a = JSON.parse(localStorage.getItem('dz_waiton_recent') || '[]').filter(x => x.toLowerCase() !== w.toLowerCase()); a.unshift(w); localStorage.setItem('dz_waiton_recent', JSON.stringify(a.slice(0, 12))); } catch (e) {} }
+// write (or clear, when p is null) the park tokens on one backlog line
+async function setPark(lineIndex, p) {
+  const lines = rawMd.split('\n'); let l = lines[lineIndex]; if (l == null) return;
+  const t = tasks.find(x => x.lineIndex === lineIndex);
+  l = l.replace(/\s*\[(?:park|waiton|nudge|pnote|pinged):[^\]]*\]/g, '');
+  if (p) {
+    const since = p.keepSince && t && t.parkedAt && !isNaN(t.parkedAt) ? t.parkedAt.toISOString() : new Date().toISOString();
+    l = l.replace(/\s*\[today(?::[^\]]+)?\]/, '').replace(/\s*\[tomorrow\]/, '').replace(/\s*\[ondeck\]/, '').trimEnd();
+    l += ` [park:${p.kind}:${since}]`;
+    if (p.kind === 'waiting') { if (p.waitOn) l += ` [waiton:${encodeNotes(p.waitOn)}]`; l += ` [nudge:${p.nudge ?? 5}]`; }
+    if (p.note) l += ` [pnote:${encodeNotes(p.note)}]`;
+    if (p.pinged) l += ` [pinged:${p.pinged}]`;
+  }
+  lines[lineIndex] = l; rawMd = lines.join('\n'); parseTasks();
+  const y = window.scrollY; render(); window.scrollTo(0, y);
+  await saveBacklog();
+}
+function parkModal(inner) {
+  const ov = document.createElement('div'); ov.className = 'modal-overlay';
+  ov.innerHTML = `<div class="modal pk-modal">${inner}</div>`;
+  const close = () => { ov.classList.remove('visible'); setTimeout(() => ov.remove(), 200); };
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  document.body.appendChild(ov); requestAnimationFrame(() => ov.classList.add('visible'));
+  return { ov, close };
+}
+function openParkSheet(task) {
+  const editing = !!task.parked;
+  let kind = task.parked || 'waiting', nudge = task.parked ? task.nudge : 5;
+  const recent = parkRecent();
+  const { ov, close } = parkModal(`
+    <h2>${editing ? 'Edit park' : 'Park'} <span class="pk-tt">“${pjh(task.title)}”</span></h2>
+    <div class="pk-sub">${task.today || task.tomorrow || task.ondeck ? 'It leaves Today and frees the slot. ' : ''}You'll find it under Backlog → Parked.</div>
+    <div class="pk-opts">
+      <button class="pk-opt" data-k="started"><span class="ic">🚧</span><span>Started<small>I'm partway through</small></span></button>
+      <button class="pk-opt" data-k="waiting"><span class="ic">⏳</span><span>Waiting on…<small>someone or something else</small></span></button>
+    </div>
+    <div class="pk-wait">
+      ${recent.length ? `<div class="pk-lbl">Recent</div><div class="pk-chips2">${recent.map(r => `<button class="pk-c" data-who="${pjh(r)}">${pjh(r)}</button>`).join('')}</div>` : ''}
+      <input type="text" class="pk-who" placeholder="Who or what? (HOA, lender, a refund…)" value="${pjh(task.waitOn || '')}">
+      <div class="pk-lbl">Nudge me after</div>
+      <div class="pk-chips2 pk-nudge">${[[3, '3 days'], [5, '5 days'], [7, '1 week'], [0, 'Never']].map(([v, l]) => `<button class="pk-c" data-n="${v}">${l}</button>`).join('')}</div>
+    </div>
+    <input type="text" class="pk-note-in" placeholder="Note: where you left off (optional)" value="${pjh(task.pnote || '')}">
+    <div class="modal-btns"><button class="btn-cancel">Cancel</button><button class="btn-primary">${editing ? 'Save' : 'Park'}</button></div>`);
+  const who = ov.querySelector('.pk-who');
+  const sync = () => {
+    ov.querySelectorAll('.pk-opt').forEach(b => b.classList.toggle('on', b.dataset.k === kind));
+    ov.querySelector('.pk-wait').style.display = kind === 'waiting' ? '' : 'none';
+    ov.querySelectorAll('.pk-nudge .pk-c').forEach(b => b.classList.toggle('on', +b.dataset.n === nudge));
+    ov.querySelectorAll('[data-who]').forEach(b => b.classList.toggle('on', b.dataset.who.toLowerCase() === who.value.trim().toLowerCase()));
+  };
+  ov.querySelectorAll('.pk-opt').forEach(b => b.onclick = () => { kind = b.dataset.k; sync(); if (kind === 'waiting' && !who.value) who.focus(); });
+  ov.querySelectorAll('[data-who]').forEach(b => b.onclick = () => { who.value = b.dataset.who; sync(); });
+  ov.querySelectorAll('.pk-nudge .pk-c').forEach(b => b.onclick = () => { nudge = +b.dataset.n; sync(); });
+  who.addEventListener('input', sync);
+  ov.querySelector('.btn-cancel').onclick = close;
+  ov.querySelector('.btn-primary').onclick = async () => {
+    const w = who.value.trim(), note = ov.querySelector('.pk-note-in').value.trim();
+    if (kind === 'waiting' && w) parkRemember(w);
+    close();
+    await setPark(task.lineIndex, { kind, waitOn: kind === 'waiting' ? w : '', nudge, note, keepSince: editing, pinged: editing && task.pingedAt ? task.pingedAt.toISOString() : null });
+    showToast(editing ? 'Park updated' : kind === 'waiting' ? `⏸ Parked${w ? ' · waiting on ' + w : ''}` : '⏸ Parked · started');
+  };
+  sync();
+}
+function parkFromModal() { const t = editingTask; if (!t) return; closeModal(); setTimeout(() => openParkSheet(t), 220); }
+async function unparkTask(t, msg) { await setPark(t.lineIndex, null); showToast(msg || '↩ Back in your Backlog'); }
+async function parkPinged(lineIdxs) {
+  const now = new Date().toISOString();
+  for (const li of lineIdxs) { const t = tasks.find(x => x.lineIndex === li); if (t && t.parked) await setPark(li, { kind: t.parked, waitOn: t.waitOn, nudge: t.nudge, note: t.pnote, keepSince: true, pinged: now }); }
+  showToast('👍 Nudge reset. I\'ll check again later');
+}
+function openParkActions(task) {
+  const d = parkAge(task), due = parkDue(task);
+  const { ov, close } = parkModal(`
+    <h2 class="pk-tt2">${pjh(task.title)}</h2>
+    <div class="pk-sub">${task.parked === 'waiting' ? '⏳ Waiting' + (task.waitOn ? ' on <b>' + pjh(task.waitOn) + '</b>' : '') : '🚧 Started'} · parked ${d === 0 ? 'today' : d + ' day' + (d === 1 ? '' : 's')}${due ? ' · <b style="color:var(--orange)">time to ping</b>' : ''}</div>
+    ${task.pnote ? `<div class="pk-quote">“${pjh(task.pnote)}”</div>` : ''}
+    <div class="modal-btns"><button class="btn-cancel" data-a="unpark">Unpark</button><button class="btn-primary" data-a="today">→ Today</button></div>
+    <div class="pk-acts">
+      ${task.parked === 'waiting' ? '<button data-a="ping">👍 Still waiting · I followed up</button>' : ''}
+      <button data-a="edit">✏️ Change reason or note</button>
+      <button data-a="task">📝 Edit task</button>
+      <button data-a="done">✓ Mark done</button>
+    </div>`);
+  ov.querySelectorAll('[data-a]').forEach(b => b.onclick = async () => {
+    const a = b.dataset.a; close();
+    if (a === 'unpark') return unparkTask(task);
+    if (a === 'ping') return parkPinged([task.lineIndex]);
+    if (a === 'edit') return setTimeout(() => openParkSheet(task), 220);
+    if (a === 'task') return setTimeout(() => openEditModal(task), 220);
+    if (a === 'done') return toggleDone(task.title, task.lineIndex);
+    if (a === 'today') {
+      await setPark(task.lineIndex, null);
+      if (canAddToToday().ok) { if (await addToToday(task.title)) showToast('→ Back on Today'); }
+      else if (await addToDeck(task.title)) showToast('Focus set is full, so it\'s queued on deck');
+    }
+  });
 }
 
 // ---- TODAY TAB ----
@@ -3876,20 +4112,23 @@ function openTrendsRangeMenu(ev) {
 function taskCard(t) {
   const inT = t.today;
   const px = t.cardId ? pjTaskExtras(t) : null;
-  return `<div class="swipe-wrap" data-swipe-line="${t.lineIndex}">
+  const canPark = !t.done && !t.cardId;
+  return `<div class="swipe-wrap" data-swipe-line="${t.lineIndex}" ${canPark ? `data-park="${t.parked ? 'unpark' : 'park'}"` : ''}>
+    ${canPark ? `<div class="park-action">${t.parked ? '↩<span>Unpark</span>' : '⏸<span>Park</span>'}</div>` : ''}
     <div class="delete-action" data-delete-line="${t.lineIndex}" data-delete-title="${esc(t.title)}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
       Delete
     </div>
     <div class="task-card ${px&&px.parked?'pj-parked':''}" ${t.tag?`style="--spine:${tagDotColor(t.tag)}"`:''}>
-      <div class="check-ring ${t.done?'done':''} ${px?'pj-ring':''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
+      <div class="check-ring ${t.done?'done':''} ${px?'pj-ring':''} ${!t.done && t.parked ? 'pk-' + t.parked : ''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <div class="task-body" data-edit-line="${t.lineIndex}">
-        <div class="task-title ${t.done?'done':''}">${t.title}</div>${px?px.line:''}
+        <div class="task-title ${t.done?'done':''}">${t.title}</div>${px?px.line:''}${!t.done && t.parked ? parkLine(t) : ''}
         ${(t.tag || t.notes || px || createdMsOf(t)) ? `<div class="task-meta">${px?px.meta:''}${tagHTML(t.tag)}${ageChip(t)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
       </div>
       ${px && px.right && !t.done ? px.right : !t.done ? (() => {
+        if (t.parked) return '';
         if (t.tomorrow) return `<button class="today-ring-btn in-tomorrow" data-tmr-toggle="${esc(t.title)}" title="Staged for tomorrow — tap to unstage">🌙</button>`;
         if (inT) return `<button class="today-ring-btn in-today" data-today-toggle="${esc(t.title)}" title="In Today — tap to remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>`;
         if (t.ondeck) return `<button class="today-ring-btn in-deck" data-deck-toggle="${esc(t.title)}" title="On Deck — tap to remove from queue">${IC_DECK}</button>`;
@@ -3937,6 +4176,7 @@ function attachTaskEvents(el) {
       const lineIdx = parseInt(body.dataset.editLine);
       const task = tasks.find(t=>t.lineIndex===lineIdx);
       if (task && task.cardId && pjFind(task.cardId)[1]) { pjOpen('card', task.cardId); return; }
+      if (task && task.parked && !task.done) { openParkActions(task); return; }
       if (task) openEditModal(task);
     });
   });
@@ -4028,7 +4268,7 @@ function attachTaskEvents(el) {
   el.querySelectorAll('.swipe-wrap').forEach(wrap => {
     const card = wrap.querySelector('.task-card');
     if (!card) return;
-    let startX=0, startY=0, dx=0, tracking=false, startedOpen=false, locked=false;
+    let startX=0, startY=0, dx=0, tracking=false, startedOpen=false, locked=false, dir=-1;
     const LOCK = 14;   // px of clearly-horizontal travel before a swipe engages (kills accidental touches)
 
     card.addEventListener('touchstart', e => {
@@ -4036,7 +4276,7 @@ function attachTaskEvents(el) {
       startX=e.touches[0].clientX; startY=e.touches[0].clientY;
       startedOpen = openSwipeWrap===wrap;
       dx = startedOpen ? -OPEN_X : 0;
-      tracking=true; locked=startedOpen;
+      tracking=true; locked=startedOpen; dir=-1;
       if (locked) { card.classList.add('swiping'); wrap.classList.add('swipe-live'); }
     }, {passive:true});
 
@@ -4045,9 +4285,12 @@ function attachTaskEvents(el) {
       const mx=e.touches[0].clientX-startX, my=e.touches[0].clientY-startY;
       if (!locked) {
         if (Math.abs(my) > 10 && Math.abs(my) >= Math.abs(mx)) { tracking=false; return; }   // it's a scroll
-        if (mx > -LOCK || Math.abs(mx) < Math.abs(my) * 1.6) return;                          // not a deliberate left swipe yet
-        locked=true; card.classList.add('swiping'); wrap.classList.add('swipe-live');
+        if (Math.abs(mx) < LOCK || Math.abs(mx) < Math.abs(my) * 1.6) return;                // not a deliberate swipe yet
+        if (mx > 0 && !wrap.dataset.park) return;                                             // right swipe = park; only where allowed
+        dir = mx > 0 ? 1 : -1;
+        locked=true; card.classList.add('swiping'); wrap.classList.add(dir > 0 ? 'swipe-park' : 'swipe-live');
       }
+      if (dir > 0) { dx = Math.max(0, Math.min(OPEN_X + 24, mx - LOCK)); card.style.transform=`translateX(${dx}px)`; wrap.classList.toggle('park-armed', dx > THRESHOLD + 10); return; }
       dx=Math.max(-OPEN_X,Math.min(0,(startedOpen?-OPEN_X:0)+mx+(startedOpen?0:LOCK)));
       card.style.transform=`translateX(${dx}px)`;
     }, {passive:true});
@@ -4055,6 +4298,14 @@ function attachTaskEvents(el) {
     card.addEventListener('touchend', () => {
       if (!tracking || !locked) { tracking=false; return; }
       tracking=false; locked=false; card.classList.remove('swiping');
+      if (dir > 0) {
+        const fire = dx > THRESHOLD + 10; dir = -1;
+        card.style.transition='transform .2s cubic-bezier(.25,.46,.45,.94)'; card.style.transform='';
+        setTimeout(()=>{ card.style.transition=''; wrap.classList.remove('swipe-park', 'park-armed'); },220);
+        if (fire) { const t = tasks.find(x => x.lineIndex === parseInt(wrap.dataset.swipeLine));
+          if (t) { if (navigator.vibrate) navigator.vibrate(8); if (wrap.dataset.park === 'unpark') unparkTask(t); else openParkSheet(t); } }
+        return;
+      }
       if (dx < -THRESHOLD) {
         card.style.transition='transform .2s cubic-bezier(.25,.46,.45,.94)';
         card.style.transform=`translateX(-${OPEN_X}px)`;
@@ -4106,8 +4357,16 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.04-5"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.04-7"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.04-7", date: "Oct 4, 2026", items: [
+    ["new", "Waiting room: swipe right (or open a task → Park) to park something you've started or are waiting on"],
+    ["new", "Backlog → Parked groups everything by who you're waiting on, with a \"ping?\" nudge after a few days"],
+    ["fixed", "Editing a task that's On Deck no longer drops it from the queue"],
+  ]},
+  { v: "2026.10.04-6", date: "Oct 4, 2026", items: [
+    ["improved", "The task editor, project card sheet and other pop-ups now write in your style's fonts too"],
+  ]},
   { v: "2026.10.04-5", date: "Oct 4, 2026", items: [
     ["new", "Your look follows you: style, glass color and light/dark now sync to every device you sign in on"],
   ]},
@@ -5206,6 +5465,7 @@ function blKpis(activeTasks) {
   let ready = 0, waiting = 0, due = 0;
   pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t || t.done) return;
     if (c.ready || pjDue(c)) ready++; if (c.waiting) { waiting++; if (pjDue(c)) due++; } }));
+  const pkW = tasks.filter(t => !t.done && t.parked === 'waiting'); waiting += pkW.length; due += pkW.filter(parkDue).length;
   const dated = activeTasks.filter(t => createdMsOf(t)).sort((a, b) => createdMsOf(a) - createdMsOf(b));
   const old = dated[0], oldD = old ? Math.floor((Date.now() - createdMsOf(old)) / 864e5) : 0;
   return `<div class="bl-kpis">
@@ -5213,7 +5473,7 @@ function blKpis(activeTasks) {
       <circle cx="18" cy="18" r="15" fill="none" stroke="var(--tag-bg)" stroke-width="4"/>${planPct > pct ? `<circle cx="18" cy="18" r="15" fill="none" stroke="var(--accent)" stroke-opacity=".3" stroke-width="4" stroke-linecap="round" stroke-dasharray="${planPct * C} ${C}" transform="rotate(-90 18 18)"/>` : ''}${Dn ? `<circle cx="18" cy="18" r="15" fill="none" stroke="url(#blgr)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${pct * C} ${C}" transform="rotate(-90 18 18)"/>` : ''}</svg>
       <div><div class="l">Today’s focus</div><div class="v">${Dn} / ${goal}</div><div class="s">${Dn >= goal && !U ? 'Set complete 🤙' : [U + Dn ? `${U + Dn} on Today` : 'Nothing on Today yet', slots ? `${slots} slot${slots > 1 ? 's' : ''} open` : ''].filter(Boolean).join(' · ')}</div></div></div>
     <div class="bl-kpi glass-panel" ${ready ? 'data-pj-checkin' : ''}><div class="l">⚡ Ready for you</div><div class="v" style="color:var(--green)">${ready}</div><div class="s">${ready ? 'your move — tap to check in' : 'nothing came back yet'}</div></div>
-    <div class="bl-kpi glass-panel"><div class="l">⏳ Waiting on others</div><div class="v" style="color:var(--orange)">${waiting}</div><div class="s">${due ? `<span style="color:var(--danger)">${due} follow-up${due > 1 ? 's' : ''} due</span>` : 'no follow-ups due'}</div></div>
+    <div class="bl-kpi glass-panel" ${pkW.length ? 'style="cursor:pointer" onclick="blSetView(\'parked\')"' : ''}><div class="l">⏳ Waiting on others</div><div class="v" style="color:var(--orange)">${waiting}</div><div class="s">${due ? `<span style="color:var(--danger)">${due} follow-up${due > 1 ? 's' : ''} due</span>` : 'no follow-ups due'}</div></div>
     <div class="bl-kpi glass-panel" ${old ? `data-bl-open="${old.lineIndex}"` : ''}><div class="l">Oldest open</div><div class="v">${old ? oldD + 'd' : '—'}</div><div class="s bl-trunc">${old ? old.title.replace(/</g, '&lt;') : 'nothing dated'}</div></div>
   </div>`;
 }
