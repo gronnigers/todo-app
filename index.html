@@ -1312,8 +1312,14 @@
   :root[data-skin="moleskine"] .check-ring, :root[data-skin="moleskine"] .lane-today .task-card .check-ring,
   :root[data-skin="moleskine"] .check-ring.done, :root[data-skin="moleskine"] .lane-today .task-card .check-ring.done {
     position: relative; border: 0; background: transparent; box-shadow: none; width: 28px; height: 28px; border-radius: 0; }
-  :root[data-skin="moleskine"] .check-ring::before { content: "—"; font: 26px/1 var(--font-pen); color: var(--text); }
-  :root[data-skin="moleskine"] .check-ring.done::before { content: none; }
+  :root[data-skin="moleskine"] .check-ring::before { content: ""; width: 30px; height: 30px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13.4 4.7c4 .6 6.4 4.2 5.5 8.1-.9 3.9-4.9 6.3-8.8 5.2-3.7-1.1-5.7-4.9-4.4-8.5 1-2.8 3.5-4.5 6.3-4.5 1.3 0 2.3.3 3.1.8' fill='none' stroke='%231d2b53' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round' /%3E%3C/svg%3E") center/contain no-repeat; }
+  :root[data-skin="moleskine"] .check-ring.done::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13.4 4.7c4 .6 6.4 4.2 5.5 8.1-.9 3.9-4.9 6.3-8.8 5.2-3.7-1.1-5.7-4.9-4.4-8.5 1-2.8 3.5-4.5 6.3-4.5 1.3 0 2.3.3 3.1.8' fill='none' stroke='%231d2b53' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='.55'/%3E%3Cpath d='M7.6 12.4 L11 16.4 L21.2 3.4' fill='none' stroke='%23a82222' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' /%3E%3C/svg%3E"); }
+  :root[data-skin="moleskine"] .check-ring.pk-started::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13.4 4.7c4 .6 6.4 4.2 5.5 8.1-.9 3.9-4.9 6.3-8.8 5.2-3.7-1.1-5.7-4.9-4.4-8.5 1-2.8 3.5-4.5 6.3-4.5 1.3 0 2.3.3 3.1.8' fill='none' stroke='%231d2b53' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round' /%3E%3Cpath d='M12 5.4C7.7 5.8 5.6 9 6 12.2s2.7 5.7 6 5.9z' fill='%231d2b53' opacity='.85'/%3E%3C/svg%3E"); }
+  :root[data-skin="moleskine"] .check-ring.pk-waiting::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13.4 4.7c4 .6 6.4 4.2 5.5 8.1-.9 3.9-4.9 6.3-8.8 5.2-3.7-1.1-5.7-4.9-4.4-8.5 1-2.8 3.5-4.5 6.3-4.5 1.3 0 2.3.3 3.1.8' fill='none' stroke='%23b5651d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke-dasharray='3 2.6'/%3E%3Cpath d='M10 9.2h4M10 14.8h4M10.4 9.4c0 1.6 3.2 1.6 3.2 2.6s-3.2 1-3.2 2.6' fill='none' stroke='%23b5651d' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E"); }
+  :root[data-skin="moleskine"] .check-ring.done svg { display: none; }
+  :root[data-skin="moleskine"] .check-ring.pk-started, :root[data-skin="moleskine"] .check-ring.pk-waiting { border: 0; background: transparent; }
+  :root[data-skin="moleskine"] .check-ring.pj-ring::after { width: 6px; height: 6px; }
+  :root[data-skin="moleskine"] .check-ring:not(.done):active::before { transform: scale(.9); }
   :root[data-skin="moleskine"] .check-ring svg { position: absolute; inset: 0; margin: auto; width: 22px; height: 22px; }
   :root[data-skin="moleskine"] .check-ring svg polyline { stroke: #1d2b53; }
   :root[data-skin="moleskine"] .plan-dot { border: 0; opacity: 1; display: grid; place-items: center; width: 28px; height: 28px; }
@@ -1519,6 +1525,31 @@
   :root[data-skin="cork"] .pk-opt, :root[data-skin="cork"] .pk-acts button { font-family: var(--font-marker); font-weight: 400; font-size: 14px; border-radius: 2px; }
   :root[data-skin="cork"] .pk-opt small { font-family: 'Caveat', cursive; font-size: 16px; } :root[data-skin="cork"] .pk-c { font-family: 'Caveat', cursive; font-weight: 700; font-size: 17px; border-radius: 3px; }
   :root[data-skin="cork"] .pk-note, :root[data-skin="cork"] .pk-quote { font-family: 'Caveat', cursive; font-style: normal; font-size: 17px; font-weight: 600; }
+
+  /* === SKIN TYPE: popover menus (tags, sort, theme, ranges) === */
+  :root[data-skin="moleskine"] .pop-row { font-family: var(--font-pen); font-weight: 400; font-size: 25px; line-height: 1; padding-top: 9px; padding-bottom: 9px; }
+  :root[data-skin="moleskine"] .pop-row.on { font-weight: 400; }
+  :root[data-skin="moleskine"] .skin-head { font: 400 21px var(--font-pen); letter-spacing: 0; text-transform: none; color: var(--accent); }
+  :root[data-skin="moleskine"] .skin-sw b, :root[data-skin="moleskine"] .glass-sw { font-family: var(--font-pen); font-weight: 400; font-size: 20px; }
+  :root[data-skin="moleskine"] .skin-sw small { font-family: var(--font-pen); font-size: 16px; }
+  :root[data-skin="vinyl"] .pop-row { font-family: var(--font-display); font-weight: 400; font-size: 19px; letter-spacing: .08em; }
+  :root[data-skin="vinyl"] .skin-head { font: 400 11px 'Space Mono', ui-monospace, monospace; letter-spacing: .14em; color: var(--accent); }
+  :root[data-skin="vinyl"] .skin-sw b { font-family: var(--font-display); font-weight: 400; font-size: 17px; letter-spacing: .08em; }
+  :root[data-skin="cork"] .pop-row { font-family: 'Caveat', cursive; font-weight: 700; font-size: 23px; line-height: 1; }
+  :root[data-skin="cork"] .skin-head { font: 400 12.5px var(--font-marker); letter-spacing: .4px; text-transform: none; color: var(--accent); }
+  :root[data-skin="cork"] .skin-sw b { font-family: var(--font-marker); font-weight: 400; font-size: 13px; letter-spacing: .3px; }
+  :root[data-skin="cork"] .skin-sw small, :root[data-skin="cork"] .glass-sw { font-family: 'Caveat', cursive; font-weight: 700; font-size: 16px; }
+
+  /* === SKIN TYPE: list furniture (completed toggle, empty states, add buttons) === */
+  :root[data-skin="moleskine"] .done-toggle-label { font: 400 23px var(--font-pen); text-transform: none; letter-spacing: 0; color: var(--accent); }
+  :root[data-skin="moleskine"] .today-empty { font-family: var(--font-pen); font-size: 21px; line-height: 1.15; }
+  :root[data-skin="moleskine"] .bonus-add-btn { font-family: var(--font-pen); font-weight: 400; font-size: 23px; }
+  :root[data-skin="vinyl"] .done-toggle-label { font: 400 17px var(--font-display); letter-spacing: .12em; color: var(--accent); }
+  :root[data-skin="vinyl"] .bonus-add-btn { font-family: var(--font-display); font-weight: 400; font-size: 18px; letter-spacing: .1em; }
+  :root[data-skin="vinyl"] .today-empty { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; }
+  :root[data-skin="cork"] .done-toggle-label { font: 400 13px var(--font-marker); letter-spacing: .4px; text-transform: none; }
+  :root[data-skin="cork"] .today-empty { font-family: 'Caveat', cursive; font-weight: 600; font-size: 20px; line-height: 1.15; }
+  :root[data-skin="cork"] .bonus-add-btn { font-family: var(--font-marker); font-weight: 400; font-size: 14px; letter-spacing: .3px; }
 
   /* === STATS v2: today rings · year in squares · ring calendar · trophy case === */
   .fx { --fxd: var(--font-ui); --fxw: 800; --fxs: 1; --fxls: -.02em; }
@@ -3091,7 +3122,9 @@ function renderAuth(app) {
     </div>`;
 }
 
+let lastRenderTab = null;
 function renderMain(app) {
+  const keepY = lastRenderTab === currentTab ? window.scrollY : 0;
   document.body.dataset.tab = currentTab;
   const activeTasks = tasks.filter(t => !t.done);
   const doneTasks = tasks.filter(t => t.done);
@@ -3138,6 +3171,8 @@ function renderMain(app) {
   else if (currentTab==='today') renderToday(content, activeTasks, doneTasks);
   else if (currentTab==='projects') renderProjects(content);
   else renderStats(content, activeTasks, doneTasks);
+  if (keepY) window.scrollTo(0, keepY); else if (lastRenderTab !== currentTab) window.scrollTo(0, 0);
+  lastRenderTab = currentTab;
 }
 
 function navItem(tab, icon, label) {
@@ -3420,7 +3455,7 @@ function renderToday(el, activeTasks, doneTasks) {
     }
 
     // ON DECK — queued overflow; slides into Today one at a time after the 3 are done
-    html += `<div class="section-label ondeck-label">ON DECK${deck.length?` · ${deck.length}`:''}</div>`;
+    html += `<div class="section-label ondeck-label">On Deck${deck.length?` · ${deck.length}`:''}</div>`;
     if (deck.length === 0) {
       html += `<div class="today-empty" style="padding:20px">Line up extra tasks for a busy day. Once your 3 focus tasks are done, these slide into Today one at a time. Anything still here at day's end goes back to the backlog.</div>`;
     } else {
@@ -4357,8 +4392,13 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.04-7"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.04-8"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.04-8", date: "Oct 4, 2026", items: [
+    ["improved", "Moleskine: hand-drawn circles replace the dashes; they half-fill when started and get a red check when done"],
+    ["improved", "Tag, sort and theme menus now use your style's fonts"],
+    ["fixed", "Opening the Completed list (and other taps) keeps you where you were instead of jumping to the top"],
+  ]},
   { v: "2026.10.04-7", date: "Oct 4, 2026", items: [
     ["new", "Waiting room: swipe right (or open a task → Park) to park something you've started or are waiting on"],
     ["new", "Backlog → Parked groups everything by who you're waiting on, with a \"ping?\" nudge after a few days"],
