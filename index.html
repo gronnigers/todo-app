@@ -2104,6 +2104,7 @@ function localDayKey() {
 async function maybeRolloverToday() {
   if (syncError || !rawMd) return;              // don't touch a failed/empty load
   const key = localDayKey();
+  await healTodayDone(key);
   const last = localStorage.getItem('today_last_day');
   if (!last) { localStorage.setItem('today_last_day', key); return; }
   if (last === key) return;                      // same day, nothing to do
@@ -2118,14 +2119,19 @@ async function maybeRolloverToday() {
     if (/\[bonus\]/.test(x))  { changed = true; x = x.replace(/\s*\[today(?::[^\]]+)?\]/, '').replace(/\s*\[bonus\]/, ''); }
     return x;
   });
-  // 1) shed finished core Today tasks (already counted in stats)
+  // 1) shed finished Today tasks from EARLIER days only (already counted in stats).
+  //    Never touch ones finished today — another device may have done them this morning.
   lines = lines.map(l => {
-    if (l.startsWith('- [x] ') && l.includes('[today')) { changed = true; return l.replace(/\s*\[today(?::[^\]]+)?\]/, ''); }
+    if (l.startsWith('- [x] ') && l.includes('[today')) {
+      const m = l.match(/\[done:([^\]]+)\]/), dk = m ? dayKeyFromDate(new Date(m[1])) : '';
+      if (dk && dk >= key) return l;
+      changed = true; return l.replace(/\s*\[today(?::[^\]]+)?\]/, '');
+    }
     return l;
   });
   // 2) carried-over debts (unfinished core Today) keep their slots — count them
   const debtCount = lines.filter(l => l.startsWith('- [ ] ') && /\[today/.test(l)).length;
-  let slots = Math.max(0, TODAY_LIMIT - debtCount);
+  let slots = Infinity;   // no cap any more: past your 3 it's all Stretch
   // 3) promote staged Tomorrow tasks into the remaining slots (debts first);
   //    any that don't fit stay staged for the next flip
   const stamp = new Date().toISOString();
@@ -2142,6 +2148,22 @@ async function maybeRolloverToday() {
     parseTasks();
     await saveBacklog();
   }
+}
+
+// One-time repair (Oct 6, 2026): an older rollover on a second device stripped [today] from tasks
+// finished earlier the same day. Put today's finished tasks back on Today, ahead of everything else
+// so they read as the Focus set they were. Runs once per device.
+async function healTodayDone(key) {
+  try { if (localStorage.getItem('dz_heal_today_v1')) return; } catch (e) { return; }
+  const lines = rawMd.split('\n'); let changed = false;
+  const todays = tasks.filter(t => t.today && t.todayAt && !isNaN(t.todayAt)).map(t => +t.todayAt);
+  let base = (todays.length ? Math.min(...todays) : Date.now()) - 60e3;
+  const fix = tasks.filter(t => t.done && !t.today && (t.doneAt || completions[t.title]) && dayKeyFromDate(new Date(t.doneAt || completions[t.title])) === key)
+    .sort((a, b) => new Date(a.doneAt || completions[a.title]) - new Date(b.doneAt || completions[b.title]));
+  fix.forEach((t, i) => { const l = lines[t.lineIndex]; if (!l || /\[today/.test(l)) return;
+    lines[t.lineIndex] = l.trimEnd() + ` [today:${new Date(base - (fix.length - i) * 1000).toISOString()}]`; changed = true; });
+  try { localStorage.setItem('dz_heal_today_v1', '1'); } catch (e) {}
+  if (changed) { rawMd = lines.join('\n'); parseTasks(); await saveBacklog(); }
 }
 
 // ---- FOCUS HISTORY: the app's own record of focus-task completions per day ----
@@ -4525,8 +4547,12 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.06-5"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.06-6"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.06-6", date: "Oct 6, 2026", items: [
+    ["fixed", "Opening the app on a second device in the morning no longer clears tasks you already finished today on another device"],
+    ["fixed", "Today's finished tasks that got cleared are back on Today"],
+  ]},
   { v: "2026.10.06-5", date: "Oct 6, 2026", items: [
     ["improved", "No more queue: add as many tasks to Today as you like. The first 3 are your Focus, and anything after that shows up right below as Stretch"],
     ["improved", "Anything that was waiting On Deck moved straight onto Today as a stretch task"],
