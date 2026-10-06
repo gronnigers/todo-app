@@ -1632,6 +1632,44 @@
   :root[data-skin="cork"] .pj-stage, :root[data-skin="cork"] .pj-badge, :root[data-skin="cork"] .pk-chip { font: 700 16px/1 'Caveat', cursive; border-radius: 3px; }
   :root[data-skin="cork"] .pj-back-btn { font: 400 12px var(--font-marker); letter-spacing: .3px; border-radius: 2px; box-shadow: var(--shadow-sm); }
 
+  /* === TODAY LINEUP: focus group + the queue that follows === */
+  .lu-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 18px 2px 8px; }
+  .lu-head .section-label { margin: 0; }
+  .lu-note { font-size: 12.5px; color: var(--sub); text-align: right; }
+  .lu-empty { color: var(--sub); font-size: 14px; padding: 4px 2px 6px; line-height: 1.45; }
+  .lu-then { display: flex; align-items: center; gap: 12px; margin: 22px 0 10px; color: var(--sub); font-size: 11.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+  .lu-then::before, .lu-then::after { content: ""; flex: 1; border-top: 1.5px dashed var(--border); }
+  .lu-num { flex: 0 0 26px; height: 26px; border-radius: 50%; border: 1.5px dashed var(--sub); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--sub); }
+  .task-card.staged.ondeck, html:not([data-theme="light"]) .task-card.staged.ondeck { background: transparent; border: 1.5px dashed var(--border); box-shadow: none; }
+  .task-card.ondeck .task-title { color: var(--sub); }
+  .lu-add { display: block; width: 100%; margin: 4px 0 0; padding: 11px; border: 0; background: none; color: var(--accent); font: 600 14px var(--font-ui); cursor: pointer; border-radius: 12px; text-align: center; }
+  .lu-add:hover { background: var(--accent-light); }
+  :root[data-skin="vinyl"] .lane-today .lu-head + .task-card .task-title:not(.done)::after {
+    content: "NOW PLAYING"; margin-left: 10px; font: 700 9.5px var(--font-ui); letter-spacing: .14em; color: var(--accent); vertical-align: 2px; }
+  :root[data-skin="moleskine"] .lu-note { font: 400 20px/1 var(--font-pen); }
+  :root[data-skin="moleskine"] .lu-empty { font: 400 21px/1.15 var(--font-pen); }
+  :root[data-skin="moleskine"] .lu-then { font: 400 22px var(--font-pen); letter-spacing: 0; text-transform: none; color: var(--accent); }
+  :root[data-skin="moleskine"] .lu-then::before, :root[data-skin="moleskine"] .lu-then::after { border-top-color: rgba(168,34,34,.35); }
+  :root[data-skin="moleskine"] .lu-num { border: 0; font: 400 24px var(--font-pen); color: var(--sub); }
+  :root[data-skin="moleskine"] .lu-num::after { content: "."; }
+  :root[data-skin="moleskine"] .task-card.staged.ondeck { border: 0; border-bottom: 1px dashed var(--rule); }
+  :root[data-skin="moleskine"] .lu-add { font: 400 23px var(--font-pen); }
+  :root[data-skin="vinyl"] .lu-note { font: 11px 'Space Mono', ui-monospace, monospace; letter-spacing: .04em; }
+  :root[data-skin="vinyl"] .lu-then { font: 400 16px var(--font-display); letter-spacing: .14em; color: var(--accent); }
+  :root[data-skin="vinyl"] .lu-num { border: 0; font: 12px 'Space Mono', ui-monospace, monospace; }
+  :root[data-skin="vinyl"] .task-card.staged.ondeck { border: 0; border-bottom: 1px dashed var(--border); border-radius: 0; }
+  :root[data-skin="vinyl"] .task-card.ondeck::before { content: none; }
+  :root[data-skin="vinyl"] .lu-add { font: 400 16px var(--font-display); letter-spacing: .12em; }
+  :root[data-skin="cork"] .lu-note { font: 700 18px 'Caveat', cursive; color: #fff6e0; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  :root[data-skin="cork"] .lu-empty { font: 700 20px/1.15 'Caveat', cursive; color: #fff6e0; }
+  :root[data-skin="cork"] .lu-then { font: 400 13px var(--font-marker); letter-spacing: .4px; text-transform: none; color: var(--text); }
+  :root[data-skin="cork"] .lu-then span { background: #fffdf5; padding: 5px 12px 3px; box-shadow: var(--shadow-sm); rotate: -1deg; }
+  :root[data-skin="cork"] .lu-then::before, :root[data-skin="cork"] .lu-then::after { border-top: 2px dashed rgba(255,246,224,.6); }
+  :root[data-skin="cork"] .task-card.staged.ondeck { background: rgba(255,253,245,.82); border: 0; }
+  :root[data-skin="cork"] .lu-num { border: 0; font: 400 15px var(--font-marker); color: #5a4330; }
+  :root[data-skin="cork"] .lu-add { font: 400 14px var(--font-marker); letter-spacing: .3px; color: #fff6e0; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
+  :root[data-skin="cork"] .lu-add:hover { background: rgba(255,250,235,.15); }
+
   /* === STATS v2: today rings · year in squares · ring calendar · trophy case === */
   .fx { --fxd: var(--font-ui); --fxw: 800; --fxs: 1; --fxls: -.02em; }
   :root[data-skin="vinyl"] .fx { --fxd: var(--font-display); --fxw: 400; --fxs: 1.15; --fxls: .04em; }
@@ -3474,7 +3512,7 @@ function winCard(doneN, deckN) {
   const st = computeFocusStreak().current, today = focusCountForDay(localDayKey());
   const title = deckN ? 'Focus done' : doneN >= TODAY_LIMIT ? `Daily ${TODAY_LIMIT} done` : 'Focus set complete';
   const bits = [st >= 1 ? `🔥 ${st}-day streak` : '', today > TODAY_LIMIT ? `${today} done today` : '',
-    deckN ? `On Deck is up next · ${deckN} queued` : 'Take the win 🤙'].filter(Boolean);
+    deckN ? `${deckN} queued · rolling in next` : 'Take the win 🤙'].filter(Boolean);
   return `<div class="win-card"><div class="win-badge">${fxRing(58, 7, TODAY_LIMIT)}<span class="win-ck">✓</span></div>
     <div class="win-txt"><div class="win-t">${title}</div><div class="win-s">${bits.join(' · ')}</div></div></div>`;
 }
@@ -3517,42 +3555,24 @@ function renderToday(el, activeTasks, doneTasks) {
   if (total===0 && deck.length===0) {
     html += `<div class="today-empty"><span class="emoji">🎯</span>Your focus set is empty.<br>Tap the <strong>+</strong> on up to <strong>3</strong> backlog tasks to load Today.</div>`;
   } else {
-    // FOCUS SET (+ any promoted overflow)
-    if (total===0) {
-      html += `<div class="today-empty" style="padding:20px"><span class="emoji">🎯</span>No focus tasks yet.<br>Tap the <strong>+</strong> on up to <strong>3</strong> backlog tasks — your On Deck queue flows in once they're done.</div>`;
-    } else if (todayUnfin.length > 0) {
-      const slotsLeft = Math.max(0, TODAY_LIMIT - total);
-      html += inOverflow
-        ? `<div class="focus-hint full">⤵ On Deck in play — finish to pull the next</div>`
-        : todayDone.length > 0
-          ? `<div class="focus-hint locked">🔒 Finish your set to unlock the next</div>`
-          : slotsLeft > 0
-            ? `<div class="focus-hint">🎯 ${slotsLeft} focus slot${slotsLeft===1?'':'s'} left · queue more on deck below</div>`
-            : `<div class="focus-hint full">🎯 Focus set full — queue extras on deck below</div>`;
-      html += `<div class="section-label">Up Next</div>`;
-      todayUnfin.forEach(t => { html += todayCard(t, false); });
-      if (todayDone.length>0) { html += `<div class="section-label">Done</div>`; todayDone.forEach(t => { html += todayCard(t, true); }); }
-    } else if (todayDone.length > 0 && unlocked) {
-      html += winCard(todayDone.length, deck.length);
-      html += `<div class="section-label">Done</div>`;
-      todayDone.forEach(t => { html += todayCard(t, true); });
-    } else if (todayDone.length > 0) {
-      const openSlots = TODAY_LIMIT - todayDone.length;
-      html += `<div class="focus-hint">🎯 ${todayDone.length} of ${TODAY_LIMIT} done — add ${openSlots} more to finish your set</div>`;
-      html += `<div class="section-label">Done</div>`;
-      todayDone.forEach(t => { html += todayCard(t, true); });
-      html += `<button class="bonus-add-btn core-add-btn" data-core-add>＋ Add focus task</button>`;
-    }
-
-    // ON DECK — queued overflow; slides into Today one at a time after the 3 are done
-    html += `<div class="section-label ondeck-label">On Deck${deck.length?` · ${deck.length}`:''}</div>`;
-    if (deck.length === 0) {
-      html += `<div class="today-empty" style="padding:20px">Line up extra tasks for a busy day. Once your 3 focus tasks are done, these slide into Today one at a time. Anything still here at day's end goes back to the backlog.</div>`;
-    } else {
-      html += `<div class="focus-hint">${unlocked ? '⤵ Sliding into Today as you finish each one' : '🅿️ Waiting on your focus 3 — then these roll in one at a time'}</div>`;
-      deck.forEach(t => { html += deckCard(t); });
-    }
-    html += `<button class="bonus-add-btn core-add-btn" data-deck-add>＋ Add to On Deck</button>`;
+    // ONE LINEUP: your focus 3 (open first, finished ones stay in place), then the queue that rolls in after them.
+    const open = todayUnfin, done = todayDone, slotsLeft = Math.max(0, TODAY_LIMIT - total);
+    if (!open.length && done.length && unlocked) html += winCard(done.length, deck.length);
+    const note = total === 0 ? `Pick up to ${TODAY_LIMIT}`
+      : inOverflow && open.length ? 'Bonus round · rolled in from your queue'
+      : open.length && done.length ? 'Finish your set to unlock the next'
+      : open.length && slotsLeft ? `${slotsLeft} slot${slotsLeft === 1 ? '' : 's'} open`
+      : !open.length && done.length && !unlocked ? `${TODAY_LIMIT - done.length} more to finish your set`
+      : unlocked ? `${done.length} done` : 'Set is full';
+    html += `<div class="lu-head"><span class="section-label">Focus</span><span class="lu-note">${note}</span></div>`;
+    if (total === 0) html += `<div class="lu-empty">Tap the <b>+</b> on up to ${TODAY_LIMIT} Backlog tasks, or pick them here.</div>`;
+    open.forEach(t => { html += todayCard(t, false); });
+    done.forEach(t => { html += todayCard(t, true); });
+    if (canAddToToday().ok && total < TODAY_LIMIT) html += `<button class="lu-add" data-core-add>＋ Add focus task</button>`;
+    // THE QUEUE (On Deck): continues the list, numbered after your focus tasks
+    html += `<div class="lu-then"><span>${deck.length ? (unlocked ? 'Up next · rolls in as you finish' : `Then · ${deck.length} queued, one at a time`) : 'Busy day?'}</span></div>`;
+    deck.forEach((t, i) => { html += deckCard(t, total + i + 1); });
+    html += `<button class="lu-add" data-deck-add>＋ ${deck.length ? 'Queue another' : `Queue extras · they roll in after your ${TODAY_LIMIT}`}</button>`;
   }
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
@@ -3637,9 +3657,9 @@ function todayCard(t, done) {
 }
 
 // On-deck (queued overflow) card — muted until it auto-promotes into Today.
-function deckCard(t) {
+function deckCard(t, n) {
   return `<div class="task-card staged ondeck" style="${t.tag?`--spine:${tagDotColor(t.tag)}`:''}">
-    <div class="plan-dot"></div>
+    <div class="lu-num">${n || ''}</div>
     <div class="task-body" data-edit-line="${t.lineIndex}">
       <div class="task-title">${t.title}</div>
       ${(t.tag || t.notes) ? `<div class="task-meta">${tagHTML(t.tag)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
@@ -4482,8 +4502,11 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.06-3"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.06-4"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.06-4", date: "Oct 6, 2026", items: [
+    ["improved", "Today is one lineup now: your Focus 3 (finished ones stay in place), then a numbered queue that rolls in after them, so there's no more Up Next vs. On Deck confusion"],
+  ]},
   { v: "2026.10.06-3", date: "Oct 6, 2026", items: [
     ["improved", "Project task details (waiting line, stage and project chips, It's back) now use your style's fonts"],
     ["fixed", "No more \"Waiting on waiting on…\" when the note already says it"],
