@@ -1670,6 +1670,13 @@
   :root[data-skin="cork"] .lu-add { font: 400 14px var(--font-marker); letter-spacing: .3px; color: #fff6e0; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
   :root[data-skin="cork"] .lu-add:hover { background: rgba(255,250,235,.15); }
 
+  /* stretch tasks: same list, quieter than your 3 */
+  .stretch-card { opacity: .92; }
+  .lane-today .stretch-card .task-title:not(.done) { font-weight: 500; }
+  :root[data-skin="glass"] .lane-today .task-card.stretch-card { box-shadow: none; }
+  .lu-then span::before { content: "⚡ "; }
+  :root[data-skin="vinyl"] .lu-then span::before { content: "B-SIDE · "; }
+
   /* === STATS v2: today rings · year in squares · ring calendar · trophy case === */
   .fx { --fxd: var(--font-ui); --fxw: 800; --fxs: 1; --fxls: -.02em; }
   :root[data-skin="vinyl"] .fx { --fxd: var(--font-display); --fxw: 400; --fxs: 1.15; --fxls: .04em; }
@@ -2072,6 +2079,7 @@ function coreComplete() {
 function bonusUnlocked() { return coreComplete(); }
 // Can a new CORE task be added to Today right now?
 function canAddToToday() {
+  return { ok: true };   // no lock any more: the first 3 on Today are your Focus, anything after is Stretch
   const U = todayUnfinishedCount(), D = todayDoneCount();
   if (coreComplete())            return { ok: false, reason: 'done' };     // set complete → bonus territory
   if (U + D >= TODAY_LIMIT)      return { ok: false, reason: 'full' };     // 3 slots occupied
@@ -2312,6 +2320,14 @@ async function promoteFromDeck(title) {
 // open, promote exactly ONE queued task (one at a time). Mutates rawMd + re-parses
 // but does NOT save/render — the caller handles that. Returns true if it promoted.
 function maybeBackfillFromDeck() {
+  const q = tasks.filter(t => t.ondeck && !t.done);
+  if (q.length) {
+    const lines = rawMd.split('\n'), now = Date.now();
+    q.forEach((t, i) => { let l = lines[t.lineIndex].replace(/\s*\[ondeck\]/, '').replace(/\s*\[tomorrow\]/, '');
+      if (!/\[today/.test(l)) l = l.trimEnd() + ` [today:${new Date(now + i).toISOString()}]`; lines[t.lineIndex] = l; });
+    rawMd = lines.join('\n'); parseTasks(); return true;
+  }
+  return false;
   if (!coreComplete()) return false;                                   // the 3 aren't done yet
   if (tasks.filter(t => t.today && !t.done).length > 0) return false;  // an overflow task is still active
   const next = ondeckQueue()[0];
@@ -3510,9 +3526,9 @@ function openParkActions(task) {
 // ---- "Daily 3 done" celebration card ----
 function winCard(doneN, deckN) {
   const st = computeFocusStreak().current, today = focusCountForDay(localDayKey());
-  const title = deckN ? 'Focus done' : doneN >= TODAY_LIMIT ? `Daily ${TODAY_LIMIT} done` : 'Focus set complete';
+  const title = doneN >= TODAY_LIMIT ? `Daily ${TODAY_LIMIT} done` : 'Focus set complete';
   const bits = [st >= 1 ? `🔥 ${st}-day streak` : '', today > TODAY_LIMIT ? `${today} done today` : '',
-    deckN ? `${deckN} queued · rolling in next` : 'Take the win 🤙'].filter(Boolean);
+    deckN ? `${deckN} stretch task${deckN === 1 ? '' : 's'} to go` : 'Take the win 🤙'].filter(Boolean);
   return `<div class="win-card"><div class="win-badge">${fxRing(58, 7, TODAY_LIMIT)}<span class="win-ck">✓</span></div>
     <div class="win-txt"><div class="win-t">${title}</div><div class="win-s">${bits.join(' · ')}</div></div></div>`;
 }
@@ -3553,26 +3569,33 @@ function renderToday(el, activeTasks, doneTasks) {
     </div>`;
 
   if (total===0 && deck.length===0) {
-    html += `<div class="today-empty"><span class="emoji">🎯</span>Your focus set is empty.<br>Tap the <strong>+</strong> on up to <strong>3</strong> backlog tasks to load Today.</div>`;
+    html += `<div class="today-empty"><span class="emoji">🎯</span>Nothing on Today yet.<br>Tap the <strong>+</strong> on backlog tasks to load it. Your first <strong>3</strong> are your Focus, and anything after that is Stretch.</div>`;
   } else {
-    // ONE LINEUP: your focus 3 (open first, finished ones stay in place), then the queue that rolls in after them.
-    const open = todayUnfin, done = todayDone, slotsLeft = Math.max(0, TODAY_LIMIT - total);
-    if (!open.length && done.length && unlocked) html += winCard(done.length, deck.length);
-    const note = total === 0 ? `Pick up to ${TODAY_LIMIT}`
-      : inOverflow && open.length ? 'Bonus round · rolled in from your queue'
-      : open.length && done.length ? 'Finish your set to unlock the next'
-      : open.length && slotsLeft ? `${slotsLeft} slot${slotsLeft === 1 ? '' : 's'} open`
-      : !open.length && done.length && !unlocked ? `${TODAY_LIMIT - done.length} more to finish your set`
-      : unlocked ? `${done.length} done` : 'Set is full';
-    html += `<div class="lu-head"><span class="section-label">Focus</span><span class="lu-note">${note}</span></div>`;
-    if (total === 0) html += `<div class="lu-empty">Tap the <b>+</b> on up to ${TODAY_LIMIT} Backlog tasks, or pick them here.</div>`;
-    open.forEach(t => { html += todayCard(t, false); });
-    done.forEach(t => { html += todayCard(t, true); });
-    if (canAddToToday().ok && total < TODAY_LIMIT) html += `<button class="lu-add" data-core-add>＋ Add focus task</button>`;
-    // THE QUEUE (On Deck): continues the list, numbered after your focus tasks
-    html += `<div class="lu-then"><span>${deck.length ? (unlocked ? 'Up next · rolls in as you finish' : `Then · ${deck.length} queued, one at a time`) : 'Busy day?'}</span></div>`;
-    deck.forEach((t, i) => { html += deckCard(t, total + i + 1); });
-    html += `<button class="lu-add" data-deck-add>＋ ${deck.length ? 'Queue another' : `Queue extras · they roll in after your ${TODAY_LIMIT}`}</button>`;
+    // ONE LIST: the first 3 you put on Today are your Focus; anything added after that is Stretch.
+    const byAdded = (x, y) => ((x.todayAt ? +x.todayAt : 0) - (y.todayAt ? +y.todayAt : 0)) || (x.lineIndex - y.lineIndex);
+    const all = [...todayUnfin, ...todayDone].sort(byAdded);
+    const focusSet = all.slice(0, TODAY_LIMIT), stretch = all.slice(TODAY_LIMIT);
+    const fOpen = focusSet.filter(t => !t.done), fDone = focusSet.filter(t => t.done);
+    const sOpen = stretch.filter(t => !t.done), sDone = stretch.filter(t => t.done);
+    const slotsLeft = Math.max(0, TODAY_LIMIT - focusSet.length);
+    if (focusSet.length >= TODAY_LIMIT && !fOpen.length) html += winCard(fDone.length, sOpen.length);
+    // open work stays on top (Focus, then Stretch); everything finished collects in Done at the bottom
+    if (fOpen.length || slotsLeft) {
+      const note = slotsLeft ? `${slotsLeft} slot${slotsLeft === 1 ? '' : 's'} open` : `${fDone.length} of ${TODAY_LIMIT} done`;
+      html += `<div class="lu-head"><span class="section-label">Focus</span><span class="lu-note">${note}</span></div>`;
+      fOpen.forEach(t => { html += todayCard(t, false); });
+      if (slotsLeft) html += `<button class="lu-add" data-core-add>＋ Add focus task</button>`;
+    }
+    if (sOpen.length) {
+      html += `<div class="lu-then"><span>Stretch · ${sOpen.length} to go</span></div>`;
+      sOpen.forEach(t => { html += todayCard(t, false, true); });
+    }
+    if (!slotsLeft) html += `<button class="lu-add" data-core-add>＋ Add a stretch task</button>`;
+    if (fDone.length || sDone.length) {
+      html += `<div class="lu-head"><span class="section-label">Done</span><span class="lu-note">${fDone.length} focus${sDone.length ? ` · ${sDone.length} stretch` : ''}</span></div>`;
+      fDone.forEach(t => { html += todayCard(t, true); });
+      sDone.forEach(t => { html += todayCard(t, true, true); });
+    }
   }
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
@@ -3624,7 +3647,7 @@ function openCorePicker() {
   const ov = document.createElement('div');
   ov.className = 'modal-overlay';
   ov.innerHTML = `<div class="modal">
-    <h2>🎯 Add focus task · ${slotsLeft} slot${slotsLeft===1?'':'s'} left</h2>
+    <h2>${slotsLeft ? `🎯 Add focus task · ${slotsLeft} slot${slotsLeft===1?'':'s'} left` : '⚡ Add stretch tasks · no limit'}</h2>
     <div class="pick-list">${rows}</div>
     <div class="modal-btns"><button class="btn-primary" id="core-done">Done</button></div>
   </div>`;
@@ -3642,9 +3665,9 @@ function openCorePicker() {
   }));
 }
 
-function todayCard(t, done) {
+function todayCard(t, done, stretch) {
   const badge = ageBadge(t);
-  return `<div class="task-card" style="${done?'opacity:.6;':''}${t.tag?`--spine:${tagDotColor(t.tag)}`:''}">
+  return `<div class="task-card ${stretch ? 'stretch-card' : ''}" style="${done?'opacity:.6;':''}${t.tag?`--spine:${tagDotColor(t.tag)}`:''}">
     <div class="check-ring ${done?'done':''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
@@ -4278,7 +4301,7 @@ function taskCard(t) {
         if (inT) return `<button class="today-ring-btn in-today" data-today-toggle="${esc(t.title)}" title="In Today — tap to remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>`;
         if (t.ondeck) return `<button class="today-ring-btn in-deck" data-deck-toggle="${esc(t.title)}" title="On Deck — tap to remove from queue">${IC_DECK}</button>`;
         // Focus set has room → "+" adds to the 3. Otherwise it's never locked — "+" queues it on deck.
-        if (canAddToToday().ok) return `<button class="today-ring-btn" data-today-toggle="${esc(t.title)}" title="Add to Today's focus">+</button>`;
+        if (canAddToToday().ok) return `<button class="today-ring-btn" data-today-toggle="${esc(t.title)}" title="${todayUnfinishedCount() + todayDoneCount() >= TODAY_LIMIT ? 'Add to Today as a stretch task' : 'Add to Today\'s focus'}">+</button>`;
         return `<button class="today-ring-btn add-deck" data-deck-toggle="${esc(t.title)}" title="Focus set full — queue on deck">${IC_DECK}</button>`;
       })() : ''}
     </div>
@@ -4502,8 +4525,12 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.06-4"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.06-5"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.06-5", date: "Oct 6, 2026", items: [
+    ["improved", "No more queue: add as many tasks to Today as you like. The first 3 are your Focus, and anything after that shows up right below as Stretch"],
+    ["improved", "Anything that was waiting On Deck moved straight onto Today as a stretch task"],
+  ]},
   { v: "2026.10.06-4", date: "Oct 6, 2026", items: [
     ["improved", "Today is one lineup now: your Focus 3 (finished ones stay in place), then a numbered queue that rolls in after them, so there's no more Up Next vs. On Deck confusion"],
   ]},
