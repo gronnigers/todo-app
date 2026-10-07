@@ -1677,6 +1677,21 @@
   .lu-then span::before { content: "⚡ "; }
   :root[data-skin="vinyl"] .lu-then span::before { content: "B-SIDE · "; }
 
+  /* === TODAY REORDER === */
+  .td-grip { flex: 0 0 auto; width: 28px; height: 36px; margin-left: 2px; display: grid; place-items: center; border: 0; background: none; color: var(--sub); opacity: .55; cursor: grab; touch-action: none; border-radius: 8px; }
+  .td-grip svg { width: 18px; height: 18px; }
+  .td-grip:hover { opacity: 1; background: var(--tag-bg); }
+  .td-up { flex: 0 0 auto; width: 30px; height: 30px; margin-right: 6px; border-radius: 50%; border: 0; cursor: pointer; background: var(--accent-light); color: var(--accent); font: 700 16px var(--font-ui); display: grid; place-items: center; }
+  .task-card.td-dragging { position: relative; z-index: 30; box-shadow: 0 16px 40px rgba(0,0,0,.28) !important; scale: 1.02; transition: scale .12s; background: var(--card); }
+  :root[data-skin="moleskine"] .task-card.td-dragging { background: #fbf7ec; }
+  :root[data-skin="vinyl"] .task-card.td-dragging { background: #22190f; }
+  body.td-drag-on, body.td-drag-on * { user-select: none !important; -webkit-user-select: none !important; cursor: grabbing !important; }
+  .td-drop { position: relative; height: 0; }
+  .td-drop::after { content: ""; position: absolute; left: 0; right: 0; top: -3px; height: 4px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  .td-drop.to-stretch::after { background: var(--orange); box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange) 20%, transparent); }
+  :root[data-skin="moleskine"] .td-up { font: 400 22px var(--font-pen); }
+  :root[data-skin="cork"] .td-up { border-radius: 3px; box-shadow: var(--shadow-sm); background: #fffdf5; }
+
   /* === STATS v2: today rings · year in squares · ring calendar · trophy case === */
   .fx { --fxd: var(--font-ui); --fxw: 800; --fxs: 1; --fxls: -.02em; }
   :root[data-skin="vinyl"] .fx { --fxd: var(--font-display); --fxw: 400; --fxs: 1.15; --fxls: .04em; }
@@ -2860,6 +2875,7 @@ function parseTasks() {
     const isBonus = /\[bonus\]/.test(line);
     const isOnDeck = /\[ondeck\]/.test(line);
     const parkM = line.match(/\[park:(started|waiting):([^\]]+)\]/), waitM = line.match(/\[waiton:([^\]]*)\]/),
+          tdoM = line.match(/\[tdo:(\d{4}-\d{2}-\d{2}):(\d+)\]/),
           nudgeM = line.match(/\[nudge:(\d+)\]/), pnoteM = line.match(/\[pnote:([^\]]*)\]/), pingM = line.match(/\[pinged:([^\]]+)\]/);
 
     // Strip [created:...], [done:...], [notes:...], [tomorrow], [bonus], [ondeck] before main parse
@@ -2872,7 +2888,7 @@ function parseTasks() {
       .replace(/\s*\[card:[^\]]+\]/g, '')
       .replace(/\s*\[focus\]/g, '')
       .replace(/\s*\[ondeck\]/g, '')
-      .replace(/\s*\[(?:park|waiton|nudge|pnote|pinged):[^\]]*\]/g, '');
+      .replace(/\s*\[(?:park|waiton|nudge|pnote|pinged|tdo):[^\]]*\]/g, '');
 
     let m = cleanLine.match(/^- \[( |x)\] (.+?)(?:\s+\(([A-Za-z0-9][\w -]*)\))?(\s+\[today(?::([^\]]+))?\])?$/);
     if (m && m[3] && /\s/.test(m[3]) && !(readTagRegistry() || []).includes(m[3].toLowerCase()) && !TAG_COLORS[m[3].toLowerCase()]) {   // "(Function Health)" etc. is part of the title, not a tag
@@ -2898,7 +2914,8 @@ function parseTasks() {
         focus: isFocus, doneAt: doneTs || null,
         parked: parkM ? parkM[1] : null, parkedAt: parkM ? new Date(parkM[2]) : null,
         waitOn: waitM ? decodeNotes(waitM[1]) : '', nudge: nudgeM ? +nudgeM[1] : 5,
-        pnote: pnoteM ? decodeNotes(pnoteM[1]) : '', pingedAt: pingM ? new Date(pingM[1]) : null
+        pnote: pnoteM ? decodeNotes(pnoteM[1]) : '', pingedAt: pingM ? new Date(pingM[1]) : null,
+        tdoDay: tdoM ? tdoM[1] : null, tdo: tdoM ? +tdoM[2] : null
       });
     }
   });
@@ -3003,7 +3020,7 @@ async function editTask(lineIndex, oldTitle, newTitle, newTag, newNotes) {
   const isDone = line.includes('- [x]');
   // Preserve ALL existing bracket metadata (created/done/today/tomorrow/bonus);
   // only the title, tag, and notes are being rewritten here.
-  const keptFlags = (line.match(/\s*\[(?:created|done|today|tomorrow|bonus|card|focus|ondeck|park|waiton|nudge|pnote|pinged)(?::[^\]]*)?\]/g) || []).join('');
+  const keptFlags = (line.match(/\s*\[(?:created|done|today|tomorrow|bonus|card|focus|ondeck|park|waiton|nudge|pnote|pinged|tdo)(?::[^\]]*)?\]/g) || []).join('');
   const notesFlag = newNotes ? ` [notes:${encodeNotes(newNotes)}]` : '';
   const box = isDone ? '- [x]' : '- [ ]';
   const tagPart = newTag ? ` (${newTag})` : '';
@@ -3594,12 +3611,16 @@ function renderToday(el, activeTasks, doneTasks) {
     html += `<div class="today-empty"><span class="emoji">🎯</span>Nothing on Today yet.<br>Tap the <strong>+</strong> on backlog tasks to load it. Your first <strong>3</strong> are your Focus, and anything after that is Stretch.</div>`;
   } else {
     // ONE LIST: the first 3 you put on Today are your Focus; anything added after that is Stretch.
-    const byAdded = (x, y) => ((x.todayAt ? +x.todayAt : 0) - (y.todayAt ? +y.todayAt : 0)) || (x.lineIndex - y.lineIndex);
+    const dk = localDayKey(), ordOf = t => t.tdoDay === dk ? t.tdo : null;
+    const byAdded = (x, y) => { const a = ordOf(x), b = ordOf(y);
+      if (a != null && b != null) return a - b; if (a != null) return -1; if (b != null) return 1;
+      return ((x.todayAt ? +x.todayAt : 0) - (y.todayAt ? +y.todayAt : 0)) || (x.lineIndex - y.lineIndex); };
     const all = [...todayUnfin, ...todayDone].sort(byAdded);
     const focusSet = all.slice(0, TODAY_LIMIT), stretch = all.slice(TODAY_LIMIT);
     const fOpen = focusSet.filter(t => !t.done), fDone = focusSet.filter(t => t.done);
     const sOpen = stretch.filter(t => !t.done), sDone = stretch.filter(t => t.done);
     const slotsLeft = Math.max(0, TODAY_LIMIT - focusSet.length);
+    todayGroups = { fDone, fOpen, sOpen, sDone, K: fOpen.length };
     if (focusSet.length >= TODAY_LIMIT && !fOpen.length) html += winCard(fDone.length, sOpen.length);
     // open work stays on top (Focus, then Stretch); everything finished collects in Done at the bottom
     if (fOpen.length || slotsLeft) {
@@ -3610,7 +3631,7 @@ function renderToday(el, activeTasks, doneTasks) {
     }
     if (sOpen.length) {
       html += `<div class="lu-then"><span>Stretch · ${sOpen.length} to go</span></div>`;
-      sOpen.forEach(t => { html += todayCard(t, false, true); });
+      sOpen.forEach(t => { html += todayCard(t, false, true, fOpen.length > 0); });
     }
     if (!slotsLeft) html += `<button class="lu-add" data-core-add>＋ Add a stretch task</button>`;
     if (fDone.length || sDone.length) {
@@ -3622,6 +3643,7 @@ function renderToday(el, activeTasks, doneTasks) {
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
   attachTaskEvents(el);
+  tdAttachDrag(el);
 }
 
 function bonusCard(t, done) {
@@ -3687,9 +3709,9 @@ function openCorePicker() {
   }));
 }
 
-function todayCard(t, done, stretch) {
+function todayCard(t, done, stretch, canSwap) {
   const badge = ageBadge(t);
-  return `<div class="task-card ${stretch ? 'stretch-card' : ''}" style="${done?'opacity:.6;':''}${t.tag?`--spine:${tagDotColor(t.tag)}`:''}">
+  return `<div class="task-card ${stretch ? 'stretch-card' : ''}" ${done ? '' : `data-td-open="${t.lineIndex}" data-td-group="${stretch ? 's' : 'f'}"`} style="${done?'opacity:.6;':''}${t.tag?`--spine:${tagDotColor(t.tag)}`:''}">
     <div class="check-ring ${done?'done':''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
@@ -3697,8 +3719,66 @@ function todayCard(t, done, stretch) {
       <div class="task-title ${done?'done':''}">${t.title}</div>
       ${(t.tag || badge || t.notes || t.cardId) ? `<div class="task-meta">${t.cardId?pjTaskExtras(t).meta:''}${tagHTML(t.tag)}${badge}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
     </div>
+    ${!done && stretch && canSwap ? `<button class="td-up" data-td-up="${t.lineIndex}" title="Swap into Focus">⇡</button>` : ''}
     <button class="remove-today-btn" data-remove="${esc(t.title)}">×</button>
+    ${done ? '' : `<button class="td-grip" data-td-grip title="Drag to reorder" aria-label="Drag to reorder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>`}
   </div>`;
+}
+
+// ---- TODAY REORDER: drag the grip to reorder; drop a Stretch task above the line to swap it into Focus ----
+let todayGroups = null;
+async function todayReorder(newOpen) {
+  const G = todayGroups; if (!G) return;
+  const all = [...G.fDone, ...newOpen, ...G.sDone], dk = localDayKey(), lines = rawMd.split('\n');
+  all.forEach((t, i) => { const l = lines[t.lineIndex]; if (l == null) return;
+    lines[t.lineIndex] = l.replace(/\s*\[tdo:[^\]]*\]/g, '').trimEnd() + ` [tdo:${dk}:${i}]`; });
+  rawMd = lines.join('\n'); parseTasks(); render(); await saveBacklog();
+}
+function tdAttachDrag(root) {
+  root.querySelectorAll('[data-td-up]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation(); const G = todayGroups; if (!G) return;
+    const li = +b.dataset.tdUp, t = G.sOpen.find(x => x.lineIndex === li); if (!t) return;
+    const open = [...G.fOpen, ...G.sOpen].filter(x => x !== t); open.splice(Math.max(0, G.K - 1), 0, t);
+    if (navigator.vibrate) navigator.vibrate(8);
+    todayReorder(open); showToast(`⇅ Swapped into Focus · "${G.fOpen[G.K - 1].title}" moved to Stretch`);
+  }));
+  root.querySelectorAll('[data-td-grip]').forEach(g => g.addEventListener('pointerdown', e => tdDragStart(e, g)));
+}
+function tdDragStart(e, grip) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const G = todayGroups, card = grip.closest('[data-td-open]'); if (!G || !card) return;
+  e.preventDefault(); e.stopPropagation();
+  const open = [...G.fOpen, ...G.sOpen], li = +card.dataset.tdOpen, dragged = open.find(t => t.lineIndex === li);
+  const rem = [...document.querySelectorAll('#content [data-td-open]')].filter(x => x !== card);
+  const divider = document.querySelector('#content .lu-then');
+  const line = document.createElement('div'); line.className = 'td-drop';
+  const startY = e.clientY, startScroll = window.scrollY; let lastY = e.clientY, idx = rem.indexOf(card), moved = false;
+  window.__tdDrag = true; card.classList.add('td-dragging'); document.body.classList.add('td-drag-on');
+  try { grip.setPointerCapture(e.pointerId); } catch (_) {}
+  const place = () => {
+    card.style.transform = `translateY(${lastY - startY + window.scrollY - startScroll}px)`;
+    let i = 0; for (const x of rem) { const r = x.getBoundingClientRect(); if (lastY > r.top + r.height / 2) i++; }
+    idx = i; const inFocus = i < G.K || !divider, focusRem = rem.filter(x => x.dataset.tdGroup === 'f');
+    if (rem[i] && (!inFocus || rem[i].dataset.tdGroup === 'f')) rem[i].before(line);
+    else if (inFocus && focusRem.length) focusRem[focusRem.length - 1].after(line);
+    else if (inFocus && divider) divider.before(line);
+    else (rem[rem.length - 1] || card).after(line);
+    line.classList.toggle('to-stretch', !inFocus);
+  };
+  const tick = setInterval(() => { if (lastY < 90) { window.scrollBy(0, -10); place(); } else if (lastY > innerHeight - 110) { window.scrollBy(0, 10); place(); } }, 16);
+  const move = ev => { lastY = ev.clientY; if (Math.abs(lastY - startY) > 4) moved = true; place(); };
+  const up = () => {
+    clearInterval(tick); grip.removeEventListener('pointermove', move); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up);
+    window.__tdDrag = false; document.body.classList.remove('td-drag-on'); line.remove(); card.classList.remove('td-dragging'); card.style.transform = '';
+    if (!moved) return;
+    const order = rem.map(x => open.find(t => t.lineIndex === +x.dataset.tdOpen)); order.splice(idx, 0, dragged);
+    if (order.every((t, i) => t === open[i])) return;
+    const wasF = G.fOpen.includes(dragged), nowF = idx < G.K;
+    todayReorder(order);
+    if (wasF !== nowF) showToast(nowF ? '⇅ Moved into Focus' : '⇅ Moved to Stretch');
+  };
+  grip.addEventListener('pointermove', move); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
+  place();
 }
 
 // On-deck (queued overflow) card — muted until it auto-promotes into Today.
@@ -4547,8 +4627,12 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.06-6"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.07-1"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.07-1", date: "Oct 7, 2026", items: [
+    ["new", "Reorder Today: drag the ⋮⋮ grip to move tasks around; drop a stretch task above the line to swap it into your Focus"],
+    ["new", "Quick swap: tap ⇡ on a stretch task to trade places with your last focus task"],
+  ]},
   { v: "2026.10.06-6", date: "Oct 6, 2026", items: [
     ["fixed", "Opening the app on a second device in the morning no longer clears tasks you already finished today on another device"],
     ["fixed", "Today's finished tasks that got cleared are back on Today"],
@@ -5723,6 +5807,7 @@ function syncUiBusy() {
   const m = document.getElementById('modal'); if (m && !m.classList.contains('hidden')) return true;
   if (document.querySelector('.pj-sheet.open, .pop-scrim, .pj-lightbox, .modal-overlay:not(.hidden)')) return true;
   if (typeof pjDrag !== 'undefined' && (pjDrag || pjPending)) return true;
+  if (window.__tdDrag) return true;
   if (typeof openSwipeWrap !== 'undefined' && openSwipeWrap) return true;
   return false;
 }
