@@ -3963,7 +3963,7 @@ function renderFocus(activeTasks, doneTasks) {
       </div>
       <div class="chart-card fx-span2"><div class="fx-lbl">Last 7 days</div>
         <div class="fx-week">${week.map(d => { const n = cnt(d), isT = d.getTime() === T.getTime();
-          return `<div class="d ${isT ? 'today' : ''}">${fxRing(62, 8, n)}<span>${isT ? 'Today' : fxFmt(d, { weekday: 'short' })}</span><b>${n}${n > G ? ` <span class="xtra-c">+${n - G}</span>` : ''}</b></div>`; }).join('')}</div>
+          return `<div class="d ${isT ? 'today' : ''}">${fxRing(62, 8, n)}<span>${isT ? 'Today' : fxFmt(d, { weekday: 'short' })}</span><b title="${n} done">${Math.min(n, G)}${n > G ? ` <span class="xtra-c">+${n - G}</span>` : ''}</b></div>`; }).join('')}</div>
       </div>
     </div>`;
 
@@ -4002,7 +4002,7 @@ function renderFocus(activeTasks, doneTasks) {
     const d = new Date(y, m, i), k = dayKeyFromDate(d), n = FD[k] || 0, fut = d > T, isT = d.getTime() === T.getTime();
     if (!fut) { mDays++; mTot += n; if (n >= G) mHits++; }
     cells += `<div class="fx-cell ${fut ? 'future' : ''} ${isT ? 'today' : ''} ${!fut && k < firstKey ? 'pre' : ''}" title="${k}: ${n} done"><span class="dn">${i}</span>` +
-      (fut ? '' : fxRing(50, 6, n) + `<span class="cnt">${n}</span>`) + (!fut && n >= G ? '<span class="star">★</span>' : '') + (n > G ? `<span class="xtra">+${n - G}</span>` : '') + '</div>';
+      (fut ? '' : fxRing(50, 6, n) + `<span class="cnt">${Math.min(n, G)}</span>`) + (!fut && n >= G ? '<span class="star">★</span>' : '') + (n > G ? `<span class="xtra">+${n - G}</span>` : '') + '</div>';
   }
   out += `<div class="chart-card">
     <div class="fx-calhead"><button class="hm-nav" onclick="fxMonth(-1)">‹</button>
@@ -4627,8 +4627,11 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.07-1"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.08-1"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.08-1", date: "Oct 8, 2026", items: [
+    ["fixed", "Stats rings now read as your 3 plus extras (3 +1) instead of the total plus extras (4 +1)"],
+  ]},
   { v: "2026.10.07-1", date: "Oct 7, 2026", items: [
     ["new", "Reorder Today: drag the ⋮⋮ grip to move tasks around; drop a stretch task above the line to swap it into your Focus"],
     ["new", "Quick swap: tap ⇡ on a stretch task to trade places with your last focus task"],
