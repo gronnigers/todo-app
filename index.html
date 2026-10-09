@@ -1692,6 +1692,21 @@
   :root[data-skin="moleskine"] .td-up { font: 400 22px var(--font-pen); }
   :root[data-skin="cork"] .td-up { border-radius: 3px; box-shadow: var(--shadow-sm); background: #fffdf5; }
 
+  /* === TASK ATTACHMENTS === */
+  .md-files { margin: -2px 0 12px; }
+  .md-files.hidden { display: none; }
+  .md-lbl { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--sub); margin: 0 2px 8px; }
+  .md-lbl svg { width: 14px; height: 14px; }
+  .md-grid { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); margin-bottom: 0; }
+  .att-chip { gap: 2px; } .att-chip svg { width: 13px; height: 13px; } .att-chip b { font-size: 11px; font-weight: 700; }
+  :root[data-skin="moleskine"] .md-lbl { font: 400 21px var(--font-pen); letter-spacing: 0; text-transform: none; color: var(--accent); }
+  :root[data-skin="moleskine"] .pj-file .fn, :root[data-skin="moleskine"] .pj-file.add { font-family: var(--font-pen); font-weight: 400; font-size: 16px; }
+  :root[data-skin="vinyl"] .md-lbl { font: 400 15px var(--font-display); letter-spacing: .12em; color: var(--accent); }
+  :root[data-skin="vinyl"] .pj-file .fn { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 400; font-size: 10px; }
+  :root[data-skin="cork"] .md-lbl { font: 400 13px var(--font-marker); letter-spacing: .3px; text-transform: none; }
+  :root[data-skin="cork"] .pj-file .fn, :root[data-skin="cork"] .pj-file.add { font-family: 'Caveat', cursive; font-weight: 700; font-size: 16px; }
+  :root[data-skin="cork"] .pj-file { border-radius: 2px; }
+
   /* === STATS v2: today rings · year in squares · ring calendar · trophy case === */
   .fx { --fxd: var(--font-ui); --fxw: 800; --fxs: 1; --fxls: -.02em; }
   :root[data-skin="vinyl"] .fx { --fxd: var(--font-display); --fxw: 400; --fxs: 1.15; --fxls: .04em; }
@@ -1891,6 +1906,7 @@
       <option value="">No tag</option>
     </select>
     <textarea id="modal-task-notes" placeholder="Notes (optional)…"></textarea>
+    <div id="modal-files" class="md-files hidden"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" id="modal-submit-btn" onclick="submitModal()">Add Task</button>
@@ -2875,6 +2891,7 @@ function parseTasks() {
     const isBonus = /\[bonus\]/.test(line);
     const isOnDeck = /\[ondeck\]/.test(line);
     const parkM = line.match(/\[park:(started|waiting):([^\]]+)\]/), waitM = line.match(/\[waiton:([^\]]*)\]/),
+          attM = line.match(/\[att:([^\]]*)\]/),
           tdoM = line.match(/\[tdo:(\d{4}-\d{2}-\d{2}):(\d+)\]/),
           nudgeM = line.match(/\[nudge:(\d+)\]/), pnoteM = line.match(/\[pnote:([^\]]*)\]/), pingM = line.match(/\[pinged:([^\]]+)\]/);
 
@@ -2888,7 +2905,7 @@ function parseTasks() {
       .replace(/\s*\[card:[^\]]+\]/g, '')
       .replace(/\s*\[focus\]/g, '')
       .replace(/\s*\[ondeck\]/g, '')
-      .replace(/\s*\[(?:park|waiton|nudge|pnote|pinged|tdo):[^\]]*\]/g, '');
+      .replace(/\s*\[(?:park|waiton|nudge|pnote|pinged|tdo|att):[^\]]*\]/g, '');
 
     let m = cleanLine.match(/^- \[( |x)\] (.+?)(?:\s+\(([A-Za-z0-9][\w -]*)\))?(\s+\[today(?::([^\]]+))?\])?$/);
     if (m && m[3] && /\s/.test(m[3]) && !(readTagRegistry() || []).includes(m[3].toLowerCase()) && !TAG_COLORS[m[3].toLowerCase()]) {   // "(Function Health)" etc. is part of the title, not a tag
@@ -2915,7 +2932,8 @@ function parseTasks() {
         parked: parkM ? parkM[1] : null, parkedAt: parkM ? new Date(parkM[2]) : null,
         waitOn: waitM ? decodeNotes(waitM[1]) : '', nudge: nudgeM ? +nudgeM[1] : 5,
         pnote: pnoteM ? decodeNotes(pnoteM[1]) : '', pingedAt: pingM ? new Date(pingM[1]) : null,
-        tdoDay: tdoM ? tdoM[1] : null, tdo: tdoM ? +tdoM[2] : null
+        tdoDay: tdoM ? tdoM[1] : null, tdo: tdoM ? +tdoM[2] : null,
+        files: attM ? attDecode(attM[1]) : []
       });
     }
   });
@@ -3020,7 +3038,7 @@ async function editTask(lineIndex, oldTitle, newTitle, newTag, newNotes) {
   const isDone = line.includes('- [x]');
   // Preserve ALL existing bracket metadata (created/done/today/tomorrow/bonus);
   // only the title, tag, and notes are being rewritten here.
-  const keptFlags = (line.match(/\s*\[(?:created|done|today|tomorrow|bonus|card|focus|ondeck|park|waiton|nudge|pnote|pinged|tdo)(?::[^\]]*)?\]/g) || []).join('');
+  const keptFlags = (line.match(/\s*\[(?:created|done|today|tomorrow|bonus|card|focus|ondeck|park|waiton|nudge|pnote|pinged|tdo|att)(?::[^\]]*)?\]/g) || []).join('');
   const notesFlag = newNotes ? ` [notes:${encodeNotes(newNotes)}]` : '';
   const box = isDone ? '- [x]' : '- [ ]';
   const tagPart = newTag ? ` (${newTag})` : '';
@@ -3048,6 +3066,8 @@ async function editTask(lineIndex, oldTitle, newTitle, newTag, newNotes) {
 // DELETE TASK
 // ============================================================
 async function deleteTask(lineIndex, title) {
+  const gone = tasks.find(t => t.lineIndex === lineIndex);
+  if (gone && gone.files && gone.files.length) gone.files.forEach(f => graphFetch(`/me/drive/items/${f.id}`, { method: 'DELETE' }).catch(() => {}));
   const lines = rawMd.split('\n');
   lines.splice(lineIndex, 1);
   rawMd = lines.join('\n');
@@ -3084,6 +3104,7 @@ function openAddModal() {
   document.getElementById('modal-delete-btn').classList.add('hidden');
   document.getElementById('modal-link-btn').classList.add('hidden');
   document.getElementById('modal-park-btn').classList.add('hidden');
+  document.getElementById('modal-files').classList.add('hidden');
   populateTagSelect(null);
   showModal();
 }
@@ -3095,6 +3116,7 @@ function openEditModal(task) {
   document.getElementById('modal-task-notes').value = task.notes || '';
   document.getElementById('modal-delete-btn').classList.remove('hidden');
   document.getElementById('modal-link-btn').classList.toggle('hidden', !!(task.done || task.cardId));
+  renderModalFiles(task);
   const pkb = document.getElementById('modal-park-btn');
   pkb.classList.toggle('hidden', !!(task.done || task.cardId)); pkb.textContent = task.parked ? '⏸ Edit park…' : '⏸ Park…';
   populateTagSelect(task.tag || null);
@@ -3572,6 +3594,80 @@ function winCard(doneN, deckN) {
     <div class="win-txt"><div class="win-t">${title}</div><div class="win-s">${bits.join(' · ')}</div></div></div>`;
 }
 
+
+// ============================================================
+// TASK ATTACHMENTS: files live in OneDrive (Backlog/attachments/tasks/…); the line keeps a small index:
+// [att:<itemId>|<name>|<mime>;…]
+// ============================================================
+const IC_CLIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+const attN = t => (t.files && t.files.length) || 0;
+function attChip(t) { const n = attN(t); return n ? `<span class="note-chip att-chip" title="${n} attachment${n === 1 ? '' : 's'}">${IC_CLIP}${n > 1 ? `<b>${n}</b>` : ''}</span>` : ''; }
+function attDecode(s) { return (s || '').split(';').filter(Boolean).map(x => { const [id, name, type] = x.split('|'); return { id, name: decodeNotes(name || 'file'), type: type || '' }; }).filter(f => f.id); }
+function attEncode(files) { return files.filter(f => !f.busy).map(f => [f.id, encodeNotes(String(f.name).replace(/[|;]/g, '_')), (f.type || '').replace(/[|;\]]/g, '')].join('|')).join(';'); }
+async function setTaskFiles(lineIndex, files) {
+  const lines = rawMd.split('\n'); let l = lines[lineIndex]; if (l == null) return;
+  l = l.replace(/\s*\[att:[^\]]*\]/g, '').trimEnd(); const enc = attEncode(files);
+  if (enc) l += ` [att:${enc}]`;
+  lines[lineIndex] = l; rawMd = lines.join('\n'); parseTasks(); render(); await saveBacklog();
+}
+let mdFiles = [];   // working copy while the editor is open (includes in-flight uploads)
+function renderModalFiles(task) {
+  const box = document.getElementById('modal-files'); if (!box) return;
+  if (task) mdFiles = (task.files || []).map(f => ({ ...f }));
+  box.classList.toggle('hidden', !editingTask || modalMode !== 'edit');
+  box.innerHTML = `<div class="md-lbl">${IC_CLIP}Attachments${mdFiles.length ? ` · ${mdFiles.length}` : ''}</div><div class="pj-files md-grid">${mdFiles.map(f => {
+      const img = (f.type || '').startsWith('image/'), ext = (String(f.name).split('.').pop() || 'file').slice(0, 4).toUpperCase();
+      return `<div class="pj-file ${img ? 'img' : ''} ${f.busy ? 'busy' : ''}" data-md-file="${f.id}" ${img && !f.busy ? `data-thumb="${f.id}"` : ''}>${f.busy ? '<span class="spin"></span>' : ''}${img ? '' : `<span class="ext">${pjh(ext)}</span>`}<span class="fn">${pjh(f.name)}</span>${f.busy ? '' : `<button class="x" data-md-rm="${f.id}" title="Remove">✕</button>`}</div>`; }).join('')}
+    <label class="pj-file add"><b>＋</b>Add<input type="file" multiple hidden data-md-upload></label></div>`;
+  pjLoadThumbs(box);
+}
+async function driveUpload(dir, file) {
+  const safe = file.name.replace(/[\\/:*?"<>|#%]/g, '_');
+  const path = `${dir}/${Date.now().toString(36)}-${safe}`, enc = path.split('/').map(encodeURIComponent).join('/');
+  if (file.size <= 4e6) {
+    const r = await graphFetch(`/me/drive/root:${enc}:/content`, { method: 'PUT', headers: { 'Content-Type': file.type || 'application/octet-stream' }, body: file });
+    if (!r || !r.ok) throw new Error('upload ' + (r && r.status)); return r.json();
+  }
+  const s = await graphFetch(`/me/drive/root:${enc}:/createUploadSession`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ item: { '@microsoft.graph.conflictBehavior': 'rename' } }) });
+  if (!s || !s.ok) throw new Error('session'); const { uploadUrl } = await s.json();
+  const CH = 327680 * 10; let pos = 0, last = null;
+  while (pos < file.size) { const end = Math.min(pos + CH, file.size);
+    last = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Range': `bytes ${pos}-${end - 1}/${file.size}` }, body: file.slice(pos, end) });
+    if (!last.ok && last.status !== 202) throw new Error('chunk'); pos = end; }
+  return last.json();
+}
+async function openDriveFile(f) {
+  if ((f.type || '').startsWith('image/')) { const r = await graphFetch(`/me/drive/items/${f.id}/thumbnails/0/large`); let u = null; if (r && r.ok) u = (await r.json()).url;
+    if (u) { const lb = document.createElement('div'); lb.className = 'pj-lightbox'; lb.innerHTML = `<img src="${u}" alt="">`; lb.onclick = () => lb.remove(); document.body.appendChild(lb); return; } }
+  const win = window.open('', '_blank');
+  const r = await graphFetch(`/me/drive/items/${f.id}?$select=webUrl`); if (r && r.ok) { const j = await r.json(); if (win) win.location = j.webUrl; else location.href = j.webUrl; } else if (win) win.close();
+}
+const mdLine = () => editingTask && tasks.find(t => t.lineIndex === editingTask.lineIndex && t.title === editingTask.title);
+document.addEventListener('change', async e => {
+  if (!e.target.matches || !e.target.matches('[data-md-upload]')) return;
+  const files = [...e.target.files]; e.target.value = ''; const key = Date.now().toString(36);
+  for (const file of files) {
+    if (file.size > 60e6) { showToast(`${file.name} is over 60 MB`); continue; }
+    const tmp = { id: 'tmp' + Math.random().toString(36).slice(2), name: file.name, type: file.type || '', busy: true };
+    mdFiles.push(tmp); renderModalFiles();
+    try {
+      const item = await driveUpload(`${PJ_ATTACH_DIR}/tasks/${key}`, file);
+      tmp.id = item.id; delete tmp.busy;
+      const t = mdLine(); if (t) await setTaskFiles(t.lineIndex, [...(t.files || []).filter(f => !mdFiles.some(m => m.id === f.id)), ...mdFiles.filter(f => !f.busy)]);
+    } catch (err) { mdFiles = mdFiles.filter(x => x !== tmp); showToast('⚠️ Upload failed: ' + file.name); }
+    renderModalFiles();
+  }
+});
+document.addEventListener('click', async e => {
+  const t = e.target; if (!t.closest || !t.closest('#modal-files')) return;
+  const rm = t.closest('[data-md-rm]');
+  if (rm) { e.stopPropagation(); const f = mdFiles.find(x => x.id === rm.dataset.mdRm); if (!f || !confirm(`Remove “${f.name}”? It’s deleted from OneDrive too.`)) return;
+    mdFiles = mdFiles.filter(x => x !== f); renderModalFiles();
+    const tk = mdLine(); if (tk) await setTaskFiles(tk.lineIndex, mdFiles.filter(x => !x.busy));
+    graphFetch(`/me/drive/items/${f.id}`, { method: 'DELETE' }).catch(() => {}); return; }
+  const fe = t.closest('[data-md-file]'); if (fe) { const f = mdFiles.find(x => x.id === fe.dataset.mdFile); if (f && !f.busy) openDriveFile(f); }
+});
+
 // ---- TODAY TAB ----
 function renderToday(el, activeTasks, doneTasks) {
   const inToday = activeTasks.filter(t=>t.today);
@@ -3653,7 +3749,7 @@ function bonusCard(t, done) {
     </div>
     <div class="task-body" data-edit-line="${t.lineIndex}">
       <div class="task-title ${done?'done':''}">${t.title}</div>
-      <div class="task-meta">${tagHTML(t.tag)}<span class="bonus-badge" title="Stretch task">${IC_PLUS}</span>${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>
+      <div class="task-meta">${tagHTML(t.tag)}<span class="bonus-badge" title="Stretch task">${IC_PLUS}</span>${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>
     </div>
     <button class="remove-today-btn dim-gold" data-bonus-remove="${esc(t.title)}">×</button>
   </div>`;
@@ -3717,7 +3813,7 @@ function todayCard(t, done, stretch, canSwap) {
     </div>
     <div class="task-body" data-edit-line="${t.lineIndex}">
       <div class="task-title ${done?'done':''}">${t.title}</div>
-      ${(t.tag || badge || t.notes || t.cardId) ? `<div class="task-meta">${t.cardId?pjTaskExtras(t).meta:''}${tagHTML(t.tag)}${badge}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
+      ${(t.tag || badge || t.notes || attN(t) || t.cardId) ? `<div class="task-meta">${t.cardId?pjTaskExtras(t).meta:''}${tagHTML(t.tag)}${badge}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
     </div>
     ${!done && stretch && canSwap ? `<button class="td-up" data-td-up="${t.lineIndex}" title="Swap into Focus">⇡</button>` : ''}
     <button class="remove-today-btn" data-remove="${esc(t.title)}">×</button>
@@ -3787,7 +3883,7 @@ function deckCard(t, n) {
     <div class="lu-num">${n || ''}</div>
     <div class="task-body" data-edit-line="${t.lineIndex}">
       <div class="task-title">${t.title}</div>
-      ${(t.tag || t.notes) ? `<div class="task-meta">${tagHTML(t.tag)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
+      ${(t.tag || t.notes || attN(t)) ? `<div class="task-meta">${tagHTML(t.tag)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
     </div>
     <button class="pull-today-btn" data-deck-pull="${esc(t.title)}" title="Pull into Today now">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
@@ -3817,7 +3913,7 @@ function tomorrowCard(t) {
     <div class="plan-dot"></div>
     <div class="task-body" data-edit-line="${t.lineIndex}">
       <div class="task-title">${t.title}</div>
-      ${(t.tag || t.notes) ? `<div class="task-meta">${tagHTML(t.tag)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
+      ${(t.tag || t.notes || attN(t)) ? `<div class="task-meta">${tagHTML(t.tag)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
     </div>
     <button class="pull-today-btn" data-pull="${esc(t.title)}" title="Pull into Today now">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
@@ -4395,7 +4491,7 @@ function taskCard(t) {
       </div>
       <div class="task-body" data-edit-line="${t.lineIndex}">
         <div class="task-title ${t.done?'done':''}">${t.title}</div>${px?px.line:''}${!t.done && t.parked ? parkLine(t) : ''}
-        ${(t.tag || t.notes || px || createdMsOf(t)) ? `<div class="task-meta">${px?px.meta:''}${tagHTML(t.tag)}${ageChip(t)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}</div>` : ''}
+        ${(t.tag || t.notes || attN(t) || px || createdMsOf(t)) ? `<div class="task-meta">${px?px.meta:''}${tagHTML(t.tag)}${ageChip(t)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
       </div>
       ${px && px.right && !t.done ? px.right : !t.done ? (() => {
         if (t.parked) return '';
@@ -4627,8 +4723,12 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.08-1"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.10.08-2"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.10.08-2", date: "Oct 8, 2026", items: [
+    ["new", "Attachments on any task: open a task and tap ＋ Add under Attachments to add photos, PDFs or any file (saved to your OneDrive)"],
+    ["new", "Tasks with files show a 📎 on the card; tap a file to open it, and photos open full-screen"],
+  ]},
   { v: "2026.10.08-1", date: "Oct 8, 2026", items: [
     ["fixed", "Stats rings now read as your 3 plus extras (3 +1) instead of the total plus extras (4 +1)"],
   ]},
