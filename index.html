@@ -1894,6 +1894,114 @@
   .about-v { font-size: 12.5px; color: var(--sub); }
   .about-btns { display: flex; gap: 6px; flex-wrap: wrap; }
   .about-btns .theme-btn { background: var(--tag-bg); color: var(--text); padding: 7px 11px; border-radius: 8px; }
+
+  /* ============================================================
+     LISTS tab — built from the same task-card pieces so every skin styles it
+     ============================================================ */
+  .lst-count { font-size: 13px; font-weight: 600; color: var(--sub); letter-spacing: .3px; margin: 0 2px 12px; }
+  .lst-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+  @media (min-width: 860px) { .lst-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; } }
+  .lst-grid .swipe-wrap { margin-bottom: 0; }
+  .lst-tile .task-card { flex-direction: column; align-items: stretch; gap: 4px; min-height: 150px; cursor: pointer; }
+  .lst-tile-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .lst-ic { width: 30px; height: 30px; border-radius: 9px; display: inline-grid; place-items: center; color: #fff; flex: none; }
+  .lst-n { font-size: 22px; font-weight: 800; line-height: 1; }
+  .lst-sub { font-size: 13px; color: var(--sub); }
+  .lst-prev { margin-top: 8px; font-size: 12.5px; color: var(--sub); line-height: 1.4; }
+  .lst-prev div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lst-dim { opacity: .75; }
+  .lst-newtile { min-height: 150px; border-radius: 16px; border: 2px dashed var(--border); background: transparent; color: var(--accent); font: 600 26px var(--font-ui); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+  .lst-newtile span { font-size: 15px; }
+  .lst-empty { text-align: center; padding: 50px 20px; color: var(--sub); font-size: 15px; line-height: 1.5; }
+  .lst-cta { border: 0; border-radius: 12px; padding: 11px 18px; font: 600 15px var(--font-ui); cursor: pointer; margin-top: 12px; }
+  .lst-bar { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+  .lst-back { border: 0; background: var(--tag-bg); color: var(--accent); font: 600 14px var(--font-ui); padding: 8px 12px; border-radius: 12px; cursor: pointer; }
+  .lst-meta { flex: 1; min-width: 0; font-size: 12px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lst-more { border: 0; background: var(--tag-bg); color: var(--text); font: 700 13px var(--font-ui); letter-spacing: 1px; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
+  .lst-quick { margin-bottom: 14px; }
+  .lst-quick input { flex: 1; min-width: 0; }
+  .lst-f { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: color-mix(in srgb, var(--spine, var(--accent)) 14%, transparent); color: var(--text); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lst-src { font-size: 13px; color: var(--sub); font-style: italic; }
+  .lst-hero { border-radius: 20px; padding: 22px 20px; margin-bottom: 16px; cursor: pointer; color: #fff; background: linear-gradient(150deg, var(--spine), color-mix(in srgb, var(--spine) 68%, #000)); box-shadow: var(--shadow-md); }
+  .lst-hero-l { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+  .lst-hero-q { font-size: 23px; font-weight: 700; line-height: 1.25; margin: 14px 0 10px; }
+  .lst-hero-s { font-size: 14px; opacity: .9; }
+  .lst-swatches { display: flex; gap: 10px; flex-wrap: wrap; margin: 2px 2px 14px; }
+  .lst-sw { width: 30px; height: 30px; border-radius: 15px; border: 0; cursor: pointer; }
+  .lst-sw.on { box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--text); }
+  .lst-donechk { display: flex; align-items: center; gap: 10px; margin: 2px 2px 14px; font-weight: 600; font-size: 15px; color: var(--text); cursor: pointer; }
+  .modal .lst-donechk input { width: 20px; height: 20px; margin: 0; padding: 0; accent-color: var(--accent); }
+
+  /* gift card wallet */
+  .lst-wallet-head { margin: 4px 2px 14px; }
+  .lst-wl { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+  .lst-total { font-size: 44px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; color: var(--text); }
+  .lst-alert { display: block; width: 100%; text-align: left; border: 1px solid color-mix(in srgb, var(--orange) 40%, transparent); background: color-mix(in srgb, var(--orange) 12%, var(--card)); color: var(--text); border-radius: 14px; padding: 11px 14px; margin-bottom: 10px; cursor: pointer; font-family: var(--font-ui); }
+  .lst-alert.gone { border-color: color-mix(in srgb, var(--danger) 40%, transparent); background: color-mix(in srgb, var(--danger) 10%, var(--card)); }
+  .lst-alert b { display: block; font-size: 14px; } .lst-alert span { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .lst-stack { display: flex; flex-direction: column; margin-top: 16px; padding-bottom: 8px; }
+  .lst-gc { position: relative; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr auto; text-align: left; height: 150px; border: 0; border-radius: 18px; padding: 16px 18px; cursor: pointer; font-family: var(--font-ui);
+    color: #fff; background: linear-gradient(140deg, var(--gc), color-mix(in srgb, var(--gc) 62%, #000)); box-shadow: 0 -2px 14px rgba(0,0,0,.18); transition: transform .2s cubic-bezier(.2,.8,.2,1); }
+  .lst-gc + .lst-gc { margin-top: -94px; }
+  .lst-gc:hover, .lst-gc:focus-visible { transform: translateY(-8px); z-index: 2; }
+  .lst-gc-name { font-weight: 700; font-size: 16px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 10px; } .lst-gc-amt { font-weight: 800; font-size: 19px; text-align: right; }
+  .lst-gc-sub { grid-column: 1 / -1; grid-row: 3; display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; opacity: .9; }
+  .lst-gc-sub i { font-style: normal; } .lst-gc-sub i.gone, .lst-gc-sub i.soon { font-weight: 700; text-decoration: underline; }
+  @media (min-width: 860px) {
+    .lst-stack { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .lst-gc + .lst-gc { margin-top: 0; }
+  }
+
+  /* --- vinyl --- */
+  :root[data-skin="vinyl"] .lst-n, :root[data-skin="vinyl"] .lst-total { font-family: var(--font-display); font-weight: 400; letter-spacing: .04em; }
+  :root[data-skin="vinyl"] .lst-total { font-size: 56px; }
+  :root[data-skin="vinyl"] .lst-prev, :root[data-skin="vinyl"] .lst-sub, :root[data-skin="vinyl"] .lst-meta { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .02em; }
+  :root[data-skin="vinyl"] .lst-f { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 400; border-radius: 3px; }
+  :root[data-skin="vinyl"] .lst-ic { border-radius: 50%; }
+  :root[data-skin="vinyl"] .lst-newtile { border-radius: 6px; }
+  :root[data-skin="vinyl"] .lst-hero { border-radius: 6px; background: color-mix(in srgb, var(--spine) 45%, #120d0a); }
+  :root[data-skin="vinyl"] .lst-hero-q { font-family: var(--font-display); font-weight: 400; font-size: 34px; letter-spacing: .03em; line-height: 1.05; }
+  :root[data-skin="vinyl"] .lst-gc { border-radius: 6px; background: color-mix(in srgb, var(--gc) 50%, #120d0a); box-shadow: inset 0 0 0 1px rgba(243,233,220,.14), 0 -2px 14px rgba(0,0,0,.5); color: #f3e9dc; }
+  :root[data-skin="vinyl"] .lst-gc-name, :root[data-skin="vinyl"] .lst-gc-amt { font-family: var(--font-display); font-weight: 400; font-size: 24px; letter-spacing: .06em; }
+  :root[data-skin="vinyl"] .lst-gc-sub { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; }
+
+  /* --- moleskine --- */
+  :root[data-skin="moleskine"] .lst-prev, :root[data-skin="moleskine"] .lst-sub, :root[data-skin="moleskine"] .lst-f, :root[data-skin="moleskine"] .lst-src { font-family: var(--font-pen); font-size: 19px; font-weight: 400; }
+  :root[data-skin="moleskine"] .lst-f { background: none; padding: 0 4px 0 0; color: var(--sub); }
+  :root[data-skin="moleskine"] .lst-n, :root[data-skin="moleskine"] .lst-total { font-family: var(--font-pen); font-weight: 400; }
+  :root[data-skin="moleskine"] .lst-n { font-size: 30px; } :root[data-skin="moleskine"] .lst-total { font-size: 58px; color: var(--accent); }
+  :root[data-skin="moleskine"] .lst-newtile { font-family: var(--font-pen); font-size: 30px; border-radius: 4px; } :root[data-skin="moleskine"] .lst-newtile span { font-size: 24px; }
+  :root[data-skin="moleskine"] .lst-hero { color: var(--text); background: var(--card); border: 1.5px solid var(--text); border-radius: 4px; box-shadow: inset 6px 0 0 var(--spine), var(--shadow-sm); }
+  :root[data-skin="moleskine"] .lst-hero-q { font-family: var(--font-pen); font-weight: 400; font-size: 34px; line-height: 1.05; }
+  :root[data-skin="moleskine"] .lst-hero-s, :root[data-skin="moleskine"] .lst-hero-l { font-family: var(--font-pen); font-size: 20px; letter-spacing: 0; text-transform: none; }
+  :root[data-skin="moleskine"] .lst-gc { color: var(--text); border-radius: 4px; box-shadow: inset 7px 0 0 var(--gc), 0 0 0 1.5px var(--text), 0 -2px 10px rgba(60,50,30,.15);
+    background: repeating-linear-gradient(var(--card) 0 27px, var(--rule) 27px 28px); }
+  :root[data-skin="moleskine"] .lst-gc-name, :root[data-skin="moleskine"] .lst-gc-amt { font-family: var(--font-pen); font-weight: 400; font-size: 28px; line-height: 1; }
+  :root[data-skin="moleskine"] .lst-gc-amt { color: var(--accent); }
+  :root[data-skin="moleskine"] .lst-gc-sub { font-family: var(--font-pen); font-size: 19px; opacity: 1; color: var(--sub); }
+
+  /* --- cork: tiles are pinned notes already; the wallet becomes pinned paper cards --- */
+  :root[data-skin="cork"] .lst-count, :root[data-skin="cork"] .lst-wl { color: #2a1d10; }
+  :root[data-skin="cork"] .lst-prev, :root[data-skin="cork"] .lst-sub, :root[data-skin="cork"] .lst-src { font-family: var(--font-hand); font-size: 18px; font-weight: 600; color: #4a3a2a; }
+  :root[data-skin="cork"] .lst-f { font-family: var(--font-hand); font-size: 18px; font-weight: 700; background: none; padding: 0 4px 0 0; color: #4a3a2a; }
+  :root[data-skin="cork"] .lst-n { font-family: var(--font-marker); font-weight: 400; }
+  :root[data-skin="cork"] .lst-newtile { border-color: rgba(255,250,235,.7); color: #fffdf5; font-family: var(--font-marker); }
+  :root[data-skin="cork"] .lst-bar .lst-back, :root[data-skin="cork"] .lst-more { background: #fffdf5; box-shadow: var(--shadow-sm); border-radius: 2px; }
+  :root[data-skin="cork"] .lst-meta { color: #2a1d10; font-weight: 600; }
+  :root[data-skin="cork"] .lst-wallet-head { display: inline-block; background: #fffdf5; padding: 12px 18px 14px; box-shadow: var(--shadow-sm); rotate: -1deg; }
+  :root[data-skin="cork"] .lst-total { font-family: var(--font-marker); font-weight: 400; letter-spacing: 0; color: #2e7d32; }
+  :root[data-skin="cork"] .lst-hero { color: var(--text); border-radius: 2px; rotate: -.6deg; background: color-mix(in srgb, var(--spine) 26%, #fffbe8); box-shadow: 2px 6px 10px rgba(40,20,5,.35); }
+  :root[data-skin="cork"] .lst-hero-q { font-family: var(--font-marker); font-weight: 400; font-size: 22px; }
+  :root[data-skin="cork"] .lst-hero-s, :root[data-skin="cork"] .lst-hero-l { font-family: var(--font-hand); font-size: 19px; letter-spacing: 0; text-transform: none; }
+  :root[data-skin="cork"] .lst-alert { border-radius: 2px; background: #fff3a0; border: 0; box-shadow: var(--shadow-sm); }
+  :root[data-skin="cork"] .lst-gc { color: #1f1a14; border-radius: 2px; background: color-mix(in srgb, var(--gc) 28%, #fffbe8); box-shadow: 2px 6px 10px rgba(40,20,5,.35); overflow: visible; }
+  :root[data-skin="cork"] .lst-gc:nth-child(odd) { rotate: -.7deg; } :root[data-skin="cork"] .lst-gc:nth-child(even) { rotate: .6deg; }
+  :root[data-skin="cork"] .lst-gc::before { content: ""; position: absolute; left: 50%; top: -7px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; z-index: 2;
+    background: radial-gradient(circle at 35% 35%, #ff8a80, #c62828 60%, #7f0000); box-shadow: 1px 3px 3px rgba(0,0,0,.4); }
+  :root[data-skin="cork"] .lst-gc:nth-child(even)::before { background: radial-gradient(circle at 35% 35%, #90caf9, #1565c0 60%, #0d2c5e); }
+  :root[data-skin="cork"] .lst-gc-name { font-family: var(--font-marker); font-weight: 400; font-size: 17px; }
+  :root[data-skin="cork"] .lst-gc-amt { font-family: var(--font-marker); font-weight: 400; font-size: 21px; color: #2e7d32; }
+  :root[data-skin="cork"] .lst-gc-sub { font-family: var(--font-hand); font-size: 18px; font-weight: 700; opacity: 1; color: #4a3a2a; }
 </style>
 </head>
 <body>
@@ -2865,7 +2973,7 @@ async function saveBacklog() {
 
 async function manualRefresh() {
   showToast('Refreshing…');
-  await Promise.all([loadBacklog(), loadFocusHistory(), loadPrefs()]);
+  await Promise.all([loadBacklog(), loadFocusHistory(), loadPrefs(), currentTab === 'lists' ? loadLists() : null]);
   await maybeRolloverToday();
   if (maybeBackfillFromDeck()) await saveBacklog();
   render();
@@ -3325,7 +3433,8 @@ function renderMain(app) {
   document.body.dataset.tab = currentTab;
   const activeTasks = tasks.filter(t => !t.done);
   const doneTasks = tasks.filter(t => t.done);
-  const titles = { backlog:'Backlog', today:'Today', stats:'Stats' };
+  const lstCur = currentTab==='lists' && lstOpen && lists.find(l => l.file === lstOpen);
+  const titles = { backlog:'Backlog', today:'Today', lists: lstCur ? lstH(lstCur.name) : 'Lists', stats:'Stats' };
   const tags = [...new Set(tasks.map(t=>t.tag).filter(Boolean))];
 
   app.innerHTML = `
@@ -3337,7 +3446,7 @@ function renderMain(app) {
           <button class="sync-btn" onclick="manualRefresh()" title="Refresh from OneDrive">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </button>
-          ${currentTab==='backlog' ? `<button class="add-btn" onclick="openAddModal()">+</button>` : '<div></div>'}
+          ${currentTab==='backlog' ? `<button class="add-btn" onclick="openAddModal()">+</button>` : currentTab==='lists' ? `<button class="add-btn" onclick="lstPlus()" title="${lstCur ? 'Add item' : 'New list'}">+</button>` : '<div></div>'}
         </div>
       </div>
       ${syncError ? `<div style="font-size:11px;color:var(--danger);padding:4px 0 2px;word-break:break-word">${syncError}</div>` : lastSynced ? `<div style="font-size:11px;color:var(--sub);padding:2px 0">Synced ${lastSynced.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>` : ''}
@@ -3358,6 +3467,7 @@ function renderMain(app) {
       <div class="nav-brand"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Donezo</div>
       ${navItem('backlog',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,'Backlog')}
       ${navItem('today',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,'Today')}
+      ${navItem('lists',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`,'Lists')}
       ${navItem('stats',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,'Stats')}
     </div>`;
 
@@ -3365,6 +3475,7 @@ function renderMain(app) {
   const content = document.getElementById('content');
   if (currentTab==='backlog') renderBacklog(content, activeTasks, doneTasks);
   else if (currentTab==='today') renderToday(content, activeTasks, doneTasks);
+  else if (currentTab==='lists') renderLists(content);
   else renderStats(content, activeTasks, doneTasks);
   if (keepY) window.scrollTo(0, keepY); else if (lastRenderTab !== currentTab) window.scrollTo(0, 0);
   lastRenderTab = currentTab;
@@ -4669,7 +4780,7 @@ function attachTaskEvents(el) {
   },{passive:true});
 }
 
-function switchTab(tab) { if (!['backlog','today','stats'].includes(tab)) tab = 'backlog'; currentTab=tab; laneView='today'; filterTag=null; searchQ=''; closeOpenSwipe(); render(); }
+function switchTab(tab) { if (!['backlog','today','lists','stats'].includes(tab)) tab = 'backlog'; if (tab === 'lists') { if (currentTab === 'lists') lstOpen = null; lstLoaded = false; } currentTab=tab; laneView='today'; filterTag=null; searchQ=''; closeOpenSwipe(); render(); }
 
 // Targeted search handler — only re-renders the content div, never the header.
 // Rebuilding the entire page (full render()) on every keystroke destroys the
@@ -4698,8 +4809,13 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.11.16-3"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.16-4"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.16-4", date: "Nov 16, 2026", items: [
+    ["new", "Lists tab: your Reading, Gift Cards, Restaurants, Words of Wisdom, Fashion and Gift Ideas lists live in Donezo now, styled by whichever look you have on"],
+    ["new", "Add, edit, check off and delete list items; make new lists from scratch or a template (Movies & Shows, Whiskey Shelf, Packing List, Songs to Learn, Travel Bucket List)"],
+    ["new", "Gift Cards opens as a wallet with your total balance, biggest cards on top, expired or expiring cards flagged, and quick \"used some\" buttons"],
+  ]},
   { v: "2026.11.16-3", date: "Nov 16, 2026", items: [
     ["fixed", "The + button opens Add Task again"],
   ]},
@@ -5063,6 +5179,356 @@ async function migrateTags() {
   if (hasTag('personal')) { await removeTag('personal'); did = true; }
   if (did) showToast('Tags updated: House → Around the house · Personal removed');
 }
+
+
+// ============================================================
+// LISTS — reference lists (Reading, Gift Cards, Restaurants…) stored as
+// markdown in OneDrive: 0 - Data/Lists/<slug>.md  (same files the old List app used)
+//   # Title
+//   <!-- Format: - [ ] Name | Field | Field -->        ← the list's fields
+//   <!-- donezo: {"color":"#22a06b","icon":"card"} --> ← optional look (added by Donezo)
+//   - [ ] Value | Value | Value                      ← an item ([x] = done / read / tried)
+//   - "Quote" | Source                                ← quote-style lists (Words of Wisdom)
+// Edits re-read the file first and change only the one line, so Claude / other devices never get clobbered.
+// ============================================================
+const LST_DIR = '/0 - Data/Lists';
+const lstPath = f => `/me/drive/root:${LST_DIR}/${encodeURIComponent(f)}:/content`;
+const LST_COLORS = ['#5b5bd6', '#22a06b', '#c2410c', '#be185d', '#0e7490', '#7c3aed', '#92400e', '#475569'];
+const LST_IC = {
+  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+  quote: '<path d="M7 7h4v4c0 3-1.5 5-4 6"/><path d="M15 7h4v4c0 3-1.5 5-4 6"/>',
+  shirt: '<path d="M20.4 3.5 16 2a4 4 0 0 1-8 0L3.6 3.5a2 2 0 0 0-1.3 2.2l.6 3.5a1 1 0 0 0 1 .8H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.1a1 1 0 0 0 1-.8l.6-3.5a2 2 0 0 0-1.3-2.2z"/>',
+  fork: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>',
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+  film: '<rect x="2" y="2" width="20" height="20" rx="2.2"/><path d="M7 2v20M17 2v20M2 12h20"/>',
+  glass: '<path d="M8 22h8M7 10h10M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/>',
+  bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>',
+  music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  plane: '<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  star: '<polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/>',
+};
+const lstSvg = (k, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LST_IC[k] || LST_IC.list}</svg>`;
+// built-in looks for the lists you already have (by file name)
+const LST_KNOWN = {
+  'reading.md': { color: '#5b5bd6', icon: 'book', doneWord: 'Read' },
+  'gift-cards.md': { color: '#22a06b', icon: 'card', doneWord: 'Used up' },
+  'words-of-wisdom.md': { color: '#c2410c', icon: 'quote' },
+  'restaurants.md': { color: '#be185d', icon: 'fork', doneWord: 'Tried' },
+  'fashion.md': { color: '#0e7490', icon: 'shirt' },
+  'gift-ideas.md': { color: '#7c3aed', icon: 'gift', doneWord: 'Given' },
+};
+const LST_TEMPLATES = [
+  { name: 'Movies & Shows', icon: 'film', color: '#475569', fields: ['Type', 'Where to watch', 'Recommended by', 'Notes'], doneWord: 'Watched' },
+  { name: 'Whiskey Shelf', icon: 'glass', color: '#92400e', fields: ['Distillery', 'Price', 'Rating', 'Notes'], doneWord: 'Tasted' },
+  { name: 'Packing List', icon: 'bag', color: '#0e7490', fields: ['Category', 'Notes'], doneWord: 'Packed' },
+  { name: 'Songs to Learn', icon: 'music', color: '#7c3aed', fields: ['Artist', 'Tuning', 'Notes'], doneWord: 'Learned' },
+  { name: 'Travel Bucket List', icon: 'plane', color: '#0369a1', fields: ['Where', 'Best time', 'Notes'], doneWord: 'Been' },
+];
+
+let lists = (() => { try { return JSON.parse(localStorage.getItem('lst_cache')) || []; } catch { return []; } })();
+let lstOpen = null;          // file name of the open list, null = overview
+let lstLoaded = false, lstLoading = false, lstErr = null;
+const lstH = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function lstParse(file, raw) {
+  const lines = raw.split('\n');
+  const L = { file, raw, name: file.replace(/\.md$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), fields: ['Name'], quote: false, items: [], meta: {} };
+  const h = lines.find(l => /^#\s+/.test(l)); if (h) L.name = h.replace(/^#\s+/, '').trim();
+  const fm = raw.match(/<!--\s*Format:\s*-\s*(\[ \]|")\s*(.*?)\s*-->/i);
+  if (fm) {
+    L.quote = fm[1] === '"';
+    const cols = fm[2].split('|').map(s => s.replace(/"/g, '').trim()).filter(Boolean);
+    if (cols.length) L.fields = L.quote ? ['Quote', ...cols.slice(1)] : cols;
+    if (L.quote && L.fields.length < 2) L.fields.push('Source');
+  }
+  const dm = raw.match(/<!--\s*donezo:\s*(\{.*?\})\s*-->/); if (dm) { try { L.meta = JSON.parse(dm[1]); } catch {} }
+  const k = LST_KNOWN[file] || {};
+  L.color = L.meta.color || k.color || LST_COLORS[[...file].reduce((a, c) => a + c.charCodeAt(0), 0) % LST_COLORS.length];
+  L.icon = L.meta.icon || k.icon || (L.quote ? 'quote' : 'list');
+  L.doneWord = L.meta.doneWord || k.doneWord || 'Done';
+  L.wallet = file === 'gift-cards.md' || L.meta.kind === 'wallet' || L.fields.some(f => /^(amount|balance)$/i.test(f));
+  lines.forEach((line, i) => {
+    let m = line.match(/^- \[( |x|X)\] (.*)$/);
+    if (m) { const p = m[2].split('|').map(s => s.trim()); L.items.push({ i, line, done: m[1] !== ' ', vals: p }); return; }
+    m = line.match(/^- "(.+)"\s*(?:\|(.*))?$/);
+    if (m) L.items.push({ i, line, done: false, quote: true, vals: [m[1], ...((m[2] || '').split('|').map(s => s.trim()))] });
+  });
+  return L;
+}
+function lstLine(L, it) {
+  const clean = v => String(v || '').replace(/\|/g, '/').replace(/\n/g, ' ').trim();
+  const vals = L.fields.map((_, k) => clean(it.vals[k]));
+  while (vals.length > 1 && !vals[vals.length - 1]) vals.pop();
+  if (L.quote) return `- "${vals[0].replace(/"/g, '”')}" |${vals.length > 1 ? ' ' + vals.slice(1).join(' | ') : ''}`;
+  return `- [${it.done ? 'x' : ' '}] ${vals.join(' | ').replace(/\| {2}(?=\|)/g, '| ')}`;
+}
+function lstCache() { try { localStorage.setItem('lst_cache', JSON.stringify(lists.map(l => ({ file: l.file, raw: l.raw })))); } catch {} }
+// restore parsed lists from the cache (cache keeps only raw text)
+lists = lists.filter(l => l && l.file && typeof l.raw === 'string').map(l => lstParse(l.file, l.raw));
+
+async function loadLists() {
+  if (lstLoading) return; lstLoading = true;
+  try {
+    const r = await graphFetch(`/me/drive/root:${LST_DIR}:/children?$select=name,file&$top=200`);
+    if (!r || !r.ok) { lstErr = r ? 'Could not open 0 - Data/Lists (' + r.status + ')' : 'Signed out'; return; }
+    const files = ((await r.json()).value || []).filter(x => x.file && /\.md$/i.test(x.name)).map(x => x.name);
+    const got = await Promise.all(files.map(async f => { const x = await graphFetch(lstPath(f)); return x && x.ok ? lstParse(f, await x.text()) : null; }));
+    lists = got.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+    lstErr = null; lstLoaded = true; lstCache();
+  } catch (e) { lstErr = 'Offline: showing the last copy'; }
+  finally { lstLoading = false; }
+}
+// Apply one change to the LATEST copy of the file, then save it.
+async function lstMutate(file, fn) {
+  let raw = null;
+  try { const r = await graphFetch(lstPath(file)); if (r && r.ok) raw = await r.text(); } catch {}
+  const cur = lists.find(l => l.file === file);
+  if (raw == null) raw = cur ? cur.raw : '';
+  const lines = raw.split('\n');
+  const L = lstParse(file, raw);
+  const res = fn(L, lines);
+  if (res === false) return false;
+  let out = lines.join('\n'); if (!out.endsWith('\n')) out += '\n';
+  const nl = lstParse(file, out);
+  const k = lists.findIndex(l => l.file === file); if (k >= 0) lists[k] = nl; else lists.push(nl);
+  lstCache(); render();
+  try {
+    const w = await graphFetch(lstPath(file), { method: 'PUT', headers: { 'Content-Type': 'text/plain' }, body: out });
+    if (!w || !w.ok) { showToast('⚠️ List save failed' + (w ? ' (' + w.status + ')' : '')); return false; }
+  } catch { showToast('⚠️ List save failed (offline?)'); return false; }
+  return true;
+}
+// find an item's line in the latest copy: same text first, else same position
+const lstFind = (L, lines, it) => { let j = lines.indexOf(it.line); if (j < 0 && lines[it.i] !== undefined && /^- /.test(lines[it.i])) j = it.i; return j; };
+
+function lstAdd(file, vals, done) {
+  return lstMutate(file, (L, lines) => {
+    const ln = lstLine(L, { vals, done: !!done });
+    const last = L.items.length ? L.items[L.items.length - 1].i : -1;
+    if (last >= 0) lines.splice(last + 1, 0, ln);
+    else { while (lines.length && lines[lines.length - 1] === '') lines.pop(); lines.push(ln); }
+  });
+}
+function lstEdit(file, it, vals, done) {
+  return lstMutate(file, (L, lines) => { const j = lstFind(L, lines, it); if (j < 0) { showToast('That item changed elsewhere, refresh and try again'); return false; }
+    lines[j] = lstLine(L, { vals, done: done == null ? it.done : done }); });
+}
+function lstDelete(file, it) {
+  return lstMutate(file, (L, lines) => { const j = lstFind(L, lines, it); if (j < 0) return false; lines.splice(j, 1); });
+}
+// header edits (name, fields, look) keep every item line as-is
+function lstSetHeader(file, { name, fields, meta }) {
+  return lstMutate(file, (L, lines) => {
+    if (name != null) { const h = lines.findIndex(l => /^#\s+/.test(l)); if (h >= 0) lines[h] = '# ' + name; else lines.unshift('# ' + name, ''); }
+    if (fields) { const f = L.quote ? `<!-- Format: - "${fields[0]}" | ${fields.slice(1).join(' | ')} -->` : `<!-- Format: - [ ] ${fields.join(' | ')} -->`;
+      const k = lines.findIndex(l => /<!--\s*Format:/i.test(l)); if (k >= 0) lines[k] = f; else lines.splice(Math.max(1, lines.findIndex(l => /^#/.test(l)) + 1), 0, '', f); }
+    if (meta) { const m = `<!-- donezo: ${JSON.stringify(Object.assign({}, L.meta, meta))} -->`;
+      const k = lines.findIndex(l => /<!--\s*donezo:/.test(l)); if (k >= 0) lines[k] = m; else { const f = lines.findIndex(l => /<!--\s*Format:/i.test(l)); lines.splice(f >= 0 ? f + 1 : 1, 0, m); } }
+  });
+}
+async function lstCreate(name, fields, meta) {
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'list';
+  let file = slug + '.md', n = 2; while (lists.some(l => l.file === file)) file = `${slug}-${n++}.md`;
+  const body = `# ${name}\n\n<!-- Format: - [ ] ${fields.join(' | ')} -->\n<!-- donezo: ${JSON.stringify(meta)} -->\n`;
+  const r = await graphFetch(`/me/drive/root:${LST_DIR}/${encodeURIComponent(file)}:/content?@microsoft.graph.conflictBehavior=fail`, { method: 'PUT', headers: { 'Content-Type': 'text/plain' }, body });
+  if (!r || !r.ok) { showToast('⚠️ Could not create the list' + (r ? ' (' + r.status + ')' : '')); return; }
+  lists.push(lstParse(file, body)); lists.sort((a, b) => a.name.localeCompare(b.name)); lstCache();
+  lstOpen = file; render(); showToast(`＋ ${name} created`);
+}
+async function lstRemoveList(file) {
+  const r = await graphFetch(`/me/drive/root:${LST_DIR}/${encodeURIComponent(file)}`, { method: 'DELETE' });
+  if (!r || !(r.ok || r.status === 204)) { showToast('⚠️ Could not delete the list'); return; }
+  lists = lists.filter(l => l.file !== file); lstCache(); lstOpen = null; render();
+  showToast('List deleted · it’s in your OneDrive recycle bin');
+}
+
+// ---------- gift card helpers ----------
+const lstCol = (L, re) => L.fields.findIndex(f => re.test(f));
+const lstMoney = v => { const n = parseFloat(String(v || '').replace(/[^0-9.\-]/g, '')); return isNaN(n) ? null : n; };
+const lstFmt$ = n => '$' + n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
+function lstExp(v) {   // 2/27/27 · 10/26 · 6/5/2028 → end-of-day Date
+  const m = String(v || '').trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/); if (!m) return null;
+  let mo = +m[1], d, y;
+  if (m[3]) { d = +m[2]; y = +m[3]; } else { y = +m[2]; d = 0; mo = mo + 1; }   // M/YY = end of that month
+  if (y < 100) y += 2000;
+  const dt = new Date(y, mo - 1, d || 0, 23, 59); return isNaN(dt) ? null : dt;
+}
+function lstExpState(v) { const d = lstExp(v); if (!d) return null; const days = Math.floor((d - Date.now()) / 864e5); return { d, days, cls: days < 0 ? 'gone' : days <= 60 ? 'soon' : '' }; }
+
+// ---------- RENDER ----------
+function renderLists(el) {
+  if (!lstLoaded && !lstLoading) loadLists().then(() => { if (currentTab === 'lists') render(); });
+  const L = lstOpen && lists.find(l => l.file === lstOpen);
+  if (lstOpen && !L) lstOpen = null;
+  el.innerHTML = (L ? lstDetailHTML(L) : lstOverviewHTML()) + '<div style="height:20px"></div>';
+  const q = el.querySelector('[data-lst-quick]');
+  if (q) q.addEventListener('keydown', e => { if (e.key === 'Enter' && q.value.trim()) { const v = q.value.trim(); q.value = ''; lstAdd(L.file, [v]).then(ok => ok && showToast(`＋ Added to ${L.name}`)); setTimeout(() => { const n = document.querySelector('[data-lst-quick]'); n && n.focus(); }, 60); } });
+}
+function lstOverviewHTML() {
+  if (!lists.length) return `<div class="lst-empty">${lstLoading || !lstLoaded ? 'Loading your lists…' : (lstErr || 'No lists yet')}<br><button class="btn-primary lst-cta" data-lst-new>＋ New list</button></div>`;
+  const total = lists.reduce((a, l) => a + l.items.filter(i => !i.done).length, 0);
+  let h = `<div class="lst-count">${lists.length} lists · ${total} items${lstErr ? ` · <span style="color:var(--danger)">${lstH(lstErr)}</span>` : ''}</div><div class="lst-grid">`;
+  lists.forEach(L => {
+    const open = L.items.filter(i => !i.done);
+    let sub, prev;
+    if (L.wallet) { const a = lstCol(L, /amount|balance/i); const sum = open.reduce((s, i) => s + (lstMoney(i.vals[a]) || 0), 0); sub = `${lstFmt$(sum)} on ${open.length} card${open.length === 1 ? '' : 's'}`; prev = open.slice(0, 3).map(i => `${i.vals[0]} · ${i.vals[a] || ''}`); }
+    else { sub = `${open.length} item${open.length === 1 ? '' : 's'}`; prev = open.slice(0, 3).map(i => L.quote ? `“${i.vals[0]}”` : i.vals[0]); }
+    h += `<div class="swipe-wrap lst-tile"><div class="task-card" style="--spine:${L.color}" data-lst-open="${lstH(L.file)}" role="button" tabindex="0">
+      <div class="lst-tile-top"><span class="lst-ic" style="background:${L.color}">${lstSvg(L.icon, 17)}</span><span class="lst-n">${open.length}</span></div>
+      <div class="task-title">${lstH(L.name)}</div><div class="lst-sub">${sub}</div>
+      <div class="lst-prev">${prev.length ? prev.map(p => `<div>${lstH(p)}</div>`).join('') : '<div class="lst-dim">Nothing yet</div>'}${open.length > 3 ? `<div class="lst-dim">+${open.length - 3} more</div>` : ''}</div></div></div>`;
+  });
+  return h + `<button class="lst-newtile" data-lst-new>＋<span>New list</span></button></div>`;
+}
+function lstChips(L, it) {
+  return it.vals.slice(1).map((v, k) => v ? `<span class="lst-f" title="${lstH(L.fields[k + 1] || '')}">${lstH(v)}</span>` : '').join('');
+}
+function lstRow(L, it) {
+  const key = L.items.indexOf(it);
+  return `<div class="swipe-wrap"><div class="task-card" style="--spine:${L.color}">
+    ${L.quote ? '' : `<div class="check-ring ${it.done ? 'done' : ''}" data-lst-toggle="${key}" role="button" aria-label="Mark ${lstH(L.doneWord)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`}
+    <div class="task-body" data-lst-edit="${key}"><div class="task-title ${it.done ? 'done' : ''}">${L.quote ? '“' + lstH(it.vals[0]) + '”' : lstH(it.vals[0])}</div>
+    ${it.vals.slice(1).some(Boolean) ? `<div class="task-meta">${L.quote ? `<span class="lst-src">— ${lstH(it.vals.slice(1).filter(Boolean).join(' · '))}</span>` : lstChips(L, it)}</div>` : ''}</div></div></div>`;
+}
+function lstDetailHTML(L) {
+  const open = L.items.filter(i => !i.done), done = L.items.filter(i => i.done);
+  let h = `<div class="lst-bar"><button class="lst-back" data-lst-back>‹ Lists</button><span class="lst-ic" style="background:${L.color}">${lstSvg(L.icon, 16)}</span>
+    <span class="lst-meta">${L.fields.join(' · ')}</span><button class="lst-more" data-lst-settings aria-label="List settings">•••</button></div>`;
+  if (!L.wallet) h += `<div class="search-wrap lst-quick"><span style="color:var(--sub);font-size:18px;line-height:1">＋</span><input type="text" data-lst-quick placeholder="Add to ${lstH(L.name)}…" enterkeyhint="done" aria-label="Quick add to ${lstH(L.name)}"></div>`;
+  if (L.wallet) h += lstWalletHTML(L, open);
+  else if (L.quote && open.length) {
+    const q = open[Math.floor(Date.now() / 864e5) % open.length];
+    h += `<div class="lst-hero" style="--spine:${L.color}" data-lst-edit="${L.items.indexOf(q)}"><div class="lst-hero-l">Today’s pick</div><div class="lst-hero-q">“${lstH(q.vals[0])}”</div>${q.vals[1] ? `<div class="lst-hero-s">— ${lstH(q.vals[1])}</div>` : ''}</div>`;
+    h += `<div class="section-label">All ${open.length}</div>` + open.map(it => lstRow(L, it)).join('');
+  } else h += open.length ? open.map(it => lstRow(L, it)).join('') : `<div class="lst-empty">Nothing on ${lstH(L.name)} yet. Type above to add the first one.</div>`;
+  if (done.length) h += `<div class="section-label">${lstH(L.doneWord)} · ${done.length}</div>` + done.map(it => lstRow(L, it)).join('');
+  return h;
+}
+function lstWalletHTML(L, open) {
+  const a = lstCol(L, /amount|balance/i), e = lstCol(L, /expir/i), n = lstCol(L, /note/i);
+  const sum = open.reduce((s, i) => s + (lstMoney(i.vals[a]) || 0), 0);
+  const flagged = e < 0 ? [] : open.map(it => ({ it, x: lstExpState(it.vals[e]) })).filter(o => o.x && o.x.cls).sort((p, q) => p.x.d - q.x.d);
+  let h = `<div class="lst-wallet-head"><div class="lst-wl">Gift card wallet</div><div class="lst-total">${lstFmt$(sum)}</div>
+    <div class="lst-sub">${open.length} card${open.length === 1 ? '' : 's'}${e >= 0 ? ` · ${open.filter(i => lstExp(i.vals[e])).length} with expiration dates` : ''}</div>
+    <button class="btn-primary lst-cta" data-lst-add>＋ Add gift card</button></div>`;
+  flagged.forEach(({ it, x }) => {
+    h += `<button class="lst-alert ${x.cls}" data-lst-edit="${L.items.indexOf(it)}"><b>${lstH(it.vals[0])} · ${lstH(it.vals[a] || '')}</b><span>${x.cls === 'gone' ? 'Expired ' + x.d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) + '?' : 'Expires in ' + x.days + ' day' + (x.days === 1 ? '' : 's')}${n >= 0 && it.vals[n] ? ' · ' + lstH(it.vals[n]) : ''}</span></button>`;
+  });
+  // biggest balances first, so the cards you most want to use are on top
+  const order = [...open].sort((p, q) => (lstMoney(q.vals[a]) || 0) - (lstMoney(p.vals[a]) || 0));
+  h += `<div class="lst-stack">` + order.map((it, k) => {
+    const c = LST_COLORS.concat(['#0f5f8a', '#7a1f2b', '#4d7c0f', '#9a3412'])[[...it.vals[0]].reduce((s, ch) => s + ch.charCodeAt(0), 0) % 12];
+    const x = e >= 0 ? lstExpState(it.vals[e]) : null;
+    const note = n >= 0 && it.vals[n] ? it.vals[n] : '';
+    return `<button class="lst-gc" style="--gc:${c}" data-lst-edit="${L.items.indexOf(it)}"><span class="lst-gc-name">${lstH(it.vals[0])}</span><span class="lst-gc-amt">${lstH(it.vals[a] || '—')}</span>
+      <span class="lst-gc-sub">${x ? `<i class="${x.cls}">${x.cls === 'gone' ? 'expired' : 'exp'} ${lstH(it.vals[e])}</i>` : ''}${note ? `<i>${lstH(note)}</i>` : ''}</span></button>`;
+  }).join('') + `</div>`;
+  return h;
+}
+
+// ---------- SHEETS ----------
+function lstItemSheet(L, it) {
+  const editing = !!it;
+  const a = L.wallet ? lstCol(L, /amount|balance/i) : -1;
+  const fieldsHTML = L.fields.map((f, k) => {
+    const v = it ? (it.vals[k] || '') : '';
+    const long = /note/i.test(f) || (L.quote && k === 0);
+    return `<div class="pk-lbl">${lstH(f)}</div>${long ? `<textarea data-k="${k}" rows="${L.quote && k === 0 ? 3 : 2}">${lstH(v)}</textarea>` : `<input type="text" data-k="${k}" value="${lstH(v)}" ${k === a ? 'inputmode="decimal"' : ''}>`}`;
+  }).join('');
+  const used = editing && a >= 0 ? `<div class="pk-lbl">Used some?</div><div class="pk-chips2">${[10, 25, 50].map(x => `<button class="pk-c" data-sub="${x}">− $${x}</button>`).join('')}<button class="pk-c" data-usedup>Used up</button></div>` : '';
+  const { ov, close } = parkModal(`<h2>${editing ? 'Edit' : 'Add to'} <span class="pk-tt">${lstH(L.name)}</span></h2>
+    ${fieldsHTML}${used}
+    ${editing && !L.quote ? `<label class="lst-donechk"><input type="checkbox" data-done ${it.done ? 'checked' : ''}> ${lstH(L.doneWord)}</label>` : ''}
+    <div class="modal-btns"><button class="btn-cancel">Cancel</button><button class="btn-primary">${editing ? 'Save' : 'Add'}</button></div>
+    ${editing ? `<button class="btn-danger-outline" data-del>Delete</button>` : ''}`);
+  const inp = k => ov.querySelector(`[data-k="${k}"]`);
+  setTimeout(() => { if (!editing) inp(0).focus(); }, 250);
+  ov.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => { const cur = lstMoney(inp(a).value) || 0; const nv = Math.max(0, cur - +b.dataset.sub); inp(a).value = lstFmt$(nv); });
+  const ud = ov.querySelector('[data-usedup]'); if (ud) ud.onclick = () => { inp(a).value = '$0'; const d = ov.querySelector('[data-done]'); if (d) d.checked = true; };
+  ov.querySelector('.btn-cancel').onclick = close;
+  ov.querySelector('.btn-primary').onclick = async () => {
+    const vals = L.fields.map((_, k) => inp(k).value.trim());
+    if (!vals[0]) { inp(0).focus(); return; }
+    const d = ov.querySelector('[data-done]'); close();
+    if (editing) { const ok = await lstEdit(L.file, it, vals, d ? d.checked : null); if (ok) showToast('✓ Saved'); }
+    else { const ok = await lstAdd(L.file, vals); if (ok) showToast(`＋ Added to ${L.name}`); }
+  };
+  const del = ov.querySelector('[data-del]');
+  if (del) del.onclick = async () => {
+    if (!del.dataset.sure) { del.dataset.sure = '1'; del.textContent = 'Tap again to delete'; return; }
+    close(); const ok = await lstDelete(L.file, it); if (ok) showToast('Deleted');
+  };
+}
+function lstNewListSheet() {
+  let pick = null, color = LST_COLORS[0];
+  const { ov, close } = parkModal(`<h2>New list</h2>
+    <div class="pk-lbl">Start from a template</div><div class="pk-chips2">${LST_TEMPLATES.map((t, k) => `<button class="pk-c" data-t="${k}">${lstH(t.name)}</button>`).join('')}</div>
+    <div class="pk-lbl">Name</div><input type="text" data-name placeholder="e.g. Whiskey Shelf">
+    <div class="pk-lbl">Fields (after the name, comma separated)</div><input type="text" data-fields placeholder="e.g. Distillery, Price, Rating, Notes">
+    <div class="pk-lbl">Color</div><div class="lst-swatches">${LST_COLORS.map(c => `<button class="lst-sw" data-c="${c}" style="background:${c}" aria-label="Color ${c}"></button>`).join('')}</div>
+    <div class="modal-btns"><button class="btn-cancel">Cancel</button><button class="btn-primary">Create</button></div>`);
+  const nm = ov.querySelector('[data-name]'), fl = ov.querySelector('[data-fields]');
+  const sync = () => { ov.querySelectorAll('[data-t]').forEach(b => b.classList.toggle('on', +b.dataset.t === pick)); ov.querySelectorAll('[data-c]').forEach(b => b.classList.toggle('on', b.dataset.c === color)); };
+  ov.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { pick = +b.dataset.t; const t = LST_TEMPLATES[pick]; nm.value = t.name; fl.value = t.fields.join(', '); color = t.color; sync(); });
+  ov.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { color = b.dataset.c; sync(); });
+  ov.querySelector('.btn-cancel').onclick = close;
+  ov.querySelector('.btn-primary').onclick = async () => {
+    const name = nm.value.trim(); if (!name) { nm.focus(); return; }
+    const fields = ['Name', ...fl.value.split(',').map(s => s.trim()).filter(Boolean)];
+    const t = pick != null && LST_TEMPLATES[pick].name === name ? LST_TEMPLATES[pick] : null;
+    close(); await lstCreate(name, fields, { color, icon: t ? t.icon : 'list', ...(t && t.doneWord ? { doneWord: t.doneWord } : {}) });
+  };
+  sync(); setTimeout(() => nm.focus(), 250);
+}
+function lstSettingsSheet(L) {
+  let color = L.color;
+  const { ov, close } = parkModal(`<h2>List settings</h2>
+    <div class="pk-lbl">Name</div><input type="text" data-name value="${lstH(L.name)}">
+    <div class="pk-lbl">Fields</div><input type="text" data-fields value="${lstH(L.fields.join(', '))}">
+    <div class="pk-sub" style="margin:-4px 2px 10px">Items keep their values in order. Renaming a field is safe; adding one gives older items a blank.</div>
+    <div class="pk-lbl">Color</div><div class="lst-swatches">${LST_COLORS.map(c => `<button class="lst-sw" data-c="${c}" style="background:${c}" aria-label="Color ${c}"></button>`).join('')}</div>
+    <div class="modal-btns"><button class="btn-cancel">Cancel</button><button class="btn-primary">Save</button></div>
+    <button class="btn-danger-outline" data-del>Delete this list</button>`);
+  const sync = () => ov.querySelectorAll('[data-c]').forEach(b => b.classList.toggle('on', b.dataset.c === color));
+  ov.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { color = b.dataset.c; sync(); }); sync();
+  ov.querySelector('.btn-cancel').onclick = close;
+  ov.querySelector('.btn-primary').onclick = async () => {
+    const name = ov.querySelector('[data-name]').value.trim() || L.name;
+    const fields = ov.querySelector('[data-fields]').value.split(',').map(s => s.trim()).filter(Boolean);
+    close(); const ok = await lstSetHeader(L.file, { name: name !== L.name ? name : null, fields: fields.length && fields.join('|') !== L.fields.join('|') ? fields : null, meta: color !== L.color ? { color } : null });
+    if (ok) showToast('✓ List updated');
+  };
+  const del = ov.querySelector('[data-del]');
+  del.onclick = async () => {
+    if (!del.dataset.sure) { del.dataset.sure = '1'; del.textContent = `Tap again to delete ${L.name} (${L.items.length} items)`; return; }
+    close(); await lstRemoveList(L.file);
+  };
+}
+function lstPlus() {   // header + button on the Lists tab
+  const L = lstOpen && lists.find(l => l.file === lstOpen);
+  if (L) lstItemSheet(L, null); else lstNewListSheet();
+}
+
+// ---------- events (delegated) ----------
+document.addEventListener('click', e => {
+  if (currentTab !== 'lists' || !e.target.closest) return;
+  const t = e.target; if (!t.closest('#content')) return;
+  const L = lstOpen && lists.find(l => l.file === lstOpen);
+  const op = t.closest('[data-lst-open]'); if (op) { lstOpen = op.dataset.lstOpen; render(); window.scrollTo(0, 0); return; }
+  if (t.closest('[data-lst-new]')) return lstNewListSheet();
+  if (t.closest('[data-lst-back]')) { lstOpen = null; render(); return; }
+  if (!L) return;
+  if (t.closest('[data-lst-settings]')) return lstSettingsSheet(L);
+  if (t.closest('[data-lst-add]')) return lstItemSheet(L, null);
+  const tg = t.closest('[data-lst-toggle]');
+  if (tg) { const it = L.items[+tg.dataset.lstToggle]; if (it) lstEdit(L.file, it, it.vals, !it.done).then(ok => ok && !it.done && showToast(`✓ ${L.doneWord}`)); return; }
+  const ed = t.closest('[data-lst-edit]'); if (ed) { const it = L.items[+ed.dataset.lstEdit]; if (it) lstItemSheet(L, it); }
+});
+document.addEventListener('keydown', e => {
+  if (currentTab === 'lists' && e.key === 'Enter' && e.target.matches && e.target.matches('[data-lst-open]')) e.target.click();
+});
 
 boot();
 </script>
