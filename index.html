@@ -1092,17 +1092,17 @@
     body:not([data-tab="projects"]) .header, body:not([data-tab="projects"]) .content {
       padding-left: max(268px, calc(232px + (100vw - 232px - 1240px) / 2));
       padding-right: max(36px, calc((100vw - 232px - 1240px) / 2)); }
-    .bl-kpis { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .bl-kpis { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
     .glass-panel { background: var(--card); border: 1px solid var(--card-hairline); border-radius: 18px; -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); box-shadow: var(--shadow-sm); }
     .bl-kpi { padding: 16px 18px; min-width: 0; transition: transform .15s, box-shadow .15s; }
-    .bl-kpi[data-pj-checkin], .bl-kpi[data-bl-open], .bl-kpi-ring { cursor: pointer; }
-    .bl-kpi[data-pj-checkin]:hover, .bl-kpi[data-bl-open]:hover, .bl-kpi-ring:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .bl-kpi[data-bl-open], .bl-kpi-ring { cursor: pointer; }
+    .bl-kpi[data-bl-open]:hover, .bl-kpi-ring:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
     .bl-kpi .l { font-size: 11.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--sub); }
     .bl-kpi .v { font-size: 30px; font-weight: 800; letter-spacing: -1px; margin: 4px 0 2px; }
     .bl-kpi .s { font-size: 12.5px; color: var(--sub); }
     .bl-kpi-ring { display: flex; align-items: center; gap: 16px; }
     .bl-trunc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .bl-dash { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+    .bl-dash { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
     .bl-col-inner { padding: 16px 16px 10px; }
     .bl-col .pj-divider { display: none; }
     .bl-col .pj-bighead { margin-top: 0; font-size: 18px; }
@@ -1911,7 +1911,6 @@
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" id="modal-submit-btn" onclick="submitModal()">Add Task</button>
     </div>
-    <button class="pj-link-btn hidden" id="modal-link-btn" onclick="pjLinkFromModal()">📁 Add to a project…</button>
     <button class="pj-link-btn hidden" id="modal-park-btn" onclick="parkFromModal()">⏸ Park…</button>
     <button class="btn-danger-outline hidden" id="modal-delete-btn" onclick="deleteFromModal()">Delete Task</button>
   </div>
@@ -2862,7 +2861,7 @@ async function saveBacklog() {
 
 async function manualRefresh() {
   showToast('Refreshing…');
-  await Promise.all([loadBacklog(), loadFocusHistory(), loadProjects(), loadPrefs()]);
+  await Promise.all([loadBacklog(), loadFocusHistory(), loadPrefs()]);
   await maybeRolloverToday();
   if (maybeBackfillFromDeck()) await saveBacklog();
   render();
@@ -3115,10 +3114,9 @@ function openEditModal(task) {
   document.getElementById('modal-task-title').value = task.title;
   document.getElementById('modal-task-notes').value = task.notes || '';
   document.getElementById('modal-delete-btn').classList.remove('hidden');
-  document.getElementById('modal-link-btn').classList.toggle('hidden', !!(task.done || task.cardId));
   renderModalFiles(task);
   const pkb = document.getElementById('modal-park-btn');
-  pkb.classList.toggle('hidden', !!(task.done || task.cardId)); pkb.textContent = task.parked ? '⏸ Edit park…' : '⏸ Park…';
+  pkb.classList.toggle('hidden', !!task.done); pkb.textContent = task.parked ? '⏸ Edit park…' : '⏸ Park…';
   populateTagSelect(task.tag || null);
   showModal();
 }
@@ -3324,7 +3322,7 @@ function renderMain(app) {
   document.body.dataset.tab = currentTab;
   const activeTasks = tasks.filter(t => !t.done);
   const doneTasks = tasks.filter(t => t.done);
-  const titles = { backlog:'Backlog', projects:'Projects', today:'Today', stats:'Stats' };
+  const titles = { backlog:'Backlog', today:'Today', stats:'Stats' };
   const tags = [...new Set(tasks.map(t=>t.tag).filter(Boolean))];
 
   app.innerHTML = `
@@ -3336,7 +3334,7 @@ function renderMain(app) {
           <button class="sync-btn" onclick="manualRefresh()" title="Refresh from OneDrive">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </button>
-          ${currentTab==='backlog' ? `<button class="add-btn" onclick="openAddModal()">+</button>` : currentTab==='projects' ? `<button class="add-btn" onclick="pjOpen('project')" title="New project">+</button>` : '<div></div>'}
+          ${currentTab==='backlog' ? `<button class="add-btn" onclick="openAddModal()">+</button>` : '<div></div>'}
         </div>
       </div>
       ${syncError ? `<div style="font-size:11px;color:var(--danger);padding:4px 0 2px;word-break:break-word">${syncError}</div>` : lastSynced ? `<div style="font-size:11px;color:var(--sub);padding:2px 0">Synced ${lastSynced.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>` : ''}
@@ -3352,11 +3350,10 @@ function renderMain(app) {
         <button class="sort-btn2" onclick="openSortMenu(event)">Sort: ${sortLabel()} ${CHEV_SVG}</button>
       </div>` : ''}
     </div>
-    <div class="content ${currentTab==='today'?'lane-today':''} ${currentTab==='projects'?'lane-projects':''}" id="content"></div>
+    <div class="content ${currentTab==='today'?'lane-today':''}" id="content"></div>
     <div class="bottom-nav">
       <div class="nav-brand"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Donezo</div>
       ${navItem('backlog',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,'Backlog')}
-      ${navItem('projects',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>`,'Projects')}
       ${navItem('today',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,'Today')}
       ${navItem('stats',`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,'Stats')}
     </div>`;
@@ -3365,7 +3362,6 @@ function renderMain(app) {
   const content = document.getElementById('content');
   if (currentTab==='backlog') renderBacklog(content, activeTasks, doneTasks);
   else if (currentTab==='today') renderToday(content, activeTasks, doneTasks);
-  else if (currentTab==='projects') renderProjects(content);
   else renderStats(content, activeTasks, doneTasks);
   if (keepY) window.scrollTo(0, keepY); else if (lastRenderTab !== currentTab) window.scrollTo(0, 0);
   lastRenderTab = currentTab;
@@ -3378,11 +3374,11 @@ function navItem(tab, icon, label) {
 
 // ---- BACKLOG TAB ----
 function renderBacklog(el, activeTasks, doneTasks) {
-  const pjGrouped = !searchQ && !filterTag;
+  const blGrouped = !searchQ && !filterTag;
   const parkedAll = activeTasks.filter(t => t.parked);
   if (!parkedAll.length && blView === 'parked') blView = 'active';
   activeTasks = activeTasks.filter(t => !t.parked);
-  let filtered = pjGrouped ? activeTasks.filter(t => !(t.cardId && pjFind(t.cardId)[1])) : activeTasks;
+  let filtered = activeTasks;
   if (filterTag) filtered = filtered.filter(t => (t.tag||'').toLowerCase() === filterTag);
   if (searchQ) filtered = filtered.filter(t=>t.title.toLowerCase().includes(searchQ.toLowerCase()));
   // Sort by real creation date. Oldest = earliest first; newest = latest first.
@@ -3397,7 +3393,6 @@ function renderBacklog(el, activeTasks, doneTasks) {
     return sortOrder === 'newest' ? -diff : diff;
   });
 
-  const pjHtml = pjGrouped ? pjBacklogHTML() : '';
   let html = '';
   // Active task count header
   const countLabel = (searchQ || filterTag) ? `${filtered.length} of ${activeTasks.length}` : `${activeTasks.length}`;
@@ -3436,13 +3431,8 @@ function renderBacklog(el, activeTasks, doneTasks) {
     if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
   }
   }
-  const eeBlock = `<div class="pj-bighead pj-collapse-head" data-ee-collapse><span class="pj-chev ${eeCollapsed ? '' : 'open'}">›</span>To Do List <span class="pj-hcount">${filtered.length}</span></div>` + (eeCollapsed ? '' : html);
-  if (pjGrouped && blDesktop()) {
-    const colE = `<div class="bl-col glass-panel"><div class="bl-col-inner">${eeBlock}</div></div>`;
-    const colP = `<div class="bl-col glass-panel"><div class="bl-col-inner">${pjCheckinBar()}${pjHtml || '<div class="pj-bighead">Projects</div><div class="bl-empty">No open project tasks</div>'}</div></div>`;
-    html = blKpis(activeTasks) + `<div class="bl-dash">${pjOnTop ? colP + colE : colE + colP}</div>`;
-  } else if (pjGrouped) {
-    html = pjCheckinBar() + (pjOnTop ? pjHtml + (pjHtml ? '<div class="pj-divider"></div>' : '') + eeBlock : eeBlock + (pjHtml ? '<div class="pj-divider"></div>' + pjHtml : ''));
+  if (blGrouped && blDesktop()) {
+    html = blKpis(activeTasks) + `<div class="bl-dash"><div class="bl-col glass-panel"><div class="bl-col-inner">${html}</div></div></div>`;
   }
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
@@ -3813,7 +3803,7 @@ function todayCard(t, done, stretch, canSwap) {
     </div>
     <div class="task-body" data-edit-line="${t.lineIndex}">
       <div class="task-title ${done?'done':''}">${t.title}</div>
-      ${(t.tag || badge || t.notes || attN(t) || t.cardId) ? `<div class="task-meta">${t.cardId?pjTaskExtras(t).meta:''}${tagHTML(t.tag)}${badge}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
+      ${(t.tag || badge || t.notes || attN(t)) ? `<div class="task-meta">${tagHTML(t.tag)}${badge}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
     </div>
     ${!done && stretch && canSwap ? `<button class="td-up" data-td-up="${t.lineIndex}" title="Swap into Focus">⇡</button>` : ''}
     <button class="remove-today-btn" data-remove="${esc(t.title)}">×</button>
@@ -4253,21 +4243,6 @@ function renderTrends(activeTasks, doneTasks) {
       <div class="tr-legend"><span><i style="background:var(--accent)"></i>This week</span><span><i style="background:color-mix(in srgb, var(--accent) 40%, transparent)"></i>Last week</span>${prior.length ? '<span><i style="background:var(--sub)"></i>' + prior.length + '-week avg</span>' : ''}</div></div>`;
   }
 
-  // ---------- 10 · project pulse ----------
-  if (pj.projects.length) {
-    const doneAt = c => { const t = pjTask(c); return t && t.done ? (Date.parse(t.doneAt || completions[t.title]) || 0) : null; };
-    out += `<div class="fx-lbl tr-sec">Project pulse</div><div class="tr-pp">${pj.projects.map(p => {
-      const tot = p.cards.length, times = p.cards.map(doneAt).filter(x => x !== null), dn = times.length, pct = tot ? dn / tot * 100 : 0;
-      const wait = p.cards.filter(c => !pjDone(c) && pjKind(pjListOf(p, c)) === 'waiting').length;
-      const burn = []; for (let i = 9; i >= 0; i--) { const e = +fxAdd(W0, 7 - 7 * i); burn.push(times.filter(x => x < e).length); }
-      const recent = times.filter(x => x >= Date.now() - 28 * TR_DAY).length, left = tot - dn;
-      const eta = !tot ? '—' : !left ? 'Done 🎉' : recent ? short(fxAdd(T, Math.ceil(left / (recent / 28)))) : '—';
-      return `<div class="chart-card" style="cursor:pointer" onclick="pjActive='${p.id}';switchTab('projects')"><div class="fx-num" style="font-size:calc(21px * var(--fxs));line-height:1.1">${pjh(p.name)}</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><div class="fx-num" style="font-size:calc(34px * var(--fxs))">${dn}<span style="font-size:.5em;color:var(--sub)">/${tot}</span></div><span class="fx-pill ${pct >= 70 ? 'acc' : ''}">${Math.round(pct)}%</span></div>
-        <div class="tr-pbar"><i style="width:${pct.toFixed(1)}%"></i></div>
-        <div style="margin:10px 0 4px">${trSpark(burn, 260, 44, 'var(--accent)')}</div><div class="fx-sub" style="font-size:11.5px">Cards done · last 10 weeks</div>
-        <div class="tr-kv" style="grid-template-columns:1fr 1fr;margin-top:10px"><div><span class="fx-lbl">Waiting</span><b>${wait}</b></div><div><span class="fx-lbl">ETA</span><b>${eta}</b></div></div></div>`; }).join('')}</div>`;
-  }
   return out + `</div>`;
 }
 
@@ -4477,23 +4452,22 @@ function openTrendsRangeMenu(ev) {
 // ---- TASK CARD (backlog) ----
 function taskCard(t) {
   const inT = t.today;
-  const px = t.cardId ? pjTaskExtras(t) : null;
-  const canPark = !t.done && !t.cardId;
+  const canPark = !t.done;
   return `<div class="swipe-wrap" data-swipe-line="${t.lineIndex}" ${canPark ? `data-park="${t.parked ? 'unpark' : 'park'}"` : ''}>
     ${canPark ? `<div class="park-action">${t.parked ? '↩<span>Unpark</span>' : '⏸<span>Park</span>'}</div>` : ''}
     <div class="delete-action" data-delete-line="${t.lineIndex}" data-delete-title="${esc(t.title)}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
       Delete
     </div>
-    <div class="task-card ${px&&px.parked?'pj-parked':''}" ${t.tag?`style="--spine:${tagDotColor(t.tag)}"`:''}>
-      <div class="check-ring ${t.done?'done':''} ${px?'pj-ring':''} ${!t.done && t.parked ? 'pk-' + t.parked : ''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
+    <div class="task-card" ${t.tag?`style="--spine:${tagDotColor(t.tag)}"`:''}>
+      <div class="check-ring ${t.done?'done':''} ${!t.done && t.parked ? 'pk-' + t.parked : ''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <div class="task-body" data-edit-line="${t.lineIndex}">
-        <div class="task-title ${t.done?'done':''}">${t.title}</div>${px?px.line:''}${!t.done && t.parked ? parkLine(t) : ''}
-        ${(t.tag || t.notes || attN(t) || px || createdMsOf(t)) ? `<div class="task-meta">${px?px.meta:''}${tagHTML(t.tag)}${ageChip(t)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
+        <div class="task-title ${t.done?'done':''}">${t.title}</div>${!t.done && t.parked ? parkLine(t) : ''}
+        ${(t.tag || t.notes || attN(t) || createdMsOf(t)) ? `<div class="task-meta">${tagHTML(t.tag)}${ageChip(t)}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
       </div>
-      ${px && px.right && !t.done ? px.right : !t.done ? (() => {
+      ${!t.done ? (() => {
         if (t.parked) return '';
         if (t.tomorrow) return `<button class="today-ring-btn in-tomorrow" data-tmr-toggle="${esc(t.title)}" title="Staged for tomorrow — tap to unstage">🌙</button>`;
         if (inT) return `<button class="today-ring-btn in-today" data-today-toggle="${esc(t.title)}" title="In Today — tap to remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>`;
@@ -4529,7 +4503,6 @@ function attachTaskEvents(el) {
       e.stopPropagation();
       if (openSwipeWrap) { closeOpenSwipe(); return; }
       const pt = tasks.find(t => t.lineIndex === parseInt(btn.dataset.line));
-      if (pt && pt.cardId && !pt.done && currentTab === 'backlog' && pjFind(pt.cardId)[1]) { pjOpen('act', pt.cardId); return; }
       toggleDone(btn.dataset.toggle, parseInt(btn.dataset.line));
     });
   });
@@ -4541,7 +4514,6 @@ function attachTaskEvents(el) {
       if (openSwipeWrap) { closeOpenSwipe(); return; }
       const lineIdx = parseInt(body.dataset.editLine);
       const task = tasks.find(t=>t.lineIndex===lineIdx);
-      if (task && task.cardId && pjFind(task.cardId)[1]) { pjOpen('card', task.cardId); return; }
       if (task && task.parked && !task.done) { openParkActions(task); return; }
       if (task) openEditModal(task);
     });
@@ -4694,7 +4666,7 @@ function attachTaskEvents(el) {
   },{passive:true});
 }
 
-function switchTab(tab) { currentTab=tab; laneView='today'; filterTag=null; searchQ=''; closeOpenSwipe(); render(); }
+function switchTab(tab) { if (!['backlog','today','stats'].includes(tab)) tab = 'backlog'; currentTab=tab; laneView='today'; filterTag=null; searchQ=''; closeOpenSwipe(); render(); }
 
 // Targeted search handler — only re-renders the content div, never the header.
 // Rebuilding the entire page (full render()) on every keystroke destroys the
@@ -4723,8 +4695,12 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.10.08-2"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.16-1"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.16-1", date: "Nov 16, 2026", items: [
+    ["improved", "Projects is gone. Backlog, Today and Stats are the whole app now, and every task lives in one list"],
+    ["improved", "On desktop, the Backlog dashboard is a single list, and the project-only \"Ready for you\" tile is gone"],
+  ]},
   { v: "2026.10.08-2", date: "Oct 8, 2026", items: [
     ["new", "Attachments on any task: open a task and tap ＋ Add under Attachments to add photos, PDFs or any file (saved to your OneDrive)"],
     ["new", "Tasks with files show a 📎 on the card; tap a file to open it, and photos open full-screen"],
@@ -4840,9 +4816,8 @@ async function applyUpdate(btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Updating…'; }
   // don't lose anything mid-save
   try {
-    if (pjSaveT) { clearTimeout(pjSaveT); await pjFlush(); }
     const t0 = Date.now();
-    while ((blSaving || pjSaving) && Date.now() - t0 < 3000) await new Promise(r => setTimeout(r, 100));
+    while (blSaving && Date.now() - t0 < 3000) await new Promise(r => setTimeout(r, 100));
   } catch {}
   if (updWorker) updWorker.postMessage("SKIP_WAITING"); else location.reload();
   setTimeout(() => { if (!swReloading) location.reload(); }, 4000); // safety net
@@ -4959,7 +4934,7 @@ async function boot() {
   }
 
   try {
-    await Promise.all([loadBacklog(), loadFocusHistory(), loadProjects(), loadPrefs()]);
+    await Promise.all([loadBacklog(), loadFocusHistory(), loadPrefs()]);
     await maybeRolloverToday();
     if (maybeBackfillFromDeck()) await saveBacklog();
     render();
@@ -4979,395 +4954,10 @@ async function boot() {
 
 
 // ============================================================
-// PROJECTS — kanban boards linked to Backlog tasks.
-// Board data lives in OneDrive: 0 - Data/Backlog/projects.json
-// Each card owns exactly one backlog.md task line, tagged (project) and linked by [card:<id>].
-// Completion lives in backlog.md (the task); stage/notes/files/history live in projects.json.
+// Shared helpers (Projects was removed in 2026.11.16-1; projects.json is no longer read or written)
 // ============================================================
-const PJ_PATH = '/me/drive/root:/0 - Data/Backlog/projects.json:/content';
 const PJ_ATTACH_DIR = '/0 - Data/Backlog/attachments';
-const PJ_EASE = 'cubic-bezier(.2,.8,.2,1)';
-const PJ_DOTS = ['#8e8e93','#5b8def','#f08c00','#a855f7','#22b35e','#ec4899','#06b6d4','#eab308'];
-const PJ_IC_NOTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 6h14M5 12h14M5 18h9"/></svg>';
-const PJ_IC_CLIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>';
-
-let pj = (function(){ try { return JSON.parse(localStorage.getItem('pj_cache')) || null; } catch { return null; } })() || { version: 1, projects: [], tomb: [] };
-let pjBase = null;            // last loaded/saved JSON string — merge base
-let pjActive = localStorage.getItem('pj_active') || null;
-let pjSinking = new Set();    // cards completed while the board wasn't visible → animate on arrival
 const pjh = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const pjId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-const pjNow = () => new Date().toISOString();
-const pjDayISO = d => { const x = new Date(); x.setDate(x.getDate() + d); return localDayKeyOf(x); };
-function localDayKeyOf(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-const pjToday = () => localDayKeyOf(new Date());
-function pjFmtDay(iso) {
-  if (!iso) return '';
-  const d = Math.round((new Date(iso + 'T12:00') - new Date(pjToday() + 'T12:00')) / 864e5);
-  if (d < 0) return `${-d}d overdue`; if (d === 0) return 'today'; if (d === 1) return 'tomorrow';
-  if (d < 7) return new Date(iso + 'T12:00').toLocaleDateString(undefined, { weekday: 'short' });
-  return new Date(iso + 'T12:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-const pjDaysSince = iso => Math.max(0, Math.round((Date.now() - new Date(iso)) / 864e5));
-function pjRel(iso) { const m = Math.round((Date.now() - new Date(iso)) / 6e4); if (m < 1) return 'just now'; if (m < 60) return m + 'm ago'; const h = Math.round(m / 60); if (h < 24) return h + 'h ago'; const d = Math.round(h / 24); if (d === 1) return 'yesterday'; if (d < 7) return d + 'd ago'; return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
-
-// ---------- model helpers ----------
-const pjProj = () => pj.projects.find(p => p.id === pjActive) || pj.projects[0] || null;
-const pjFind = id => { for (const p of pj.projects) { const c = p.cards.find(c => c.id === id); if (c) return [p, c]; } return [null, null]; };
-const pjListOf = (p, c) => p.lists.find(l => l.id === c.listId) || p.lists[0];
-const pjKind = l => (l && l.kind) || 'queue';
-const pjTask = c => tasks.find(t => t.cardId === c.id) || null;
-const pjDone = c => { const t = pjTask(c); return !!(t && t.done); };
-const pjDue = c => !!(c.waiting && c.waiting.until && c.waiting.until <= pjToday());
-const pjTouch = (...xs) => xs.forEach(x => x && (x.upd = Date.now()));
-function pjLog(c, m, ic = '•') { (c.history = c.history || []).push({ at: pjNow(), m, ic }); if (c.history.length > 80) c.history.splice(0, c.history.length - 80); pjTouch(c); }
-const pjDotFor = (p, l) => PJ_DOTS[p.lists.indexOf(l) % PJ_DOTS.length];
-
-// ---------- persistence (conflict-safe merge by id + updated stamp) ----------
-async function loadProjects() {
-  try {
-    const res = await graphFetch(PJ_PATH);
-    if (res && res.ok) {
-      const txt = await res.text();
-      const data = JSON.parse(txt);
-      if (data && Array.isArray(data.projects)) { pj = Object.assign({ tomb: [] }, data); pjBase = txt; }
-    } else if (res && res.status === 404) { pjBase = null; }
-  } catch (e) { console.warn('projects load', e); }
-  localStorage.setItem('pj_cache', JSON.stringify(pj));
-}
-function pjMerge(ours, theirs) {
-  const tomb = new Set([...(ours.tomb || []), ...(theirs.tomb || [])]);
-  const byId = new Map(theirs.projects.map(p => [p.id, p]));
-  const out = [];
-  const mergeProj = (o, t) => {
-    if (!t) return o; if (!o) return t;
-    const base = (o.upd || 0) >= (t.upd || 0) ? o : t;
-    const tc = new Map(t.cards.map(c => [c.id, c])), cards = [];
-    o.cards.forEach(c => { const x = tc.get(c.id); cards.push(x && (x.upd || 0) > (c.upd || 0) ? x : c); tc.delete(c.id); });
-    tc.forEach(c => cards.push(c));
-    return Object.assign({}, base, { cards: cards.filter(c => !tomb.has(c.id)) });
-  };
-  ours.projects.forEach(p => { out.push(mergeProj(p, byId.get(p.id))); byId.delete(p.id); });
-  byId.forEach(p => out.push(p));
-  return { version: 1, projects: out.filter(p => !tomb.has(p.id)), tomb: [...tomb].slice(-500) };
-}
-let pjSaveT = null, pjSaving = false;
-function pjSave() {
-  localStorage.setItem('pj_cache', JSON.stringify(pj));
-  clearTimeout(pjSaveT); pjSaveT = setTimeout(pjFlush, 700);
-}
-async function pjFlush() {
-  pjSaveT = null;
-  if (pjSaving) { pjSaveT = setTimeout(pjFlush, 400); return; }
-  pjSaving = true;
-  try {
-    const cur = await graphFetch(PJ_PATH);
-    if (cur && cur.ok) { const latest = await cur.text(); if (latest !== pjBase) { try { pj = pjMerge(pj, JSON.parse(latest)); } catch {} } }
-    const body = JSON.stringify(pj, null, 1);
-    const res = await graphFetch(PJ_PATH, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body });
-    if (res && res.ok) pjBase = body; else if (res) showToast('⚠️ Projects save failed (' + res.status + ')');
-    localStorage.setItem('pj_cache', JSON.stringify(pj));
-  } catch (e) { showToast('⚠️ Projects save failed'); }
-  pjSaving = false;
-}
-
-// ---------- backlog.md line helpers (project tasks) ----------
-function pjLineIdx(c) { const t = pjTask(c); return t ? t.lineIndex : -1; }
-async function pjCreateTaskLine(title, cardId) {
-  const lines = rawMd.split('\n');
-  const activeIdx = lines.findIndex(l => l.trim() === '## Active');
-  const iso = pjNow();
-  const newLine = `- [ ] ${title} (project) [created:${iso}] [card:${cardId}]`;
-  if (activeIdx !== -1) lines.splice(activeIdx + 2, 0, newLine); else lines.push(newLine);
-  rawMd = lines.join('\n');
-  if (!created[title]) { created[title] = iso; saveCreated(); }
-  parseTasks();
-}
-// Removing cards from the board: open tasks go away with them; COMPLETED tasks stay in
-// backlog.md as history (just unlinked) so Stats never loses a finished task.
-function pjReleaseTasks(ids) {
-  let kept = 0;
-  rawMd = rawMd.split('\n').flatMap(l => { const m = l.match(/\[card:([^\]]+)\]/); if (!m || !ids.has(m[1])) return [l];
-    if (/^- \[x\] /.test(l)) { kept++; return [l.replace(/\s*\[card:[^\]]+\]/, '')]; }
-    return []; }).join('\n');
-  parseTasks(); return kept;
-}
-// ---------- link an existing Backlog task to a project ----------
-let pjLinkPending = null, pjPickQ = '';
-function pjLinkFromModal() { const t = editingTask; if (!t) return; closeModal(); setTimeout(() => pjOpen('link', t.lineIndex), 220); }
-async function pjLinkTask(task, p, stay) {
-  if (!task || task.done || task.cardId || !p) return;
-  const lines = rawMd.split('\n'); let l = lines[task.lineIndex]; if (!l) return;
-  const c = { id: pjId('c'), listId: pjEnsureList(p, task.today ? 'active' : 'queue').id, title: task.title, notes: task.notes || '', files: [], history: [], ready: false, waiting: null, origTag: task.tag || null };
-  pjLog(c, `Added from Backlog${task.tag ? ' (was #' + task.tag + ')' : ''}`, '↳');
-  l = l.replace(/\s*\[notes:[^\]]*\]/, '');
-  const tagRe = task.tag ? new RegExp(`\\(${escapeRe(task.tag)}\\)(?=(?:\\s*\\[[^\\]]*\\])*\\s*$)`, 'i') : null;
-  if (tagRe && tagRe.test(l)) l = l.replace(tagRe, '(project)');
-  else l = l.replace(/^(- \[[ x]\] )(.+?)((?:\s+\[[^\]]*\])*)$/, '$1$2 (project)$3');
-  l = l.trimEnd() + ` [card:${c.id}]`;
-  lines[task.lineIndex] = l; rawMd = lines.join('\n'); parseTasks();
-  p.cards.push(c); pjTouch(p); pjSave();
-  if (!stay) { pjActive = p.id; localStorage.setItem('pj_active', p.id); }
-  render(); await saveBacklog();
-  showToast(`↳ Added to ${p.name}`);
-}
-// ---------- delete project ----------
-let pjDel = { choice: null, tags: {} };
-const PJ_TAG_WORDS = {
-  'around the house': 'house home kitchen bath bathroom shower toilet garage yard lawn fence roof paint tile cabinet cabinets counter countertop sink faucet floor door window hvac plumb plumbing electric light lights fan pantry closet install mount contractor remodel permit backsplash appliance pool sprinkler gutter drywall patio deck furniture move moving mover',
-  finance: 'pay bill invoice bank loan mortgage insurance tax taxes 401k ira invest budget refund fee account credit chase escrow closing deposit transfer payment quote estimate appraisal',
-  health: 'doctor dentist derm dermatology appointment blood lab workout gym run running vitamin vitamins prescription medical therapy physical eye health dr',
-  shopping: 'buy order purchase amazon shop get new',
-  errand: 'pick_up drop_off return post_office dmv registration car_wash grocery groceries',
-  admin: 'email form sign register renew update password subscription cancel schedule paperwork document documents passport license utilities utility setup internet address',
-  gcs: 'gcs client clients tenant board deck team employee hire',
-  personal: 'guitar bike gift birthday travel flight flights book trip friend party hobby',
-};
-function pjGuessTag(c, p, opts) {
-  const words = s => (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean);
-  const text = words(c.title + ' ' + (c.notes || '')), ctx = words(p.name);
-  let best = null, bestScore = 0;
-  opts.forEach(g => {
-    const kw = new Set(words((PJ_TAG_WORDS[g] || '') + ' ' + g));
-    let sc = 0; const joined = ' ' + text.join(' ') + ' ';
-    kw.forEach(k => { if (k.includes('_') && joined.includes(' ' + k.replace(/_/g, ' ') + ' ')) sc += 3; });
-    text.forEach(w => { if (kw.has(w) || (w.length > 4 && [...kw].some(k => k.length > 4 && !k.includes('_') && (w.startsWith(k) || k.startsWith(w))))) sc += 2; });
-    ctx.forEach(w => { if (kw.has(w)) sc += 1; });
-    if (g === 'around the house' && /^\d+\s+\w+/.test(p.name)) sc += 1;   // address-named project leans house
-    if (sc > bestScore) { bestScore = sc; best = g; }
-  });
-  if (!best) {   // nothing matched: an address-like project name is a house project; else personal
-    if (/^\d+\s+\w+/.test(p.name) && opts.includes('around the house')) best = 'around the house';
-    else best = opts.includes('personal') ? 'personal' : opts[0];
-  }
-  return best;
-}
-async function pjDoDeleteProject() {
-  const p = pjProj(); if (!p) return;
-  const openCards = p.cards.filter(c => { const t = pjTask(c); return t && !t.done; });
-  if (openCards.length && !pjDel.choice) return;
-  const ids = new Set(p.cards.map(c => c.id)); let moved = 0, dropped = 0;
-  if (pjDel.choice === 'move') {
-    const lines = rawMd.split('\n');
-    openCards.forEach(c => { const t = pjTask(c); if (!t) return; let l = lines[t.lineIndex];
-      const tag = pjDel.tags[c.id] || 'personal';
-      l = l.replace(/\s*\[card:[^\]]+\]/, '').replace(/ \(project\)/, ` (${tag})`);
-      const extra = [(c.notes || '').trim(), (c.files || []).length ? `(files: Backlog/attachments/${c.id})` : ''].filter(Boolean).join(' ');
-      if (extra) { const m = l.match(/\[notes:([^\]]*)\]/);
-        l = m ? l.replace(m[0], `[notes:${encodeNotes((decodeNotes(m[1]) + ' ' + extra).trim())}]`) : l.replace(/(\([a-z0-9_-]+\))/i, `$1 [notes:${encodeNotes(extra)}]`); }
-      lines[t.lineIndex] = l; moved++; ids.delete(c.id); });
-    rawMd = lines.join('\n'); parseTasks();
-  } else {
-    dropped = openCards.length;
-    openCards.forEach(c => (c.files || []).forEach(f => graphFetch(`/me/drive/items/${f.id}`, { method: 'DELETE' })));
-  }
-  const kept = pjReleaseTasks(ids);   // removes remaining open linked lines, keeps + unlinks completed ones
-  pj.tomb.push(p.id, ...p.cards.map(c => c.id)); pj.projects = pj.projects.filter(x => x !== p);
-  pjActive = pj.projects[0] ? pj.projects[0].id : null; localStorage.setItem('pj_active', pjActive || '');
-  pjClose(); pjSave(); render(); await saveBacklog();
-  const bits = [moved && `${moved} moved to Backlog`, dropped && `${dropped} deleted`, kept && `${kept} completed kept`].filter(Boolean);
-  showToast('Project deleted' + (bits.length ? ' · ' + bits.join(' · ') : ''));
-}
-function pjStripTodayFlags(c) {   // parking a card takes it off Today/Tomorrow — no bail guilt, it's legit waiting
-  const i = pjLineIdx(c); if (i < 0) return false;
-  const lines = rawMd.split('\n'); const before = lines[i];
-  lines[i] = lines[i].replace(/\s+\[today(?::[^\]]+)?\]/, '').replace(/\s*\[bonus\]/, '').replace(/\s*\[tomorrow\]/, '');
-  if (lines[i] === before) return false;
-  rawMd = lines.join('\n'); parseTasks(); return true;
-}
-async function pjAddToday(c, quiet) {
-  const t = pjTask(c); if (!t || t.done || t.today) return !!(t && t.today);
-  let ok;
-  if (bonusUnlocked()) ok = await addBonus(t.title); else ok = await addToToday(t.title);
-  if (ok) { c.paused = null; pjLog(c, 'Added to Today', '☀'); pjSave(); if (!quiet) showToast('☀ Added to Today'); }
-  return ok;
-}
-
-// ---------- status-driven lists ----------
-// A project starts with just To Do. Other lists are created on demand by task status:
-//   Start it → In Progress · Did my part → Waiting On · Complete → Completed
-const PJ_KIND_NAME = { queue: 'To Do', active: 'In Progress', waiting: 'Waiting On', done: 'Completed' };
-const PJ_KIND_RANK = { queue: 0, active: 1, waiting: 2, done: 3 };
-function pjEnsureList(p, kind) {
-  let l = p.lists.find(x => pjKind(x) === kind); if (l) return l;
-  l = { id: pjId('l'), name: PJ_KIND_NAME[kind], kind };
-  let at = p.lists.length; for (let i = p.lists.length - 1; i >= 0; i--) { if (PJ_KIND_RANK[pjKind(p.lists[i])] <= PJ_KIND_RANK[kind]) { at = i + 1; break; } at = i; }
-  p.lists.splice(at, 0, l); pjTouch(p); return l;
-}
-function pjNormalize() {   // completed cards always live in the Completed list; reopened ones leave it
-  let changed = false;
-  pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t) return; const k = pjKind(pjListOf(p, c));
-    if (t.done && k !== 'done') { const d = pjEnsureList(p, 'done'); c.prevList = c.listId; c.listId = d.id; c.waiting = null; c.ready = false; pjTouch(c); changed = true; }
-    else if (!t.done && t.today && k === 'queue') { pjMove(c, pjEnsureList(p, 'active').id); changed = true; }
-    else if (!t.done && k === 'done') { const back = p.lists.find(l => l.id === c.prevList && pjKind(l) !== 'done') || pjEnsureList(p, 'queue'); c.listId = back.id; pjTouch(c); changed = true; } }));
-  if (changed) pjSave();
-}
-const pjPauseDue = c => !!(c.paused && (!c.paused.until || c.paused.until <= pjToday()) && c.paused.until);
-// ---------- stage transitions (the rules) ----------
-// Enter Waiting → parked (off Today). Leave Waiting → flagged Ready. Enter an Active list → Ready cleared.
-function pjTransition(p, c, fromId) {
-  const from = p.lists.find(l => l.id === fromId), to = pjListOf(p, c);
-  if (from && to && from !== to) pjLog(c, `Moved ${from.name} → ${to.name}`, '→');
-  let r; if (from !== to) c.paused = null;
-  if (pjKind(to) === 'done') { c.prevList = fromId; c.waiting = null; c.waitSince = null; c.ready = false; pjTouch(c, p); return 'done'; }
-  if (pjKind(to) === 'waiting' && pjKind(from) !== 'waiting') {
-    c.prevList = fromId; c.ready = false; c.waitSince = pjNow();
-    if (pjStripTodayFlags(c)) saveBacklog();
-    r = 'waiting';
-  } else if (pjKind(from) === 'waiting' && pjKind(to) !== 'waiting') {
-    if (c.waitSince) { const d = pjDaysSince(c.waitSince); pjLog(c, `Back from waiting${c.waiting && c.waiting.on ? ' on ' + c.waiting.on : ''} after ${d} day${d === 1 ? '' : 's'}`, '⚡'); }
-    c.waiting = null; c.waitSince = null; c.ready = pjKind(to) !== 'active'; r = 'ready';
-  } else if (pjKind(to) === 'active') c.ready = false;
-  pjTouch(c, p);
-  return r;
-}
-function pjMove(c, listId) {
-  const [p] = pjFind(c.id); const from = c.listId; if (from === listId) return;
-  c.listId = listId; p.cards = [...p.cards.filter(x => x !== c), c];
-  return pjTransition(p, c, from);
-}
-function pjSetWaiting(c, on, until) {
-  const [p] = pjFind(c.id); const wl = pjEnsureList(p, 'waiting');
-  if (c.listId !== wl.id) pjMove(c, wl.id);
-  c.waiting = { on: on || '', until: until || null }; c.ready = false; if (!c.waitSince) c.waitSince = pjNow();
-  if (pjStripTodayFlags(c)) saveBacklog();
-  pjLog(c, `Waiting on ${on || 'someone'}${until ? ' · follow up ' + pjFmtDay(until) : ''}`, '⏳');
-}
-function pjUnblock(c) {
-  const [p] = pjFind(c.id);
-  const back = p.lists.find(l => l.id === c.prevList && pjKind(l) !== 'waiting' && pjKind(l) !== 'done') || pjEnsureList(p, 'queue');
-  pjMove(c, back.id); c.ready = true; pjTouch(c);
-}
-
-// ---------- FLIP animation (keyed, relative to keyed parent) ----------
-function pjMeasure() {
-  const m = new Map();
-  document.querySelectorAll('[data-pk]').forEach(el => {
-    const r = el.getBoundingClientRect(), a = el.parentElement && el.parentElement.closest('[data-pk]');
-    const ar = a ? a.getBoundingClientRect() : { left: 0, top: 0 };
-    m.set(el.dataset.pk, { x: r.left - ar.left, y: r.top - ar.top });
-  }); return m;
-}
-function pjFlip(mutate, enter = true) {
-  const first = pjMeasure(); mutate();
-  document.querySelectorAll('[data-pk]').forEach(el => el.getAnimations().forEach(a => { if (a.id === 'pjflip') a.cancel(); }));
-  const last = pjMeasure();
-  document.querySelectorAll('[data-pk]').forEach(el => {
-    const f = first.get(el.dataset.pk), l = last.get(el.dataset.pk); let a;
-    if (!f) { if (enter) a = el.animate([{ opacity: 0, transform: 'scale(.95)' }, { opacity: 1, transform: 'none' }], { duration: 280, easing: PJ_EASE }); }
-    else { const dx = f.x - l.x, dy = f.y - l.y; if (Math.abs(dx) > .5 || Math.abs(dy) > .5) a = el.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], { duration: 340, easing: PJ_EASE }); }
-    if (a) a.id = 'pjflip';
-  });
-}
-// re-render whatever tab is showing, animated
-function pjRefresh(anim = true) { const go = () => { const sy = window.scrollY; render(); window.scrollTo(0, sy); }; anim ? pjFlip(go) : go(); }
-
-// ---------- PROJECTS TAB ----------
-function renderProjects(el) {
-  const p = pjProj();
-  if (!p) {
-    el.innerHTML = `<div class="pj-empty"><div class="big">🗂️</div><b>No projects yet</b>Track multi-stage work on a board. Every card becomes a Backlog task tagged <b>project</b>.<br><br><button class="pj-btn" onclick="pjOpen('project')">＋ New project</button></div>`;
-    return;
-  }
-  pjActive = p.id; pjNormalize();
-  const oldB = document.querySelector('.pj-board'); const sl = oldB ? oldB.scrollLeft : 0;
-  const colScroll = {}; document.querySelectorAll('.pj-cards').forEach(e => colScroll[e.dataset.list] = e.scrollTop);
-  const openBox = document.querySelector('.pj-add-box textarea'); const openList = openBox && openBox.closest('.pj-col').dataset.id, openVal = openBox && openBox.value;
-  const tot = p.cards.length, dn = p.cards.filter(pjDone).length;
-  el.innerHTML = `
-    <div class="pj-top">${pj.projects.map(x => `<button class="pj-pill ${x.id === p.id ? 'on' : ''}" data-pj-proj="${x.id}">${pjh(x.name)}</button>`).join('')}
-      <button class="pj-pill" data-pj-projmenu title="Project options">⋯</button><button class="pj-pill" data-pj-newproj>＋ New</button></div>
-    <div class="pj-prog"><div class="bar"><i style="width:${tot ? dn / tot * 100 : 0}%"></i></div><span>${dn}/${tot} done</span></div>
-    <div class="pj-board">${p.lists.map(l => {
-      const cs = pjSorted(p, l.id), open = cs.filter(c => !pjDone(c)).length;
-      return `<div class="pj-col" data-pk="col-${l.id}" data-id="${l.id}">
-        <div class="pj-col-head"><span class="pj-dot" style="background:${pjDotFor(p, l)}"></span>${pjh(l.name)}${pjKind(l) !== 'queue' ? `<span class="kind">${pjKind(l) === 'active' ? '▶' : '⏳'}</span>` : ''}<span class="pj-count">${open}${cs.length > open ? ' / ' + cs.length : ''}</span></div>
-        <div class="pj-cards" data-list="${l.id}">${cs.map(pjCardHTML).join('')}</div>
-        ${pjKind(l) === 'queue' ? '<button class="pj-add-card">＋ Add card</button><button class="pj-add-card pj-add-existing" data-pj-pick>↳ Add existing task</button>' : ''}</div>`;
-    }).join('')}
-      </div>`;
-  const b = el.querySelector('.pj-board'); b.scrollLeft = sl;
-  el.querySelectorAll('.pj-cards').forEach(e => { if (colScroll[e.dataset.list]) e.scrollTop = colScroll[e.dataset.list]; });
-  pjSizeBoard();
-  if (openList) { const col = el.querySelector(`.pj-col[data-id="${openList}"]`); if (col) { pjOpenAdd(col, false); col.querySelector('textarea').value = openVal; } }
-  pjLoadThumbs(el);
-  if (pjSinking.size) {
-    const ids = [...pjSinking]; pjSinking.clear();
-    ids.forEach(id => { const n = el.querySelector(`[data-pk="card-${id}"]`); if (n) { const col = n.closest('.pj-col'); b.scrollTo({ left: col.offsetLeft - 16, behavior: 'smooth' }); } });
-  }
-}
-function pjSizeBoard() {
-  const b = document.querySelector('.pj-board'); if (!b) return;
-  const nav = document.querySelector('.bottom-nav'); const nr = nav ? nav.getBoundingClientRect() : null;
-  const navH = nr && nr.top > window.innerHeight / 2 ? nr.height : 0;
-  b.style.height = Math.max(280, window.innerHeight - b.getBoundingClientRect().top - window.scrollY * 0 - navH - 8) + 'px';
-}
-window.addEventListener('resize', pjSizeBoard);
-function pjSorted(p, listId) {
-  const cs = p.cards.filter(c => c.listId === listId || (!p.lists.some(l => l.id === c.listId) && listId === p.lists[0].id));
-  return [...cs.filter(c => !pjDone(c)), ...cs.filter(pjDone)];
-}
-function pjBadges(c, t) {
-  let h = '';
-  if (c.waiting) h += pjDue(c) ? `<span class="pj-badge due">⏰ Follow up${c.waiting.on ? ' · ' + pjh(c.waiting.on) : ''}</span>` : `<span class="pj-badge wait">⏳ ${c.waiting.on ? pjh(c.waiting.on) : 'Waiting'}${c.waiting.until ? ' · ' + pjFmtDay(c.waiting.until) : ''}</span>`;
-  if (c.ready) h += '<span class="pj-badge ready">⚡ Ready</span>';
-  if (c.paused) h += pjPauseDue(c) ? '<span class="pj-badge due">⏸ Back to this</span>' : `<span class="pj-badge">⏸ Paused${c.paused.until ? ' · ' + pjFmtDay(c.paused.until) : ''}</span>`;
-  if (t && t.today) h += '<span class="pj-badge today">☀ Today</span>';
-  else if (t && t.tomorrow) h += '<span class="pj-badge">🌙 Tomorrow</span>';
-  return h;
-}
-function pjCardHTML(c) {
-  const t = pjTask(c), done = !!(t && t.done);
-  const img = (c.files || []).find(f => (f.type || '').startsWith('image/'));
-  return `<div class="pj-card ${done ? 'done' : ''}" data-pk="card-${c.id}" data-id="${c.id}">${img ? `<div class="pj-thumb" data-thumb="${img.id}"></div>` : ''}<div class="ct">${pjh(c.title)}</div>
-    <div class="meta">${done ? '<span class="pj-badge done">✓ Completed</span>' : pjBadges(c, t)}${!t ? '<span class="pj-badge due">Task missing</span>' : ''}${c.notes ? `<span class="pj-ind">${PJ_IC_NOTE}</span>` : ''}${(c.files || []).length ? `<span class="pj-ind">${PJ_IC_CLIP}${c.files.length}</span>` : ''}</div></div>`;
-}
-
-// board clicks (delegated once)
-document.addEventListener('click', e => {
-  const t = e.target;
-  if (!t.closest || !t.closest('#content') || currentTab !== 'projects') return;
-  const pp = t.closest('[data-pj-proj]');
-  if (t.closest('[data-pj-projmenu]')) return pjOpen('projmenu');
-  if (pp) { if (pp.dataset.pjProj === pjActive) return pjOpen('projmenu'); pjActive = pp.dataset.pjProj; localStorage.setItem('pj_active', pjActive);
-    const b = document.querySelector('.pj-board');
-    b.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(-12px)' }], { duration: 130, easing: 'ease-in' }).onfinish = () => {
-      render(); const nb = document.querySelector('.pj-board'); nb && nb.animate([{ opacity: 0, transform: 'translateX(12px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: PJ_EASE }); };
-    return; }
-  if (t.closest('[data-pj-newproj]')) return pjOpen('project');
-  if (t.closest('[data-pj-newcol]')) { const p = pjProj(); const l = { id: pjId('l'), name: 'New List', kind: 'queue' }; p.lists.push(l); pjTouch(p); pjSave();
-    pjFlip(render); const b = document.querySelector('.pj-board'); b.scrollTo({ left: b.scrollWidth, behavior: 'smooth' }); setTimeout(() => pjOpen('list', l.id), 320); return; }
-  if (t.closest('[data-pj-pick]')) return pjOpen('pick');
-  if (t.closest('.pj-add-card')) return pjOpenAdd(t.closest('.pj-col'), true);
-  if (t.closest('[data-pj-cancel]')) return pjCloseAdd(t.closest('.pj-col'));
-  if (t.closest('[data-pj-save]')) return pjSaveAdd(t.closest('.pj-col'));
-});
-function pjOpenAdd(col, focus) {
-  document.querySelectorAll('.pj-add-box').forEach(b => pjCloseAdd(b.closest('.pj-col')));
-  const btn = col.querySelector('.pj-add-card'); if (!btn) return;
-  const box = document.createElement('div'); box.className = 'pj-add-box';
-  box.innerHTML = `<textarea placeholder="Card title… (Enter to add)" enterkeyhint="done"></textarea><div class="pj-row"><button class="pj-btn" data-pj-save>Add card</button><button class="pj-btn ghost" data-pj-cancel>Cancel</button></div>`;
-  btn.replaceWith(box); const ta = box.querySelector('textarea');
-  ta.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); pjSaveAdd(col); } if (e.key === 'Escape') { e.stopPropagation(); pjCloseAdd(col); } };
-  if (focus) { box.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: PJ_EASE }); ta.focus(); }
-  const cards = col.querySelector('.pj-cards'); cards.scrollTop = cards.scrollHeight;
-}
-function pjCloseAdd(col) { const box = col && col.querySelector('.pj-add-box'); if (!box) return; const b = document.createElement('button'); b.className = 'pj-add-card'; b.textContent = '＋ Add card'; box.replaceWith(b); }
-async function pjSaveAdd(col) {
-  const ta = col.querySelector('textarea'), v = ta.value.trim().replace(/\s+/g, ' ').replace(/[\[\]]/g, '');
-  if (!v) { ta.focus(); return; }
-  if (tasks.some(t => t.title === v && !t.done)) { showToast('A task with that name already exists'); return; }
-  const p = pjProj(), listId = col.dataset.id;
-  const c = { id: pjId('c'), listId, title: v, notes: '', files: [], history: [], ready: false, waiting: null };
-  pjLog(c, 'Created in ' + p.lists.find(l => l.id === listId).name, '＋');
-  p.cards.push(c); pjTouch(p);
-  await pjCreateTaskLine(v, c.id);
-  pjFlip(render);
-  const nc = document.querySelector(`.pj-col[data-id="${listId}"]`); const ta2 = nc && nc.querySelector('textarea'); if (ta2) { ta2.value = ''; ta2.focus(); }
-  const cards = nc && nc.querySelector('.pj-cards'); if (cards) cards.scrollTo({ top: cards.scrollHeight, behavior: 'smooth' });
-  showToast('Added to Backlog as a project task');
-  pjSave(); saveBacklog();
-}
 
 // thumbnails (OneDrive thumbnail URLs are pre-authorized → usable as CSS backgrounds)
 const pjThumbCache = new Map();
@@ -5379,482 +4969,6 @@ async function pjThumbUrl(id) {
 function pjLoadThumbs(root) {
   root.querySelectorAll('[data-thumb]').forEach(async el => { const u = await pjThumbUrl(el.dataset.thumb); if (u) el.style.backgroundImage = `url("${u}")`; });
 }
-
-// ---------- DRAG ENGINE (cards + lists on board, press-and-hold on touch) ----------
-let pjPending = null, pjDrag = null, pjRaf = 0;
-const PJ_CFG = {
-  card: { item: '.pj-card', skip: 'done', delay: 200, containerAt(el) { const col = el && el.closest && el.closest('.pj-col'); return col ? col.querySelector('.pj-cards') : null; },
-    tap(item) { pjOpen('card', item.dataset.id); },
-    drop() {
-      const p = pjProj(), prev = new Map(p.cards.map(c => [c, c.listId])), order = []; let parked = null, back = null;
-      document.querySelectorAll('.pj-board .pj-cards').forEach(ct => ct.querySelectorAll('.pj-card').forEach(el => { const c = p.cards.find(c => c.id === el.dataset.id); if (c) { c.listId = ct.dataset.list; order.push(c); } }));
-      p.cards = [...order, ...p.cards.filter(c => !order.includes(c))]; pjTouch(p);
-      order.forEach(c => { if (prev.get(c) !== c.listId) { const r = pjTransition(p, c, prev.get(c)); if (r === 'waiting') parked = c; if (r === 'ready') back = c; } });
-      pjSave(); pjFlip(render);
-      if (parked) setTimeout(() => pjOpen('act', parked.id, 'wait'), 260);
-      else if (back) showToast('⚡ Flagged Ready in your Backlog');
-    } },
-  col: { item: '.pj-col', axis: 'x', tail: '.pj-new-col', handle: '.pj-col-head', delay: 200, containerAt() { return document.querySelector('.pj-board'); },
-    tap(item) { pjOpen('list', item.dataset.id); },
-    drop() { const p = pjProj(); const ids = [...document.querySelectorAll('.pj-board .pj-col')].map(c => c.dataset.id); p.lists = ids.map(id => p.lists.find(l => l.id === id)).filter(Boolean); pjTouch(p); pjSave(); pjFlip(render); } }
-};
-document.addEventListener('pointerdown', e => {
-  if (e.button > 0 || pjDrag || currentTab !== 'projects') return;
-  if (!e.target.closest || !e.target.closest('.pj-board') || e.target.closest('button,textarea,input')) return;
-  let cfg = null, item = null;
-  const head = e.target.closest('.pj-col-head');
-  if (head) { cfg = PJ_CFG.col; item = head.closest('.pj-col'); }
-  else { item = e.target.closest('.pj-card'); cfg = item && PJ_CFG.card;
-    if (item) { pjPending = { tapOnly: true, item, x: e.clientX, y: e.clientY, cx: e.clientX, cy: e.clientY, cfg }; return; } }
-  if (!item) return;
-  pjPending = { cfg, item, x: e.clientX, y: e.clientY, cx: e.clientX, cy: e.clientY, touch: e.pointerType !== 'mouse' };
-  if (pjPending.touch) pjPending.timer = setTimeout(() => { if (pjPending && !pjPending.tapOnly) pjBegin(); }, cfg.delay);
-});
-window.addEventListener('pointermove', e => {
-  if (pjDrag) { pjDrag.x = e.clientX; pjDrag.y = e.clientY; pjDrag.g.style.translate = `${pjDrag.x - pjDrag.ox}px ${pjDrag.y - pjDrag.oy}px`; pjHit(); return; }
-  if (!pjPending) return; pjPending.cx = e.clientX; pjPending.cy = e.clientY;
-  const d = Math.hypot(e.clientX - pjPending.x, e.clientY - pjPending.y);
-  if (pjPending.tapOnly) { if (d > 8) pjPending = null; return; }
-  if (pjPending.touch) { if (d > 8) { clearTimeout(pjPending.timer); pjPending = null; } }
-  else if (d > 5) pjBegin();
-});
-window.addEventListener('pointerup', () => {
-  if (pjDrag) return pjEnd();
-  if (pjPending) { clearTimeout(pjPending.timer); const p = pjPending; pjPending = null;
-    if (Math.hypot(p.cx - p.x, p.cy - p.y) < 8) p.cfg.tap(p.item); }
-});
-window.addEventListener('pointercancel', () => { if (pjDrag) pjEnd(); else if (pjPending) { clearTimeout(pjPending.timer); pjPending = null; } });
-document.addEventListener('touchmove', e => { if (pjDrag) e.preventDefault(); }, { passive: false });
-document.addEventListener('contextmenu', e => { if (pjDrag || pjPending) e.preventDefault(); });
-function pjBegin() {
-  const { cfg, item, cx, cy } = pjPending; clearTimeout(pjPending.timer); pjPending = null;
-  const r = item.getBoundingClientRect();
-  const g = item.cloneNode(true); g.removeAttribute('data-pk'); g.querySelectorAll('[data-pk]').forEach(n => n.removeAttribute('data-pk')); g.classList.add('pj-ghost');
-  g.style.width = r.width + 'px'; g.style.height = r.height + 'px'; g.style.translate = `${r.left}px ${r.top}px`;
-  document.body.appendChild(g); requestAnimationFrame(() => g.classList.add('lifted'));
-  item.classList.add('ph'); document.body.classList.add('pj-dragging');
-  if (navigator.vibrate) navigator.vibrate(12);
-  pjDrag = { cfg, item, g, ox: cx - r.left, oy: cy - r.top, x: cx, y: cy };
-  pjRaf = requestAnimationFrame(pjAutoScroll);
-}
-function pjHit() {
-  const { cfg, item, x, y } = pjDrag;
-  const el = document.elementFromPoint(x, y); const ct = cfg.containerAt(el); if (!ct) return;
-  const items = [...ct.children].filter(i => i.matches(cfg.item) && i !== item);
-  const movable = items.filter(i => !i.classList.contains('done'));
-  let ref = movable.find(i => { const r = i.getBoundingClientRect(); return cfg.axis === 'x' ? x < r.left + r.width / 2 : y < r.top + r.height / 2; });
-  if (!ref) ref = items.find(i => i.classList.contains('done')) || (cfg.tail ? ct.querySelector(cfg.tail) : null);
-  if (ref === item || (item.parentElement === ct && item.nextElementSibling === ref)) return;
-  pjFlip(() => ct.insertBefore(item, ref), false);
-}
-function pjAutoScroll() {
-  if (!pjDrag) return;
-  const { x, y, cfg } = pjDrag, E = 70; let moved = false;
-  const b = document.querySelector('.pj-board');
-  if (b) { const r = b.getBoundingClientRect(); let v = 0;
-    if (x < r.left + E) v = -(r.left + E - x) / E * 14; else if (x > r.right - E) v = (x - (r.right - E)) / E * 14;
-    if (v) { b.scrollLeft += v; moved = true; } }
-  if (cfg === PJ_CFG.card) { const ct = cfg.containerAt(document.elementFromPoint(x, y)) || pjDrag.item.parentElement;
-    if (ct) { const r = ct.getBoundingClientRect(); let v = 0;
-      if (y < r.top + 50) v = -(r.top + 50 - y) / 50 * 10; else if (y > r.bottom - 50) v = (y - (r.bottom - 50)) / 50 * 10;
-      if (v && ct.scrollHeight > ct.clientHeight) { ct.scrollTop += v; moved = true; } } }
-  if (moved) pjHit();
-  pjRaf = requestAnimationFrame(pjAutoScroll);
-}
-function pjEnd() {
-  cancelAnimationFrame(pjRaf);
-  const d = pjDrag; pjDrag = null; document.body.classList.remove('pj-dragging');
-  const r = d.item.getBoundingClientRect();
-  d.g.style.transition = 'translate .22s cubic-bezier(.2,.8,.2,1), scale .22s, rotate .22s';
-  d.g.classList.remove('lifted'); d.g.style.translate = `${r.left}px ${r.top}px`;
-  setTimeout(() => { d.g.remove(); d.item.classList.remove('ph'); d.cfg.drop(); }, 220);
-}
-
-// ---------- SHEET ----------
-let pjMode = null, pjArg = null, pjSub = null, pjUntil = null, pjCiQueue = [], pjCiAdded = 0, pjCiTotal = 0;
-function pjEnsureSheet() {
-  if (document.getElementById('pj-sheet')) return;
-  const bd = document.createElement('div'); bd.className = 'pj-backdrop'; bd.id = 'pj-backdrop'; bd.onclick = pjClose;
-  const sh = document.createElement('div'); sh.className = 'pj-sheet'; sh.id = 'pj-sheet';
-  document.body.append(bd, sh);
-  sh.addEventListener('click', pjSheetClick);
-  sh.addEventListener('input', pjSheetInput);
-  sh.addEventListener('change', pjSheetChange);
-  sh.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && e.target.tagName === 'INPUT') { if ('pjProjname' in e.target.dataset) pjCreateProject(); else e.target.blur(); } if (e.key === 'Escape') pjClose(); });
-}
-function pjOpen(mode, arg, sub) {
-  pjEnsureSheet(); pjMode = mode; pjArg = arg; pjSub = sub || null;
-  if (mode === 'act') { const [, c] = pjFind(arg); pjUntil = (c && c.waiting && c.waiting.until) || pjDayISO(3); }
-  pjRenderSheet();
-  requestAnimationFrame(() => { document.getElementById('pj-sheet').classList.add('open'); document.getElementById('pj-backdrop').classList.add('open'); });
-  const sh = document.getElementById('pj-sheet');
-  if (mode === 'project') setTimeout(() => sh.querySelector('.pj-field').focus(), 380);
-  if (mode === 'list') setTimeout(() => { const i = sh.querySelector('.pj-field'); if (i && i.value === 'New List') { i.focus(); i.select(); } }, 380);
-  if (mode === 'act' && sub === 'wait') setTimeout(() => { const i = sh.querySelector('[data-pj-won]'); i && i.focus(); }, 380);
-}
-function pjClose() {
-  const sh = document.getElementById('pj-sheet'); if (!sh) return;
-  sh.classList.remove('open'); document.getElementById('pj-backdrop').classList.remove('open'); pjMode = null;
-  if (document.activeElement && sh.contains(document.activeElement)) document.activeElement.blur();
-}
-function pjMarkUntil() { document.querySelectorAll('#pj-sheet [data-pj-until]').forEach(b => b.classList.toggle('on', (b.dataset.pjUntil || null) === (pjUntil || null))); }
-function pjStagePill(p, c) { const l = pjListOf(p, c); return `<span class="pj-stage"><span class="pj-dot" style="background:${pjDotFor(p, l)}"></span>${pjh(l.name)}</span>`; }
-function pjRenderSheet() {
-  const s = document.getElementById('pj-sheet'); if (!s || !pjMode) return;
-  const head = (title, btn = '<button class="pj-btn" data-pj-close>Done</button>') => `<div class="pj-grab"></div><div class="pj-sh-head"><h2>${title}</h2>${btn}</div>`;
-  if (pjMode === 'project') {
-    s.innerHTML = head('New project', '<button class="pj-btn" data-pj-createproj>Create</button>') + `<div class="pj-sh-body"><input class="pj-field" placeholder="Project name" data-pj-projname enterkeyhint="done">
-      <div class="pj-sub" style="margin:0 4px">Starts with a To Do list. In Progress, Waiting On and Completed appear on their own as you update each task’s status.</div></div>`;
-  } else if (pjMode === 'list') {
-    const p = pjProj(), l = p && p.lists.find(l => l.id === pjArg); if (!l) return pjClose();
-    const cnt = p.cards.filter(c => c.listId === l.id).length;
-    s.innerHTML = head('List') + `<div class="pj-sh-body"><input class="pj-field" value="${pjh(l.name)}" data-pj-rename="${l.id}" enterkeyhint="done">
-      <div class="pj-sub" style="margin:0 4px 14px">Tip: press &amp; hold a list header on the board, then drag to reorder.</div>
-      <div class="pj-stack">${cnt || pjKind(l) === 'queue' ? `<div class="pj-sub" style="margin:0 4px 4px">${pjKind(l) === 'queue' ? 'To Do is where every task starts.' : 'Lists fill and empty themselves as task statuses change.'}</div>` : `<button class="pj-btn danger big" data-pj-dellist="${l.id}">Remove empty list</button>`}
-      <button class="pj-btn soft big" data-pj-renameproj>Rename project…</button><button class="pj-btn ghost big" data-pj-delproj style="color:var(--danger)">Delete project</button></div></div>`;
-  } else if (pjMode === 'link') {
-    const t = tasks.find(x => x.lineIndex === pjArg); if (!t) return pjClose();
-    s.innerHTML = head('Add to a project', '<button class="pj-btn ghost" data-pj-close>Cancel</button>') + `<div class="pj-sh-body">
-      <div class="pj-act-title">${pjh(t.title)}</div><div class="pj-sub" style="margin:0 2px 14px">Becomes a card in the project’s To Do${t.today ? ' — it’s on Today, so it goes straight to In Progress' : ''}. Notes move onto the card.</div>
-      <div class="pj-acts">${pj.projects.map(p => `<button class="pj-act" data-pj-linkto="${p.id}"><span class="ai" style="background:var(--accent)">📁</span><span><b>${pjh(p.name)}</b><small>${p.cards.filter(c => !pjDone(c)).length} open card(s)</small></span></button>`).join('')}
-        <button class="pj-act" data-pj-linknew><span class="ai" style="background:var(--sub)">＋</span><span><b>New project…</b><small>Create one and add this task to it</small></span></button></div></div>`;
-  } else if (pjMode === 'pick') {
-    const p = pjProj(); if (!p) return pjClose();
-    const q = (pjPickQ || '').toLowerCase();
-    const cands = tasks.filter(t => !t.done && !t.cardId && (!q || t.title.toLowerCase().includes(q) || (t.tag || '').includes(q)));
-    s.innerHTML = head(`Add to ${pjh(p.name)}`) + `<div class="pj-sh-body">
-      <input class="pj-field" data-pj-pickq placeholder="Search your Backlog…" value="${pjh(pjPickQ)}">
-      <div class="pj-acts pj-picklist">${cands.slice(0, 60).map(t => `<button class="pj-act" data-pj-pickline="${t.lineIndex}"><span style="flex:1;min-width:0"><b style="font-weight:500">${pjh(t.title)}</b><small>${t.tag ? '#' + pjh(t.tag) : 'untagged'}${t.today ? ' · ☀ on Today' : ''}</small></span><span class="pj-hcount">＋</span></button>`).join('') || '<div class="pj-act"><small>No matching open tasks</small></div>'}</div></div>`;
-  } else if (pjMode === 'projmenu') {
-    const p = pjProj(); if (!p) return pjClose();
-    const open = p.cards.filter(c => { const t = pjTask(c); return t && !t.done; }).length, done = p.cards.filter(pjDone).length;
-    s.innerHTML = head(pjh(p.name)) + `<div class="pj-sh-body"><div class="pj-sub" style="margin:0 4px 14px">${p.lists.length} lists · ${open} open · ${done} completed</div>
-      <div class="pj-stack"><button class="pj-btn soft big" data-pj-renameproj>✎ Rename project</button><button class="pj-btn danger big" data-pj-delproj>🗑 Delete project…</button></div></div>`;
-  } else if (pjMode === 'delproj') {
-    const p = pjProj(); if (!p) return pjClose();
-    const open = p.cards.filter(c => { const t = pjTask(c); return t && !t.done; }), done = p.cards.filter(pjDone).length;
-    const tagOpts = allTags().filter(g => g !== 'project');
-    open.forEach(c => { if (!pjDel.tags[c.id]) pjDel.tags[c.id] = (c.origTag && tagOpts.includes(c.origTag)) ? c.origTag : pjGuessTag(c, p, tagOpts); });
-    const ch = pjDel.choice;
-    s.innerHTML = head('Delete project', '<button class="pj-btn ghost" data-pj-close>Cancel</button>') + `<div class="pj-sh-body">
-      <div class="pj-act-title">${pjh(p.name)}</div><div class="pj-sub" style="margin:0 2px 14px">${open.length} open task${open.length === 1 ? '' : 's'} · ${done} completed</div>
-      ${done ? `<div class="pj-note">✓ <b>${done} completed task${done > 1 ? 's' : ''}</b> stay in your Backlog history and keep counting in Stats.</div>` : ''}
-      ${open.length ? `<div class="pj-lbl">What about the ${open.length} open task${open.length > 1 ? 's' : ''}?</div>
-        <div class="pj-kinds" style="grid-template-columns:1fr 1fr">
-          <button class="pj-kind ${ch === 'move' ? 'on' : ''}" data-pj-delchoice="move"><b>↩ Move to Backlog</b><small>Keeps them as regular tasks, re-tagged</small></button>
-          <button class="pj-kind ${ch === 'delete' ? 'on' : ''}" data-pj-delchoice="delete"><b>🗑 Delete them</b><small>Gone for good, with attachments</small></button></div>
-        ${ch === 'move' ? `<div class="pj-lbl">Suggested tags — tap to change</div>
-          <div class="pj-acts" style="margin-bottom:14px">${open.map(c => `<div class="pj-act" style="cursor:default"><span style="flex:1;min-width:0"><b style="font-weight:500">${pjh(c.title)}</b>${c.notes ? '<small>notes carried over</small>' : ''}</span>
-            <select class="pj-tagsel" data-pj-tagfor="${c.id}">${tagOpts.map(g => `<option value="${g}" ${pjDel.tags[c.id] === g ? 'selected' : ''}>${capFirst(g)}</option>`).join('')}</select></div>`).join('')}</div>` : ''}` : ''}
-      <div class="pj-stack"><button class="pj-btn danger big" data-pj-dodel ${open.length && !ch ? 'disabled style="opacity:.4"' : ''}>${open.length && ch === 'move' ? `Move ${open.length} & delete project` : open.length && ch === 'delete' ? `Delete project + ${open.length} task${open.length > 1 ? 's' : ''}` : open.length ? 'Choose an option above' : 'Delete project'}</button></div></div>`;
-  } else if (pjMode === 'renameproj') {
-    const p = pjProj();
-    s.innerHTML = head('Rename project') + `<div class="pj-sh-body"><input class="pj-field" value="${pjh(p.name)}" data-pj-projrename enterkeyhint="done"></div>`;
-  } else if (pjMode === 'card') {
-    const [p, c] = pjFind(pjArg); if (!c) return pjClose(); const t = pjTask(c);
-    const hs = c.history || [], age = hs.length ? pjDaysSince(hs[0].at) : 0, backs = hs.filter(h => h.ic === '⚡').length;
-    s.innerHTML = head('Card') + `<div class="pj-sh-body">
-      <input class="pj-field" value="${pjh(c.title)}" data-pj-cardtitle>
-      <div class="pj-lbl">Status</div>
-      <div style="display:flex;align-items:center;gap:8px;margin:0 2px 16px">${pjStagePill(p, c)}${pjBadges(c, t)}</div>
-      <div class="pj-lbl">Notes</div>
-      <textarea class="pj-notes" data-pj-notes placeholder="Add notes, links, details…">${pjh(c.notes || '')}</textarea><div class="pj-saved">✓ Saved</div>
-      <div class="pj-lbl">Attachments</div>
-      <div class="pj-files">${(c.files || []).map(f => { const img = (f.type || '').startsWith('image/'); const ext = (f.name.split('.').pop() || 'file').slice(0, 4).toUpperCase();
-        return `<div class="pj-file ${img ? 'img' : ''} ${f.busy ? 'busy' : ''}" data-pj-file="${f.id}" ${img ? `data-thumb="${f.id}"` : ''}>${f.busy ? '<span class="spin"></span>' : ''}${img ? '' : `<span class="ext">${pjh(ext)}</span>`}<span class="fn">${pjh(f.name)}</span>${f.busy ? '' : `<button class="x" data-pj-rmfile="${f.id}">✕</button>`}</div>`; }).join('')}
-        <label class="pj-file add"><b>＋</b>Add<input type="file" multiple hidden data-pj-upload></label></div>
-      <div class="pj-lbl">History</div>
-      <div class="pj-hist">${[...hs].reverse().map(h => `<div class="pj-hi"><span class="pj-hic">${pjh(h.ic || '•')}</span><span class="pj-hm">${pjh(h.m)}</span><span class="pj-ht">${pjRel(h.at)}</span></div>`).join('') || '<div class="pj-hi"><span class="pj-hm pj-sub">No history yet</span></div>'}</div>
-      ${hs.length ? `<div class="pj-sub" style="margin:-6px 4px 14px">Open ${age} day${age === 1 ? '' : 's'}${c.waiting && c.waitSince ? ` · waiting ${pjDaysSince(c.waitSince)}d so far` : ''}${backs ? ` · came back ${backs}×` : ''}</div>` : ''}
-      <div class="pj-note">${!t ? '<b>Linked task not found</b> — it may have been deleted from backlog.md. <a href="#" data-pj-relink>Recreate it</a>' : t.done ? '<b>✓ Completed</b> in Backlog. Uncheck it there to reopen this card.' : `<b>Linked Backlog task</b> · ${t.today ? '☀ on Today' : t.tomorrow ? '🌙 staged for tomorrow' : 'in your Backlog'}<br>Cards complete from the Backlog, not the board.`}</div>
-      <div class="pj-stack">${t && !t.done ? '<button class="pj-btn big" data-pj-openact>Update status…</button>' : ''}<button class="pj-btn danger big" data-pj-delcard>${t && t.done ? 'Remove from board' : 'Delete card + task'}</button></div></div>`;
-    pjLoadThumbs(s);
-    const ta = s.querySelector('[data-pj-notes]'); if (ta) { ta.style.height = 'auto'; ta.style.height = Math.max(110, ta.scrollHeight + 2) + 'px'; }
-  } else if (pjMode === 'act') {
-    const [p, c] = pjFind(pjArg); if (!c) return pjClose(); const l = pjListOf(p, c), k = pjKind(l), wo = pjSub === 'wait', t = pjTask(c);
-    s.innerHTML = head(pjSub === 'pause' ? 'Pause' : wo ? 'Waiting on…' : 'Update task', '<button class="pj-btn ghost" data-pj-close>Cancel</button>') + `<div class="pj-sh-body">
-      <div class="pj-act-title">${pjh(c.title)}</div><div class="pj-sub" style="margin:0 2px 14px">${pjh(p.name)} · now in <b>${pjh(l.name)}</b></div>
-      ${pjSub === 'pause' ? `<div class="pj-lbl">Come back to it</div>
-        <div class="pj-chips">${[['', 'No date'], [pjDayISO(1), 'Tomorrow'], [pjDayISO(3), 'In 3 days'], [pjDayISO(7), 'Next week']].map(([d, n]) => `<button class="pj-chip" data-pj-until="${d}">${n}</button>`).join('')}</div>
-        <div class="pj-sub" style="margin:-6px 4px 14px">On that day the morning check-in brings it back up.</div>
-        <div class="pj-stack"><button class="pj-btn big" data-pj-setpause>⏸ Pause it</button>${canStageTomorrow() ? '<button class="pj-btn soft big" data-pj-pausetmr>🌙 Stage for tomorrow instead</button>' : ''}</div>`
-      : wo ? `<input class="pj-field" data-pj-won placeholder="Who or what? (e.g. Krista, contractor, the city)" value="${pjh(c.waiting && c.waiting.on || '')}">
-        <div class="pj-lbl">Follow up</div>
-        <div class="pj-chips">${[['', 'No date'], [pjDayISO(1), 'Tomorrow'], [pjDayISO(3), 'In 3 days'], [pjDayISO(7), 'Next week']].map(([d, n]) => `<button class="pj-chip" data-pj-until="${d}">${n}</button>`).join('')}</div>
-        <div class="pj-stack"><button class="pj-btn big" data-pj-setwait>⏳ Park it</button></div>`
-      : `<div class="pj-acts">
-        ${k === 'waiting' ? `<button class="pj-act" data-pj-act="back"><span class="ai" style="background:var(--green)">⚡</span><span><b>It’s back — ready for me</b><small>Returns to ${pjh((p.lists.find(x => x.id === c.prevList) || { name: 'the queue' }).name)}, flagged Ready</small></span></button>
-          <button class="pj-act" data-pj-act="snooze"><span class="ai" style="background:var(--orange)">⏰</span><span><b>Still waiting</b><small>Push the follow-up out</small></span></button>`
-        : `<button class="pj-act" data-pj-act="wait"><span class="ai" style="background:var(--orange)">⏳</span><span><b>Did my part — waiting on…</b><small>Parks it off your list until it’s back</small></span></button>`}
-        ${k !== 'active' ? `<button class="pj-act" data-pj-act="start"><span class="ai" style="background:var(--accent)">▶</span><span><b>Start it</b><small>Move to In Progress${t && !t.today ? ' + add to Today' : ''}</small></span></button>` : ''}
-        ${k === 'active' ? `<button class="pj-act" data-pj-act="pause"><span class="ai" style="background:#8b93a8">⏸</span><span><b>Pause — come back to it</b><small>Off Today, stays In Progress · not done</small></span></button>` : ''}
-        <button class="pj-act" data-pj-act="done"><span class="ai" style="background:var(--green)">✓</span><span><b>Complete</b><small>Grays out on the board</small></span></button>
-        <button class="pj-act" data-pj-act="card"><span class="ai" style="background:var(--sub)">≡</span><span><b>Open card</b><small>Notes, attachments &amp; history</small></span></button>
-      </div>`}</div>`;
-    if (wo || pjSub === 'pause') pjMarkUntil();
-  } else if (pjMode === 'checkin') {
-    const it = pjCiQueue[0], done = pjCiTotal - pjCiQueue.length;
-    const top = head('☀ Morning check-in', '<button class="pj-btn ghost" data-pj-close>Close</button>') + `<div class="pj-ci-prog"><i style="width:${pjCiTotal ? done / pjCiTotal * 100 : 100}%"></i></div>`;
-    if (!it) { s.innerHTML = top + `<div class="pj-sh-body"><div class="pj-ci-done"><div class="big">🤙</div><b>All caught up</b><p>${pjCiAdded} project task${pjCiAdded === 1 ? '' : 's'} lined up for your day.</p><button class="pj-btn" data-pj-close style="padding:12px 28px">Let’s go</button></div></div>`; return; }
-    const { p, c, why } = it, t = pjTask(c);
-    const lead = why === 'due' ? `⏰ Follow-up due — waiting on <b>${pjh(c.waiting.on || 'someone')}</b>${c.waitSince ? ` for ${pjDaysSince(c.waitSince)} days` : ''}` : why === 'ready' ? '⚡ Came back to you — it’s your move' : why === 'paused' ? `⏸ You paused this${c.paused && c.paused.until ? ' until ' + pjFmtDay(c.paused.until) : ''} — back to it today?` : '▶ In progress but not on your day';
-    const chk = canAddToToday(), bonus = bonusUnlocked();
-    s.innerHTML = top + `<div class="pj-sh-body"><div class="pj-sub" style="margin:0 2px 10px">${done + 1} of ${pjCiTotal}</div>
-      <div class="pj-ci-card"><div class="pj-ci-why ${why}">${lead}</div><div class="pj-act-title" style="margin:6px 0 6px">${pjh(c.title)}</div>
-      <div class="task-meta">${pjStagePill(p, c)}<span class="pj-badge">${pjh(p.name)}</span></div>
-      ${c.notes ? `<div class="pj-ci-note">${pjh(c.notes.slice(0, 180))}</div>` : ''}</div>
-      <div class="pj-stack">
-        ${bonus ? `<button class="pj-btn big" data-pj-ci="today">✦ Add as stretch task</button>` : chk.ok ? `<button class="pj-btn big" data-pj-ci="today">☀ Add to Today</button>` : `<button class="pj-btn big" data-pj-ci="tomorrow" ${canStageTomorrow() ? '' : 'disabled style="opacity:.45"'}>🌙 Stage for tomorrow <span style="opacity:.7;font-weight:500">(Today’s full)</span></button>`}
-        ${why === 'due' ? `<button class="pj-btn soft big" data-pj-ci="back">⚡ It’s back</button><button class="pj-btn soft big" data-pj-ci="snooze">⏰ Still waiting +3 days</button>` : ''}
-        ${why === 'ready' ? `<button class="pj-btn soft big" data-pj-ci="start">▶ Start it</button>` : ''}
-        <button class="pj-btn soft big" data-pj-ci="done">✓ Already done</button>
-        ${why === 'paused' ? `<button class="pj-btn soft big" data-pj-ci="repause">⏸ Keep paused +3 days</button>` : ''}
-        <button class="pj-btn ghost big" data-pj-ci="skip">Not today</button></div></div>`;
-    const card = s.querySelector('.pj-ci-card'); card && card.animate([{ opacity: 0, transform: 'translateX(30px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: PJ_EASE });
-  }
-}
-function pjCheckinItems() {
-  const out = [];
-  pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t || t.done || t.today || t.tomorrow) return; const k = pjKind(pjListOf(p, c));
-    if (pjDue(c)) out.push({ p, c, why: 'due', rank: 0 });
-    else if (c.ready) out.push({ p, c, why: 'ready', rank: 1 });
-    else if (pjPauseDue(c)) out.push({ p, c, why: 'paused', rank: 1.5 });
-    else if (k === 'active' && !c.paused) out.push({ p, c, why: 'active', rank: 2 }); }));
-  return out.sort((a, b) => a.rank - b.rank);
-}
-function pjStartCheckin() { pjCiQueue = pjCheckinItems(); pjCiTotal = pjCiQueue.length; pjCiAdded = 0; pjOpen('checkin'); }
-
-async function pjSheetClick(e) {
-  const t = e.target, s = document.getElementById('pj-sheet');
-  if (t.closest('[data-pj-close]')) { pjClose(); if (pjMode === null) pjRefresh(); return; }
-  if (t.closest('[data-pj-createproj]')) return pjCreateProject();
-  if (t.closest('[data-pj-openact]')) return pjOpen('act', pjArg);
-  if (t.closest('[data-pj-renameproj]')) { pjMode = 'renameproj'; pjRenderSheet(); setTimeout(() => s.querySelector('.pj-field').focus(), 50); return; }
-  if (t.closest('[data-pj-delproj]')) { pjDel = { choice: null, tags: {} }; pjMode = 'delproj'; pjRenderSheet(); return; }
-  if (t.closest('[data-pj-projmenu]')) { pjOpen('projmenu'); return; }
-  const lt = t.closest('[data-pj-linkto]'); if (lt) { const task = tasks.find(x => x.lineIndex === pjArg); const p = pj.projects.find(x => x.id === lt.dataset.pjLinkto); pjClose(); if (task && p) pjLinkTask(task, p); return; }
-  if (t.closest('[data-pj-linknew]')) { pjLinkPending = pjArg; pjOpen('project'); return; }
-  const pl = t.closest('[data-pj-pickline]'); if (pl) { const task = tasks.find(x => x.lineIndex === +pl.dataset.pjPickline); if (task) { await pjLinkTask(task, pjProj(), true); pl.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(30px)' }], { duration: 200 }).onfinish = () => pjRenderSheet(); } return; }
-  const dc = t.closest('[data-pj-delchoice]'); if (dc) { pjDel.choice = dc.dataset.pjDelchoice; pjRenderSheet(); return; }
-  if (t.closest('[data-pj-dodel]')) { pjDoDeleteProject(); return; }
-  const kb = t.closest('[data-pj-kind]'); if (kb) { const p = pjProj(); p.lists.find(l => l.id === pjArg).kind = kb.dataset.pjKind; pjTouch(p); pjSave(); pjRenderSheet(); pjRefresh(); return; }
-  const dl = t.closest('[data-pj-dellist]'); if (dl) { const p = pjProj(); if (p.lists.length < 2) return;
-    const id = dl.dataset.pjDellist, idx = p.lists.findIndex(l => l.id === id), to = p.lists[idx === 0 ? 1 : idx - 1];
-    const moved = p.cards.filter(c => c.listId === id); moved.forEach(c => { pjMove(c, to.id); });
-    pjClose(); pjFlip(() => { p.lists.splice(idx, 1); pjTouch(p); render(); }); pjSave();
-    if (moved.length) showToast(`${moved.length} card${moved.length > 1 ? 's' : ''} moved to ${to.name}`); return; }
-  const sg = t.closest('[data-pj-stage]'); if (sg) { const [p, c] = pjFind(pjArg); const to = p.lists.find(l => l.id === sg.dataset.pjStage);
-    if (to.id === c.listId) return;
-    if (pjKind(to) === 'waiting' && pjKind(pjListOf(p, c)) !== 'waiting') { pjOpen('act', c.id, 'wait'); return; }
-    const r = pjMove(c, to.id); pjSave();
-    if (pjMode === 'card') { pjRenderSheet(); pjRefresh(); } else { pjClose(); setTimeout(() => pjRefresh(), 240); }
-    if (r === 'ready') showToast('⚡ Flagged Ready'); return; }
-  const ab = t.closest('[data-pj-act]'); if (ab) { const [p, c] = pjFind(pjArg); const a = ab.dataset.pjAct, tk = pjTask(c);
-    if (a === 'pause') { pjSub = 'pause'; pjUntil = pjDayISO(1); pjRenderSheet(); return; }
-    if (a === 'wait' || a === 'snooze') { pjSub = 'wait'; pjUntil = a === 'snooze' ? pjDayISO(3) : (c.waiting && c.waiting.until) || pjDayISO(3); pjRenderSheet(); if (a === 'wait') s.querySelector('[data-pj-won]').focus(); return; }
-    if (a === 'card') return pjOpen('card', c.id);
-    pjClose();
-    if (a === 'done') { setTimeout(() => { if (tk && !tk.done) toggleDone(tk.title, tk.lineIndex); }, 240); return; }
-    if (a === 'back') { setTimeout(() => { pjFlip(() => { pjUnblock(c); render(); }); pjSave(); showToast('⚡ Back in your court'); }, 240); return; }
-    if (a === 'start') { const al = pjEnsureList(p, 'active'); setTimeout(async () => { pjFlip(() => { if (al) pjMove(c, al.id); render(); }); pjSave(); await pjAddToday(c, true); showToast(tk && tk.today ? '▶ Started · on Today' : '▶ Started'); }, 240); return; }
-  }
-  const wu = t.closest('[data-pj-until]'); if (wu) { pjUntil = wu.dataset.pjUntil || null; pjMarkUntil(); return; }
-  if (t.closest('[data-pj-setpause]') || t.closest('[data-pj-pausetmr]')) { const [, c] = pjFind(pjArg); const tmr = !!t.closest('[data-pj-pausetmr]'); const tk = pjTask(c); pjClose();
-    setTimeout(async () => {
-      const off = pjStripTodayFlags(c);
-      c.paused = { until: tmr ? pjDayISO(1) : (pjUntil || null) }; pjTouch(c);
-      pjLog(c, tmr ? 'Paused · staged for tomorrow' : `Paused${pjUntil ? ' · back ' + pjFmtDay(pjUntil) : ''}`, '⏸'); pjSave();
-      if (tmr && tk) { await addToTomorrow(tk.title); } else if (off) await saveBacklog();
-      pjFlip(render); showToast(tmr ? '🌙 Paused — back on Today tomorrow' : '⏸ Paused — still In Progress');
-    }, 240); return; }
-  if (t.closest('[data-pj-setwait]')) { const [, c] = pjFind(pjArg); const who = s.querySelector('[data-pj-won]').value.trim(); pjClose();
-    setTimeout(() => { pjFlip(() => { pjSetWaiting(c, who, pjUntil); render(); }); pjSave(); showToast(`⏳ Parked${who ? ' — waiting on ' + who : ''}`); }, 240); return; }
-  const ci = t.closest('[data-pj-ci]'); if (ci && pjCiQueue[0]) { const { c } = pjCiQueue[0]; const a = ci.dataset.pjCi, tk = pjTask(c);
-    ci.disabled = true;
-    if (a === 'today') { if (await pjAddToday(c, true)) pjCiAdded++; }
-    if (a === 'tomorrow') { if (tk && await addToTomorrow(tk.title)) { pjCiAdded++; pjLog(c, 'Staged for tomorrow at check-in', '🌙'); } }
-    if (a === 'back') { pjUnblock(c); }
-    if (a === 'repause') { c.paused = { until: pjDayISO(3) }; pjTouch(c); pjLog(c, 'Kept paused · back ' + pjFmtDay(c.paused.until), '⏸'); }
-    if (a === 'snooze') { c.waiting.until = pjDayISO(3); pjLog(c, 'Still waiting · follow up ' + pjFmtDay(c.waiting.until), '⏰'); }
-    if (a === 'start') { const [p] = pjFind(c.id); const al = pjEnsureList(p, 'active'); if (al) pjMove(c, al.id); if (await pjAddToday(c, true)) pjCiAdded++; }
-    if (a === 'done') { if (tk && !tk.done) await toggleDone(tk.title, tk.lineIndex); }
-    pjSave();
-    if (a === 'back') { pjCiQueue[0].why = 'ready'; pjRenderSheet(); render(); return; }   // it's back → now decide what to do with it
-    const card = s.querySelector('.pj-ci-card'); const dir = (a === 'skip' || a === 'snooze' || a === 'repause') ? 1 : -1;
-    const fin = () => { pjCiQueue.shift(); pjRenderSheet(); render(); };
-    if (card) card.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${dir * 40}px) rotate(${dir * 2}deg)` }], { duration: 200, easing: 'ease-in', fill: 'forwards' }).onfinish = fin; else fin();
-    return; }
-  const rm = t.closest('[data-pj-rmfile]'); if (rm) { e.stopPropagation(); const [, c] = pjFind(pjArg); const f = c.files.find(f => f.id === rm.dataset.pjRmfile);
-    if (!confirm(`Remove “${f.name}”? It’s deleted from OneDrive too.`)) return;
-    c.files = c.files.filter(x => x !== f); pjLog(c, 'Removed ' + f.name, '📎'); pjSave(); pjRenderSheet(); render();
-    graphFetch(`/me/drive/items/${f.id}`, { method: 'DELETE' }); return; }
-  const fe = t.closest('[data-pj-file]'); if (fe) { const [, c] = pjFind(pjArg); const f = c.files.find(f => f.id === fe.dataset.pjFile); if (!f || f.busy) return;
-    if ((f.type || '').startsWith('image/')) { const r = await graphFetch(`/me/drive/items/${f.id}/thumbnails/0/large`); let u = null; if (r && r.ok) u = (await r.json()).url;
-      if (u) { const lb = document.createElement('div'); lb.className = 'pj-lightbox'; lb.innerHTML = `<img src="${u}" alt="">`; lb.onclick = () => lb.remove(); document.body.appendChild(lb); return; } }
-    const win = window.open('', '_blank');
-    const r = await graphFetch(`/me/drive/items/${f.id}?$select=webUrl`); if (r && r.ok) { const j = await r.json(); if (win) win.location = j.webUrl; else location.href = j.webUrl; } else if (win) win.close();
-    return; }
-  if (t.closest('[data-pj-relink]')) { e.preventDefault(); const [, c] = pjFind(pjArg); await pjCreateTaskLine(c.title, c.id); saveBacklog(); pjRenderSheet(); render(); return; }
-  if (t.closest('[data-pj-delcard]')) { const [p, c] = pjFind(pjArg);
-    const tk = pjTask(c), wasDone = !!(tk && tk.done);
-    if (!confirm(wasDone ? `Remove “${c.title}” from the board? The completed task stays in your history and stats.` : `Delete “${c.title}” and its Backlog task?`)) return;
-    pjClose();
-    pjFlip(() => { p.cards = p.cards.filter(x => x !== c); pj.tomb.push(c.id); pjTouch(p); pjReleaseTasks(new Set([c.id])); render(); });
-    pjSave(); saveBacklog(); (c.files || []).forEach(f => graphFetch(`/me/drive/items/${f.id}`, { method: 'DELETE' }));
-    showToast(wasDone ? 'Card removed · completion kept in stats' : 'Card and its task deleted'); return; }
-}
-let pjNotesT = null, pjTitleT = null;
-function pjSheetInput(e) {
-  const d = e.target.dataset;
-  if (d.pjRename) { const p = pjProj(); p.lists.find(l => l.id === d.pjRename).name = e.target.value.trim() || 'Untitled'; pjTouch(p); pjSave(); pjRefresh(false); }
-  if ('pjPickq' in d) { pjPickQ = e.target.value; const pos = e.target.selectionStart; pjRenderSheet(); const i = document.querySelector('#pj-sheet [data-pj-pickq]'); i.focus(); i.setSelectionRange(pos, pos); return; }
-  if ('pjProjrename' in d) { const p = pjProj(); p.name = e.target.value.trim() || 'Untitled'; pjTouch(p); pjSave(); pjRefresh(false); }
-  if ('pjNotes' in d) { const [, c] = pjFind(pjArg); c.notes = e.target.value; pjTouch(c); pjSave();
-    const sv = document.querySelector('#pj-sheet .pj-saved'); sv.classList.add('on'); clearTimeout(pjNotesT); pjNotesT = setTimeout(() => sv.classList.remove('on'), 1200);
-    e.target.style.height = 'auto'; e.target.style.height = Math.max(110, e.target.scrollHeight + 2) + 'px'; }
-  if ('pjCardtitle' in d) { const [, c] = pjFind(pjArg); clearTimeout(pjTitleT);
-    pjTitleT = setTimeout(() => { const v = e.target.value.trim().replace(/\s+/g, ' ').replace(/[\[\]]/g, ''); if (!v || v === c.title) return;
-      const tk = pjTask(c); if (tasks.some(t => t.title === v && t !== tk)) { showToast('A task with that name already exists'); return; }
-      const old = c.title; c.title = v; pjLog(c, `Renamed from “${old}”`, '✎'); pjSave();
-      if (tk) editTask(tk.lineIndex, tk.title, v, 'project', tk.notes); else render(); }, 600); }
-}
-async function pjSheetChange(e) {
-  if (e.target.dataset.pjTagfor) { pjDel.tags[e.target.dataset.pjTagfor] = e.target.value; return; }
-  if (!('pjUpload' in e.target.dataset)) return;
-  const [, c] = pjFind(pjArg); const files = [...e.target.files]; e.target.value = '';
-  for (const file of files) {
-    if (file.size > 60e6) { showToast(`${file.name} is over 60 MB`); continue; }
-    const tmp = { id: pjId('tmp'), name: file.name, type: file.type || '', size: file.size, busy: true };
-    c.files = c.files || []; c.files.push(tmp); pjRenderSheet();
-    try {
-      const item = await pjUpload(c.id, file);
-      Object.assign(tmp, { id: item.id, busy: false }); delete tmp.busy;
-      pjLog(c, 'Attached ' + file.name, '📎'); pjSave();
-    } catch (err) { c.files = c.files.filter(x => x !== tmp); showToast('⚠️ Upload failed: ' + file.name); }
-    if (pjMode === 'card' && pjArg === c.id) pjRenderSheet(); render();
-  }
-}
-async function pjUpload(cardId, file) {
-  const safe = file.name.replace(/[\\/:*?"<>|#%]/g, '_');
-  const path = `${PJ_ATTACH_DIR}/${cardId}/${Date.now().toString(36)}-${safe}`;
-  const enc = path.split('/').map(encodeURIComponent).join('/');
-  if (file.size <= 4e6) {
-    const r = await graphFetch(`/me/drive/root:${enc}:/content`, { method: 'PUT', headers: { 'Content-Type': file.type || 'application/octet-stream' }, body: file });
-    if (!r || !r.ok) throw new Error('upload ' + (r && r.status)); return r.json();
-  }
-  const s = await graphFetch(`/me/drive/root:${enc}:/createUploadSession`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ item: { '@microsoft.graph.conflictBehavior': 'rename' } }) });
-  if (!s || !s.ok) throw new Error('session'); const { uploadUrl } = await s.json();
-  const CH = 327680 * 10; let pos = 0, last = null;
-  while (pos < file.size) { const end = Math.min(pos + CH, file.size);
-    last = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Range': `bytes ${pos}-${end - 1}/${file.size}` }, body: file.slice(pos, end) });
-    if (!last.ok && last.status !== 202) throw new Error('chunk'); pos = end; }
-  return last.json();
-}
-function pjCreateProject() {
-  const v = (document.querySelector('#pj-sheet [data-pj-projname]').value || '').trim(); if (!v) return;
-  const p = { id: pjId('p'), name: v, lists: [{ id: pjId('l'), name: 'To Do', kind: 'queue' }], cards: [], upd: Date.now() };
-  pj.projects.push(p); pjActive = p.id; localStorage.setItem('pj_active', p.id); pjSave(); pjClose();
-  if (pjLinkPending != null) { const task = tasks.find(x => x.lineIndex === pjLinkPending); pjLinkPending = null; if (task) { pjLinkTask(task, p); return; } }
-  if (currentTab !== 'projects') switchTab('projects'); else render();
-  const b = document.querySelector('.pj-board'); b && b.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: PJ_EASE });
-}
-
-// ---------- BACKLOG integration ----------
-let pjCollapsed = localStorage.getItem('pj_collapsed') === '1';
-let eeCollapsed = localStorage.getItem('ee_collapsed') === '1';
-let pjOnTop = localStorage.getItem('pj_top') === '1';
-function pjCheckinBar() {
-  const ci = pjCheckinItems().length;
-  return ci ? `<button class="pj-checkin" data-pj-checkin><span class="ic">☀</span><span><b>Morning check-in</b><small>${ci} project item${ci > 1 ? 's' : ''} need a decision</small></span><span class="go">Start ›</span></button>` : '';
-}
-function pjBacklogHTML() {
-  // Project tasks grouped by where they stand. Collapsible; placed below (default) or above the regular list.
-  const rows = [];
-  pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t || t.done) return; const l = pjListOf(p, c);
-    rows.push({ t, c, p, k: pjKind(l), i: p.lists.indexOf(l), today: t.today }); }));
-  if (!rows.length) return '';
-  const grp = (label, arr, cls = '') => arr.length ? `<div class="pj-sec ${cls}">${label} · ${arr.length}</div>` + arr.map(r => taskCard(r.t)).join('') : '';
-  const onToday = rows.filter(r => r.today); const notToday = rows.filter(r => !r.today);
-  const isReady = r => r.c.ready || pjDue(r.c) || pjPauseDue(r.c);
-  const ready = notToday.filter(isReady), rest = notToday.filter(r => !isReady(r));
-  const summary = [ready.length && `⚡ ${ready.length} ready`, onToday.length && `☀ ${onToday.length} today`].filter(Boolean).join(' · ');
-  let h = `<div class="pj-bighead pj-collapse-head" data-pj-collapse><span class="pj-chev ${pjCollapsed ? '' : 'open'}">›</span>Projects <span class="pj-hcount">${rows.length}</span>
-    ${pjCollapsed && summary ? `<span class="pj-hsum">${summary}</span>` : ''}
-    <span class="pj-hbtns"><button data-pj-move title="${pjOnTop ? 'Move below my tasks' : 'Move above my tasks'}">${pjOnTop ? '↓ Bottom' : '↑ Top'}</button><button onclick="event.stopPropagation();switchTab('projects')">Board ›</button></span></div>`;
-  if (pjCollapsed) return `<div class="pj-block collapsed">${h}</div>`;
-  h += grp('☀ On Today', onToday);
-  h += grp('⚡ Ready for you', ready, 'ready');
-  h += grp('▶ In progress', rest.filter(r => r.k === 'active' && !r.c.paused));
-  h += grp('⏸ Paused', rest.filter(r => r.k === 'active' && r.c.paused));
-  h += grp('Up next', rest.filter(r => r.k === 'queue').sort((a, b) => b.i - a.i));
-  h += grp('⏳ Waiting on others', rest.filter(r => r.k === 'waiting'));
-  return `<div class="pj-block">${h}</div>`;
-}
-document.addEventListener('click', e => {
-  if (!e.target.closest) return;
-  const mv = e.target.closest('[data-pj-move]');
-  if (mv) { e.stopPropagation(); pjOnTop = !pjOnTop; localStorage.setItem('pj_top', pjOnTop ? '1' : '0'); pjRefresh(); return; }
-  const eh = e.target.closest('[data-ee-collapse]');
-  if (eh) { eeCollapsed = !eeCollapsed; localStorage.setItem('ee_collapsed', eeCollapsed ? '1' : '0'); pjRefresh(); return; }
-  const hd = e.target.closest('[data-pj-collapse]');
-  if (hd && !e.target.closest('button')) { pjCollapsed = !pjCollapsed; localStorage.setItem('pj_collapsed', pjCollapsed ? '1' : '0'); pjRefresh(); }
-});
-// extra bits for a project task row: stage pill + waiting/ready line
-function pjTaskExtras(t) {
-  const [p, c] = pjFind(t.cardId); if (!c) return { meta: '', line: '', parked: false, right: null };
-  const w = c.waiting && !t.done, due = pjDue(c);
-  const on = c.waiting && c.waiting.on ? String(c.waiting.on).replace(/^\s*(waiting\s+(on|for)|follow\s+up\s+with)\s+/i, '') : '';
-  const line = w ? (due ? `<div class="pj-wline due">⏰ Follow up${on ? ' with ' + pjh(on) : ''}</div>` : `<div class="pj-wline">Waiting on ${on ? pjh(on) : 'someone'}${c.waiting.until ? ' · follow up ' + pjFmtDay(c.waiting.until) : ''}</div>`)
-    : (c.ready && !t.done ? '<div class="pj-wline rdy">⚡ Unblocked — your move</div>'
-    : c.paused && !t.done ? (pjPauseDue(c) ? '<div class="pj-wline rdy">⏸ Back to this today?</div>' : `<div class="pj-wline" style="color:var(--sub)">⏸ Paused${c.paused.until ? ' · back ' + pjFmtDay(c.paused.until) : ''}</div>`) : '');
-  return { meta: pjStagePill(p, c) + `<span class="pj-badge">${pjh(p.name)}</span>` + (c.notes ? `<span class="pj-ind">${PJ_IC_NOTE}</span>` : '') + ((c.files || []).length ? `<span class="pj-ind">${PJ_IC_CLIP}${c.files.length}</span>` : ''),
-    line, parked: (w && !due) || (!!c.paused && !pjPauseDue(c) && !t.done), right: w ? `<button class="pj-back-btn" data-pj-unblock="${c.id}">${due ? 'Follow up' : 'It’s back'}</button>` : null };
-}
-document.addEventListener('click', e => {
-  const t = e.target; if (!t.closest) return;
-  if (t.closest('[data-pj-checkin]')) { e.stopPropagation(); return pjStartCheckin(); }
-  const ub = t.closest('[data-pj-unblock]'); if (ub) { e.stopPropagation(); const [, c] = pjFind(ub.dataset.pjUnblock);
-    if (pjDue(c)) return pjOpen('act', c.id);
-    pjFlip(() => { pjUnblock(c); render(); }); pjSave(); showToast('⚡ Back in your court'); }
-}, true);
-
-// ---------- hooks into existing app functions ----------
-function pjStartedByToday(title) {
-  const t = tasks.find(x => x.title === title && x.cardId); if (!t) return;
-  const [p, c] = pjFind(t.cardId); if (!c) return;
-  if (c.paused) { c.paused = null; pjTouch(c); pjSave(); }
-  if (pjKind(pjListOf(p, c)) === 'queue') { pjMove(c, pjEnsureList(p, 'active').id); pjSave(); }
-}
-const _pjAddToToday = addToToday;
-addToToday = async function (title) { const ok = await _pjAddToToday(title); if (ok) { pjStartedByToday(title); if (currentTab === 'projects') render(); } return ok; };
-const _pjAddBonus = addBonus;
-addBonus = async function (title) { const ok = await _pjAddBonus(title); if (ok) { pjStartedByToday(title); if (currentTab === 'projects') render(); } return ok; };
-const _pjPromote = promoteFromTomorrow;
-promoteFromTomorrow = async function (title) { const ok = await _pjPromote(title); if (ok) pjStartedByToday(title); return ok; };
-const _pjToggleDone = toggleDone;
-toggleDone = async function (title, lineIndex) {
-  const t = tasks.find(x => x.lineIndex === lineIndex);
-  const [, c] = t && t.cardId ? pjFind(t.cardId) : [null, null];
-  if (c) { const completing = !t.done;
-    pjLog(c, completing ? 'Completed' : 'Reopened', completing ? '✓' : '↺');
-    const [cp] = pjFind(c.id);
-    if (completing) { pjMove(c, pjEnsureList(cp, 'done').id); if (currentTab !== 'projects') pjSinking.add(c.id); }
-    else { const back = cp.lists.find(l => l.id === c.prevList && pjKind(l) !== 'done') || pjEnsureList(cp, 'queue'); pjMove(c, back.id); }
-    pjSave(); }
-  return _pjToggleDone(title, lineIndex);
-};
-const _pjDeleteTask = deleteTask;
-deleteTask = async function (lineIndex, title) {
-  const t = tasks.find(x => x.lineIndex === lineIndex);
-  if (t && t.cardId) { const [p, c] = pjFind(t.cardId); if (c) { p.cards = p.cards.filter(x => x !== c); pj.tomb.push(c.id); pjTouch(p); pjSave(); } }
-  return _pjDeleteTask(lineIndex, title);
-};
-const _pjEditTask = editTask;
-editTask = async function (lineIndex, oldTitle, newTitle, newTag, newNotes) {
-  const t = tasks.find(x => x.lineIndex === lineIndex);
-  if (t && t.cardId) { const [, c] = pjFind(t.cardId); if (c && c.title !== newTitle) { c.title = newTitle; pjTouch(c); pjSave(); } newTag = 'project'; }
-  return _pjEditTask(lineIndex, oldTitle, newTitle, newTag, newNotes);
-};
 
 // ---------- DESKTOP DASHBOARD (Backlog tab) ----------
 const blMQ = window.matchMedia('(min-width: 860px)');
@@ -5869,17 +4983,13 @@ function ageChip(t) {
 function blKpis(activeTasks) {
   const U = todayUnfinishedCount(), Dn = todayDoneCount(), goal = TODAY_LIMIT;
   const pct = Math.min(1, Dn / goal), planPct = Math.min(1, (U + Dn) / goal), C = 2 * Math.PI * 15, slots = Math.max(0, goal - U - Dn);
-  let ready = 0, waiting = 0, due = 0;
-  pj.projects.forEach(p => p.cards.forEach(c => { const t = pjTask(c); if (!t || t.done) return;
-    if (c.ready || pjDue(c)) ready++; if (c.waiting) { waiting++; if (pjDue(c)) due++; } }));
-  const pkW = tasks.filter(t => !t.done && t.parked === 'waiting'); waiting += pkW.length; due += pkW.filter(parkDue).length;
+  const pkW = tasks.filter(t => !t.done && t.parked === 'waiting'); const waiting = pkW.length, due = pkW.filter(parkDue).length;
   const dated = activeTasks.filter(t => createdMsOf(t)).sort((a, b) => createdMsOf(a) - createdMsOf(b));
   const old = dated[0], oldD = old ? Math.floor((Date.now() - createdMsOf(old)) / 864e5) : 0;
   return `<div class="bl-kpis">
     <div class="bl-kpi glass-panel bl-kpi-ring" onclick="switchTab('today')"><svg width="70" height="70" viewBox="0 0 36 36"><defs><linearGradient id="blgr" x1="0" x2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs>
       <circle cx="18" cy="18" r="15" fill="none" stroke="var(--tag-bg)" stroke-width="4"/>${planPct > pct ? `<circle cx="18" cy="18" r="15" fill="none" stroke="var(--accent)" stroke-opacity=".3" stroke-width="4" stroke-linecap="round" stroke-dasharray="${planPct * C} ${C}" transform="rotate(-90 18 18)"/>` : ''}${Dn ? `<circle cx="18" cy="18" r="15" fill="none" stroke="url(#blgr)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${pct * C} ${C}" transform="rotate(-90 18 18)"/>` : ''}</svg>
       <div><div class="l">Today’s focus</div><div class="v">${Dn} / ${goal}</div><div class="s">${Dn >= goal && !U ? 'Set complete 🤙' : [U + Dn ? `${U + Dn} on Today` : 'Nothing on Today yet', slots ? `${slots} slot${slots > 1 ? 's' : ''} open` : ''].filter(Boolean).join(' · ')}</div></div></div>
-    <div class="bl-kpi glass-panel" ${ready ? 'data-pj-checkin' : ''}><div class="l">⚡ Ready for you</div><div class="v" style="color:var(--green)">${ready}</div><div class="s">${ready ? 'your move — tap to check in' : 'nothing came back yet'}</div></div>
     <div class="bl-kpi glass-panel" ${pkW.length ? 'style="cursor:pointer" onclick="blSetView(\'parked\')"' : ''}><div class="l">⏳ Waiting on others</div><div class="v" style="color:var(--orange)">${waiting}</div><div class="s">${due ? `<span style="color:var(--danger)">${due} follow-up${due > 1 ? 's' : ''} due</span>` : 'no follow-ups due'}</div></div>
     <div class="bl-kpi glass-panel" ${old ? `data-bl-open="${old.lineIndex}"` : ''}><div class="l">Oldest open</div><div class="v">${old ? oldD + 'd' : '—'}</div><div class="s bl-trunc">${old ? old.title.replace(/</g, '&lt;') : 'nothing dated'}</div></div>
   </div>`;
@@ -5887,7 +4997,7 @@ function blKpis(activeTasks) {
 document.addEventListener('click', e => {
   const o = e.target.closest && e.target.closest('[data-bl-open]'); if (!o) return;
   const t = tasks.find(x => x.lineIndex === +o.dataset.blOpen); if (!t) return;
-  if (t.cardId && pjFind(t.cardId)[1]) pjOpen('card', t.cardId); else openEditModal(t);
+  openEditModal(t);
 });
 
 // keep sticky offsets in sync with the real header height
@@ -5908,8 +5018,7 @@ function syncUiBusy() {
   const ae = document.activeElement;
   if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT')) return true;
   const m = document.getElementById('modal'); if (m && !m.classList.contains('hidden')) return true;
-  if (document.querySelector('.pj-sheet.open, .pop-scrim, .pj-lightbox, .modal-overlay:not(.hidden)')) return true;
-  if (typeof pjDrag !== 'undefined' && (pjDrag || pjPending)) return true;
+  if (document.querySelector('.pop-scrim, .pj-lightbox, .modal-overlay:not(.hidden)')) return true;
   if (window.__tdDrag) return true;
   if (typeof openSwipeWrap !== 'undefined' && openSwipeWrap) return true;
   return false;
@@ -5917,18 +5026,17 @@ function syncUiBusy() {
 async function autoSync(force) {
   if (!accessToken || document.hidden || syncBusy) return;
   if (!force && Date.now() - lastAutoSync < 8000) return;
-  if (blSaving || pjSaving || pjSaveT || syncUiBusy()) return;
+  if (blSaving || syncUiBusy()) return;
   syncBusy = true; lastAutoSync = Date.now();
   try {
     let changed = false;
-    const [rb, rp, rf] = await Promise.all([graphFetch(CONFIG.FILE_PATH), graphFetch(PJ_PATH), graphFetch(PREFS_PATH)]);
+    const [rb, rf] = await Promise.all([graphFetch(CONFIG.FILE_PATH), graphFetch(PREFS_PATH)]);
     if (await loadPrefs(rf)) changed = true;
-    if (blSaving || pjSaving || pjSaveT) return;                      // a local edit started meanwhile — try next tick
+    if (blSaving) return;                      // a local edit started meanwhile — try next tick
     if (rb && rb.ok) { const txt = await rb.text(); if (txt !== backlogBase && txt !== rawMd) { rawMd = txt; backlogBase = txt; parseTasks(); changed = true; } }
-    if (rp && rp.ok) { const txt = await rp.text(); if (txt !== pjBase) { try { const d = JSON.parse(txt); if (d && Array.isArray(d.projects)) { pj = Object.assign({ tomb: [] }, d); pjBase = txt; localStorage.setItem('pj_cache', txt); changed = true; } } catch {} } }
     await loadFocusHistory();
     lastSynced = new Date(); syncError = null;
-    if (changed) { await maybeRolloverToday(); if (maybeBackfillFromDeck()) await saveBacklog(); if (!syncUiBusy()) { const y = window.scrollY; pjFlip(render); window.scrollTo(0, y); } }
+    if (changed) { await maybeRolloverToday(); if (maybeBackfillFromDeck()) await saveBacklog(); if (!syncUiBusy()) { const y = window.scrollY; render(); window.scrollTo(0, y); } }
   } catch (e) { /* offline — try again later */ }
   finally { syncBusy = false; }
 }
