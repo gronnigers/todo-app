@@ -3105,7 +3105,6 @@ function openAddModal() {
   document.getElementById('modal-task-title').value = '';
   document.getElementById('modal-task-notes').value = '';
   document.getElementById('modal-delete-btn').classList.add('hidden');
-  document.getElementById('modal-link-btn').classList.add('hidden');
   document.getElementById('modal-park-btn').classList.add('hidden');
   document.getElementById('modal-files').classList.add('hidden');
   populateTagSelect(null);
@@ -4699,8 +4698,11 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.11.16-2"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.16-3"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.16-3", date: "Nov 16, 2026", items: [
+    ["fixed", "The + button opens Add Task again"],
+  ]},
   { v: "2026.11.16-2", date: "Nov 16, 2026", items: [
     ["improved", "On desktop, Backlog tasks now sit in two columns, so sticky notes and cards aren't stretched across the whole screen"],
   ]},
