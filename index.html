@@ -1104,6 +1104,10 @@
     .bl-trunc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .bl-dash { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
     .bl-col-inner { padding: 16px 16px 10px; }
+    /* two columns of task cards on desktop; headers, toggles and empty states span both */
+    .bl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; align-items: start; }
+    .bl-grid > :not(.swipe-wrap) { grid-column: 1 / -1; }
+    :root[data-skin="cork"] .bl-grid { column-gap: 30px; }
     .bl-col .pj-divider { display: none; }
     .bl-col .pj-bighead { margin-top: 0; font-size: 18px; }
     .bl-col .swipe-wrap { margin-bottom: 8px; }
@@ -3431,8 +3435,8 @@ function renderBacklog(el, activeTasks, doneTasks) {
     if (doneExpanded) doneTasks.forEach(t => { html += taskCard(t); });
   }
   }
-  if (blGrouped && blDesktop()) {
-    html = blKpis(activeTasks) + `<div class="bl-dash"><div class="bl-col glass-panel"><div class="bl-col-inner">${html}</div></div></div>`;
+  if (blDesktop()) {   // desktop: tasks sit in two columns; KPIs only when the list isn't filtered
+    html = (blGrouped ? blKpis(activeTasks) : '') + `<div class="bl-dash"><div class="bl-col glass-panel"><div class="bl-col-inner bl-grid">${html}</div></div></div>`;
   }
   html += '<div style="height:16px"></div>';
   el.innerHTML = html;
@@ -4695,8 +4699,11 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.11.16-1"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.16-2"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.16-2", date: "Nov 16, 2026", items: [
+    ["improved", "On desktop, Backlog tasks now sit in two columns, so sticky notes and cards aren't stretched across the whole screen"],
+  ]},
   { v: "2026.11.16-1", date: "Nov 16, 2026", items: [
     ["improved", "Projects is gone. Backlog, Today and Stats are the whole app now, and every task lives in one list"],
     ["improved", "On desktop, the Backlog dashboard is a single list, and the project-only \"Ready for you\" tile is gone"],
