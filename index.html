@@ -2193,8 +2193,8 @@ function saveTodaySet() {
   localStorage.setItem('today_tasks', JSON.stringify([...todaySet]));
 }
 // ---- FOCUS LIMIT: max 3 unfinished, batch-locked once you complete one ----
-const TODAY_LIMIT = 3;
-const FOCUS_GOAL = TODAY_LIMIT;   // "hit your 3" daily target for Stats
+const TODAY_LIMIT = Infinity;     // no cap: put as many tasks on Today as you like (Focus/Stretch removed 2026-11-21)
+const FOCUS_GOAL = 1;             // Stats: a day counts toward your streak once you finish at least 1 Today task
 // clean line-icons for the "focus done / stretch" zone (replaces cake & sparkle emoji)
 const IC_CHECKC = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>';
 const IC_PLUS   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
@@ -2212,16 +2212,13 @@ function coreCandidateCount() { return tasks.filter(t => !t.done && !t.today && 
 // pull in. Crucially, an open slot from bailing a task does NOT count as "done":
 // with candidates still available you get the empty slot back to fill toward 3.
 function coreComplete() {
-  const U = todayUnfinishedCount(), D = todayDoneCount();
-  if (U > 0) return false;
-  if (D < 1) return false;
-  return D >= TODAY_LIMIT || coreCandidateCount() === 0;
+  return todayUnfinishedCount() === 0 && todayDoneCount() > 0;   // everything on Today is done
 }
 // The Bonus round unlocks once the core set is genuinely complete.
 function bonusUnlocked() { return coreComplete(); }
 // Can a new CORE task be added to Today right now?
 function canAddToToday() {
-  return { ok: true };   // no lock any more: the first 3 on Today are your Focus, anything after is Stretch
+  return { ok: true };   // never locked: Today takes as many tasks as you want
   const U = todayUnfinishedCount(), D = todayDoneCount();
   if (coreComplete())            return { ok: false, reason: 'done' };     // set complete → bonus territory
   if (U + D >= TODAY_LIMIT)      return { ok: false, reason: 'full' };     // 3 slots occupied
@@ -2393,7 +2390,7 @@ async function addBonus(title) {
 }
 
 // ---- TOMORROW LANE: stage up to 3 for tomorrow; promoted to Today at rollover ----
-const TOMORROW_LIMIT = TODAY_LIMIT;    // also 3
+const TOMORROW_LIMIT = Infinity;       // no cap on staging tomorrow either
 function tomorrowCount() { return tasks.filter(t => t.tomorrow && !t.done).length; }
 function canStageTomorrow() { return tomorrowCount() < TOMORROW_LIMIT; }
 async function addToTomorrow(title) {
@@ -3683,21 +3680,18 @@ function openParkActions(task) {
     if (a === 'today') {
       await setPark(task.lineIndex, null);
       if (canAddToToday().ok) { if (await addToToday(task.title)) showToast('→ Back on Today'); }
-      else if (await addToDeck(task.title)) showToast('Focus set is full, so it\'s queued on deck');
+      else if (await addToDeck(task.title)) showToast('Queued on deck');
     }
   });
 }
 
-// ---- "Daily 3 done" celebration card ----
-function winCard(doneN, deckN) {
-  const st = computeFocusStreak().current, today = focusCountForDay(localDayKey());
-  const title = doneN >= TODAY_LIMIT ? `Daily ${TODAY_LIMIT} done` : 'Focus set complete';
-  const bits = [st >= 1 ? `🔥 ${st}-day streak` : '', today > TODAY_LIMIT ? `${today} done today` : '',
-    deckN ? `${deckN} stretch task${deckN === 1 ? '' : 's'} to go` : 'Take the win 🤙'].filter(Boolean);
-  return `<div class="win-card"><div class="win-badge">${fxRing(58, 7, TODAY_LIMIT)}<span class="win-ck">✓</span></div>
-    <div class="win-txt"><div class="win-t">${title}</div><div class="win-s">${bits.join(' · ')}</div></div></div>`;
+// ---- "All done" celebration card (shows when everything on Today is checked off) ----
+function winCard(doneN) {
+  const st = computeFocusStreak().current;
+  const bits = [`${doneN} task${doneN === 1 ? '' : 's'} done today`, st >= 1 ? `🔥 ${st}-day streak` : '', 'Take the win 🤙'].filter(Boolean);
+  return `<div class="win-card"><div class="win-badge">${fxRing(58, 7, 1, 1)}<span class="win-ck">✓</span></div>
+    <div class="win-txt"><div class="win-t">All done today</div><div class="win-s">${bits.join(' · ')}</div></div></div>`;
 }
-
 
 // ============================================================
 // TASK ATTACHMENTS: files live in OneDrive (Backlog/attachments/tasks/…); the line keeps a small index:
@@ -3795,9 +3789,7 @@ function renderToday(el, activeTasks, doneTasks) {
   const todayDone  = doneToday;  // finished [today]
   const deck       = activeTasks.filter(t => t.ondeck);   // queued, not yet active
   // `total` (inToday + doneToday) is already computed at the top of renderToday.
-  const unlocked   = coreComplete();
-  const inOverflow = todayDone.length >= TODAY_LIMIT;     // the 3 are done; the rest is overflow
-  const target = (unlocked || inOverflow) ? Math.max(todayDone.length, total) : Math.max(TODAY_LIMIT, total);
+  const target = total;
   const pct = target>0 ? Math.round((todayDone.length/target)*100) : 0;
   const dateStr = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
@@ -3808,36 +3800,25 @@ function renderToday(el, activeTasks, doneTasks) {
     </div>`;
 
   if (total===0 && deck.length===0) {
-    html += `<div class="today-empty"><span class="emoji">🎯</span>Nothing on Today yet.<br>Tap the <strong>+</strong> on backlog tasks to load it. Your first <strong>3</strong> are your Focus, and anything after that is Stretch.</div>`;
+    html += `<div class="today-empty"><span class="emoji">🎯</span>Nothing on Today yet.<br>Tap the <strong>+</strong> on backlog tasks to add as many as you like.</div>`;
   } else {
-    // ONE LIST: the first 3 you put on Today are your Focus; anything added after that is Stretch.
+    // ONE LIST: open tasks in your order on top, finished ones collect in Done at the bottom.
     const dk = localDayKey(), ordOf = t => t.tdoDay === dk ? t.tdo : null;
     const byAdded = (x, y) => { const a = ordOf(x), b = ordOf(y);
       if (a != null && b != null) return a - b; if (a != null) return -1; if (b != null) return 1;
       return ((x.todayAt ? +x.todayAt : 0) - (y.todayAt ? +y.todayAt : 0)) || (x.lineIndex - y.lineIndex); };
     const all = [...todayUnfin, ...todayDone].sort(byAdded);
-    const focusSet = all.slice(0, TODAY_LIMIT), stretch = all.slice(TODAY_LIMIT);
-    const fOpen = focusSet.filter(t => !t.done), fDone = focusSet.filter(t => t.done);
-    const sOpen = stretch.filter(t => !t.done), sDone = stretch.filter(t => t.done);
-    const slotsLeft = Math.max(0, TODAY_LIMIT - focusSet.length);
-    todayGroups = { fDone, fOpen, sOpen, sDone, K: fOpen.length };
-    if (focusSet.length >= TODAY_LIMIT && !fOpen.length) html += winCard(fDone.length, sOpen.length);
-    // open work stays on top (Focus, then Stretch); everything finished collects in Done at the bottom
-    if (fOpen.length || slotsLeft) {
-      const note = slotsLeft ? `${slotsLeft} slot${slotsLeft === 1 ? '' : 's'} open` : `${fDone.length} of ${TODAY_LIMIT} done`;
-      html += `<div class="lu-head"><span class="section-label">Focus</span><span class="lu-note">${note}</span></div>`;
-      fOpen.forEach(t => { html += todayCard(t, false); });
-      if (slotsLeft) html += `<button class="lu-add" data-core-add>＋ Add focus task</button>`;
+    const open = all.filter(t => !t.done), fin = all.filter(t => t.done);
+    todayGroups = { open, fin };
+    if (all.length && !open.length) html += winCard(fin.length);
+    if (open.length) {
+      html += `<div class="lu-head"><span class="section-label">To do</span><span class="lu-note">${open.length} to go</span></div>`;
+      open.forEach(t => { html += todayCard(t, false); });
     }
-    if (sOpen.length) {
-      html += `<div class="lu-then"><span>Stretch · ${sOpen.length} to go</span></div>`;
-      sOpen.forEach(t => { html += todayCard(t, false, true, fOpen.length > 0); });
-    }
-    if (!slotsLeft) html += `<button class="lu-add" data-core-add>＋ Add a stretch task</button>`;
-    if (fDone.length || sDone.length) {
-      html += `<div class="lu-head"><span class="section-label">Done</span><span class="lu-note">${fDone.length} focus${sDone.length ? ` · ${sDone.length} stretch` : ''}</span></div>`;
-      fDone.forEach(t => { html += todayCard(t, true); });
-      sDone.forEach(t => { html += todayCard(t, true, true); });
+    html += `<button class="lu-add" data-core-add>＋ Add to Today</button>`;
+    if (fin.length) {
+      html += `<div class="lu-head"><span class="section-label">Done</span><span class="lu-note">${fin.length}</span></div>`;
+      fin.forEach(t => { html += todayCard(t, true); });
     }
   }
   html += '<div style="height:16px"></div>';
@@ -3884,14 +3865,13 @@ function openBonusPicker() {
 
 function openCorePicker() {
   const eligible = tasks.filter(t => !t.done && !t.today && !t.tomorrow);
-  const slotsLeft = Math.max(0, TODAY_LIMIT - (todayUnfinishedCount() + todayDoneCount()));
   const rows = eligible.length
     ? eligible.map(t => `<button class="pick-row" data-pick="${esc(t.title)}"><span class="pick-plus">＋</span><span class="pick-title">${t.title}</span>${tagHTML(t.tag)}</button>`).join('')
     : `<div style="text-align:center;color:var(--sub);padding:24px 8px;font-size:14px">No other backlog tasks to add.</div>`;
   const ov = document.createElement('div');
   ov.className = 'modal-overlay';
   ov.innerHTML = `<div class="modal">
-    <h2>${slotsLeft ? `🎯 Add focus task · ${slotsLeft} slot${slotsLeft===1?'':'s'} left` : '⚡ Add stretch tasks · no limit'}</h2>
+    <h2>Add to Today</h2>
     <div class="pick-list">${rows}</div>
     <div class="modal-btns"><button class="btn-primary" id="core-done">Done</button></div>
   </div>`;
@@ -3905,13 +3885,12 @@ function openCorePicker() {
     const ok = await addToToday(b.dataset.pick);
     if (!ok) return;
     b.remove();
-    if (canAddToToday().ok === false) close();   // set filled — close
   }));
 }
 
-function todayCard(t, done, stretch, canSwap) {
+function todayCard(t, done) {
   const badge = ageBadge(t);
-  return `<div class="task-card ${stretch ? 'stretch-card' : ''}" ${done ? '' : `data-td-open="${t.lineIndex}" data-td-group="${stretch ? 's' : 'f'}"`} style="${done?'opacity:.6;':''}${t.tag?`--spine:${tagDotColor(t.tag)}`:''}">
+  return `<div class="task-card" ${done ? '' : `data-td-open="${t.lineIndex}"`} style="${done?'opacity:.6;':''}${t.tag?`--spine:${tagDotColor(t.tag)}`:''}">
     <div class="check-ring ${done?'done':''}" data-toggle="${esc(t.title)}" data-line="${t.lineIndex}">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
@@ -3919,38 +3898,29 @@ function todayCard(t, done, stretch, canSwap) {
       <div class="task-title ${done?'done':''}">${t.title}</div>
       ${(t.tag || badge || t.notes || attN(t)) ? `<div class="task-meta">${tagHTML(t.tag)}${badge}${t.notes?'<span class="note-chip" title="Has saved notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></span>':''}${attChip(t)}</div>` : ''}
     </div>
-    ${!done && stretch && canSwap ? `<button class="td-up" data-td-up="${t.lineIndex}" title="Swap into Focus">⇡</button>` : ''}
     <button class="remove-today-btn" data-remove="${esc(t.title)}">×</button>
     ${done ? '' : `<button class="td-grip" data-td-grip title="Drag to reorder" aria-label="Drag to reorder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>`}
   </div>`;
 }
 
-// ---- TODAY REORDER: drag the grip to reorder; drop a Stretch task above the line to swap it into Focus ----
+// ---- TODAY REORDER: drag the ⋮⋮ grip to put Today in whatever order you like ----
 let todayGroups = null;
 async function todayReorder(newOpen) {
   const G = todayGroups; if (!G) return;
-  const all = [...G.fDone, ...newOpen, ...G.sDone], dk = localDayKey(), lines = rawMd.split('\n');
+  const all = [...newOpen, ...G.fin], dk = localDayKey(), lines = rawMd.split('\n');
   all.forEach((t, i) => { const l = lines[t.lineIndex]; if (l == null) return;
     lines[t.lineIndex] = l.replace(/\s*\[tdo:[^\]]*\]/g, '').trimEnd() + ` [tdo:${dk}:${i}]`; });
   rawMd = lines.join('\n'); parseTasks(); render(); await saveBacklog();
 }
 function tdAttachDrag(root) {
-  root.querySelectorAll('[data-td-up]').forEach(b => b.addEventListener('click', e => {
-    e.stopPropagation(); const G = todayGroups; if (!G) return;
-    const li = +b.dataset.tdUp, t = G.sOpen.find(x => x.lineIndex === li); if (!t) return;
-    const open = [...G.fOpen, ...G.sOpen].filter(x => x !== t); open.splice(Math.max(0, G.K - 1), 0, t);
-    if (navigator.vibrate) navigator.vibrate(8);
-    todayReorder(open); showToast(`⇅ Swapped into Focus · "${G.fOpen[G.K - 1].title}" moved to Stretch`);
-  }));
   root.querySelectorAll('[data-td-grip]').forEach(g => g.addEventListener('pointerdown', e => tdDragStart(e, g)));
 }
 function tdDragStart(e, grip) {
   if (e.pointerType === 'mouse' && e.button !== 0) return;
   const G = todayGroups, card = grip.closest('[data-td-open]'); if (!G || !card) return;
   e.preventDefault(); e.stopPropagation();
-  const open = [...G.fOpen, ...G.sOpen], li = +card.dataset.tdOpen, dragged = open.find(t => t.lineIndex === li);
+  const open = G.open, li = +card.dataset.tdOpen, dragged = open.find(t => t.lineIndex === li);
   const rem = [...document.querySelectorAll('#content [data-td-open]')].filter(x => x !== card);
-  const divider = document.querySelector('#content .lu-then');
   const line = document.createElement('div'); line.className = 'td-drop';
   const startY = e.clientY, startScroll = window.scrollY; let lastY = e.clientY, idx = rem.indexOf(card), moved = false;
   window.__tdDrag = true; card.classList.add('td-dragging'); document.body.classList.add('td-drag-on');
@@ -3958,12 +3928,8 @@ function tdDragStart(e, grip) {
   const place = () => {
     card.style.transform = `translateY(${lastY - startY + window.scrollY - startScroll}px)`;
     let i = 0; for (const x of rem) { const r = x.getBoundingClientRect(); if (lastY > r.top + r.height / 2) i++; }
-    idx = i; const inFocus = i < G.K || !divider, focusRem = rem.filter(x => x.dataset.tdGroup === 'f');
-    if (rem[i] && (!inFocus || rem[i].dataset.tdGroup === 'f')) rem[i].before(line);
-    else if (inFocus && focusRem.length) focusRem[focusRem.length - 1].after(line);
-    else if (inFocus && divider) divider.before(line);
-    else (rem[rem.length - 1] || card).after(line);
-    line.classList.toggle('to-stretch', !inFocus);
+    idx = i;
+    if (rem[i]) rem[i].before(line); else (rem[rem.length - 1] || card).after(line);
   };
   const tick = setInterval(() => { if (lastY < 90) { window.scrollBy(0, -10); place(); } else if (lastY > innerHeight - 110) { window.scrollBy(0, 10); place(); } }, 16);
   const move = ev => { lastY = ev.clientY; if (Math.abs(lastY - startY) > 4) moved = true; place(); };
@@ -3973,9 +3939,7 @@ function tdDragStart(e, grip) {
     if (!moved) return;
     const order = rem.map(x => open.find(t => t.lineIndex === +x.dataset.tdOpen)); order.splice(idx, 0, dragged);
     if (order.every((t, i) => t === open[i])) return;
-    const wasF = G.fOpen.includes(dragged), nowF = idx < G.K;
     todayReorder(order);
-    if (wasF !== nowF) showToast(nowF ? '⇅ Moved into Focus' : '⇅ Moved to Stretch');
   };
   grip.addEventListener('pointermove', move); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
   place();
@@ -4000,9 +3964,9 @@ function deckCard(t, n) {
 function renderTomorrow(staged) {
   const tmrDate = new Date(Date.now()+86400000).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   let html = `<div class="today-date">🌙 ${tmrDate}</div>`;
-  html += `<div class="focus-hint tmr">🌙 ${staged.length}/3 staged — goes live at the day flip</div>`;
+  html += `<div class="focus-hint tmr">🌙 ${staged.length} staged · goes live at the day flip</div>`;
   if (staged.length === 0) {
-    html += `<div class="today-empty"><span class="emoji">🌙</span>Nothing staged for tomorrow yet.<br>Line up to <strong>3</strong> so tomorrow starts loaded.</div>`;
+    html += `<div class="today-empty"><span class="emoji">🌙</span>Nothing staged for tomorrow yet.<br>Line some up so tomorrow starts loaded.</div>`;
   } else {
     staged.forEach(t => { html += tomorrowCard(t); });
   }
@@ -4043,7 +4007,6 @@ function attachTomorrowEvents(el) {
 }
 function openTomorrowPicker() {
   const eligible = tasks.filter(t => !t.done && !t.today && !t.tomorrow);
-  const remaining = TOMORROW_LIMIT - tomorrowCount();
   const rowsHTML = () => eligible.filter(t=>!t.tomorrow).length
     ? eligible.filter(t=>!t.tomorrow).map(t => `<button class="pick-row" data-pick="${esc(t.title)}">
         <span class="pick-plus">＋</span>
@@ -4053,7 +4016,7 @@ function openTomorrowPicker() {
   const ov = document.createElement('div');
   ov.className = 'modal-overlay';
   ov.innerHTML = `<div class="modal">
-    <h2 id="tmr-pick-h">Plan tomorrow · ${remaining} slot${remaining===1?'':'s'} left</h2>
+    <h2 id="tmr-pick-h">Plan tomorrow</h2>
     <div class="pick-list">${rowsHTML()}</div>
     <div class="modal-btns"><button class="btn-primary" id="tmr-done">Done</button></div>
   </div>`;
@@ -4067,10 +4030,6 @@ function openTomorrowPicker() {
     const ok = await addToTomorrow(b.dataset.pick);
     if (!ok) return;
     b.remove();
-    if (tomorrowCount() >= TOMORROW_LIMIT) { close(); return; }
-    const rem = TOMORROW_LIMIT - tomorrowCount();
-    const h = ov.querySelector('#tmr-pick-h');
-    if (h) h.textContent = `Plan tomorrow · ${rem} slot${rem===1?'':'s'} left`;
   }));
 }
 
@@ -4078,7 +4037,7 @@ function openTomorrowPicker() {
 function renderStats(el, activeTasks, doneTasks) {
   let html = `
     <div class="seg-ctrl">
-      <button class="seg-btn ${statsView==='focus'?'active':''}" onclick="statsView='focus';render()">Focus</button>
+      <button class="seg-btn ${statsView==='focus'?'active':''}" onclick="statsView='focus';render()">Today</button>
       <button class="seg-btn ${statsView==='trends'?'active':''}" onclick="statsView='trends';render()">Trends</button>
     </div>`;
 
@@ -4140,20 +4099,20 @@ function renderFocus(activeTasks, doneTasks) {
   // ---------- 1 · today, front and center ----------
   const flame = streak.current >= 7 ? '🔥' : streak.current >= 3 ? '⚡' : streak.current >= 1 ? '✨' : '💤';
   const msg = t >= G
-    ? `All ${G} done${t > G ? `, plus <b style="color:var(--text)">${t - G} extra</b>` : ''}. Streak's safe 🤙`
-    : `Finish <b style="color:var(--text)">${G - t} more</b> to ${streak.current ? `push your streak to ${streak.current + 1} day${streak.current ? 's' : ''}` : 'start a streak'}.`;
+    ? `<b style="color:var(--text)">${t} task${t === 1 ? '' : 's'}</b> done today. Streak's safe 🤙`
+    : `Finish any Today task to ${streak.current ? `push your streak to ${streak.current + 1} day${streak.current ? 's' : ''}` : 'start a streak'}.`;
   const trail = []; for (let i = 20; i >= 0; i--) trail.push(fxAdd(T, -i));
   const week = []; for (let i = 6; i >= 0; i--) week.push(fxAdd(T, -i));
   let out = `<div class="fx">
     <div class="fx-g2">
       <div class="chart-card fx-hero">
-        <div class="fx-ringwrap">${fxRing(170, 17, t)}<div class="fx-mid"><div class="fx-num" style="font-size:calc(54px * var(--fxs))">${t}<span style="font-size:.45em;color:var(--sub)">/${G}</span></div><div class="fx-sub">today</div></div></div>
+        <div class="fx-ringwrap">${fxRing(170, 17, t)}<div class="fx-mid"><div class="fx-num" style="font-size:calc(54px * var(--fxs))">${t}</div><div class="fx-sub">done today</div></div></div>
         <div><div class="fx-num" style="font-size:calc(24px * var(--fxs));line-height:1.1">${fxFmt(T, { weekday: 'long' })},<br>${fxFmt(T, { month: 'short', day: 'numeric' })}</div>
           <p class="fx-sub" style="margin:8px 0 12px">${msg}</p>
           ${deck ? `<span class="fx-pill acc">⏭ ${deck} on deck</span>` : ''}</div>
       </div>
       <div class="chart-card">
-        <div class="fx-lbl">Focus streak</div>
+        <div class="fx-lbl">Streak</div>
         <div style="display:flex;align-items:center;gap:14px;margin-top:10px">
           <div class="fx-num" style="font-size:calc(68px * var(--fxs));color:var(--accent)">${streak.current}</div>
           <div><div style="font-size:24px;line-height:1">${flame}</div><div class="fx-sub">day${streak.current === 1 ? '' : 's'} in a row<br>Best ever: <b style="color:var(--text)">${streak.best}</b></div></div>
@@ -4163,7 +4122,7 @@ function renderFocus(activeTasks, doneTasks) {
       </div>
       <div class="chart-card fx-span2"><div class="fx-lbl">Last 7 days</div>
         <div class="fx-week">${week.map(d => { const n = cnt(d), isT = d.getTime() === T.getTime();
-          return `<div class="d ${isT ? 'today' : ''}">${fxRing(62, 8, n)}<span>${isT ? 'Today' : fxFmt(d, { weekday: 'short' })}</span><b title="${n} done">${Math.min(n, G)}${n > G ? ` <span class="xtra-c">+${n - G}</span>` : ''}</b></div>`; }).join('')}</div>
+          return `<div class="d ${isT ? 'today' : ''}">${fxRing(62, 8, n)}<span>${isT ? 'Today' : fxFmt(d, { weekday: 'short' })}</span><b title="${n} done">${n}</b></div>`; }).join('')}</div>
       </div>
     </div>`;
 
@@ -4171,7 +4130,7 @@ function renderFocus(activeTasks, doneTasks) {
   const yStart = fxAdd(T, -364), gStart = fxAdd(yStart, -yStart.getDay());
   let yrTotal = 0, yrHits = 0, bestD = null, bestN = 0;
   for (let d = new Date(yStart); d <= T; d = fxAdd(d, 1)) { const n = cnt(d); yrTotal += n; if (n >= G) yrHits++; if (n > bestN) { bestN = n; bestD = new Date(d); } }
-  const lvl = n => n <= 0 ? 0 : n < G ? 1 : n === G ? 2 : 3;
+  const lvl = n => n <= 0 ? 0 : n <= 2 ? 1 : n <= 4 ? 2 : 3;   // shade by how many you finished
   const heat = l => ['var(--progress-bg)', 'color-mix(in srgb, var(--accent) 32%, transparent)', 'color-mix(in srgb, var(--accent) 68%, transparent)', 'var(--accent)'][l];
   const cell = 13, step = 16; let svg = '', col = 0, lastM = -1;
   for (let w = new Date(gStart); w <= T; w = fxAdd(w, 7), col++) {
@@ -4185,7 +4144,7 @@ function renderFocus(activeTasks, doneTasks) {
   const W = col * step;
   out += `<div class="fx-kpis">
       <div class="chart-card"><div class="fx-lbl">Past year</div><div class="fx-num">${yrTotal}</div><div class="fx-sub">tasks done</div></div>
-      <div class="chart-card"><div class="fx-lbl">Hit your ${G}</div><div class="fx-num">${yrHits}</div><div class="fx-sub">day${yrHits === 1 ? '' : 's'}</div></div>
+      <div class="chart-card"><div class="fx-lbl">Active days</div><div class="fx-num">${yrHits}</div><div class="fx-sub">day${yrHits === 1 ? '' : 's'}</div></div>
       <div class="chart-card"><div class="fx-lbl">Longest streak</div><div class="fx-num">${streak.best}</div><div class="fx-sub">days · now ${streak.current}</div></div>
       <div class="chart-card"><div class="fx-lbl">Best day</div><div class="fx-num">${bestN || '—'}</div><div class="fx-sub">${bestD ? fxFmt(bestD, { month: 'short', day: 'numeric' }) : 'no tasks yet'}</div></div>
     </div>
@@ -4202,14 +4161,14 @@ function renderFocus(activeTasks, doneTasks) {
     const d = new Date(y, m, i), k = dayKeyFromDate(d), n = FD[k] || 0, fut = d > T, isT = d.getTime() === T.getTime();
     if (!fut) { mDays++; mTot += n; if (n >= G) mHits++; }
     cells += `<div class="fx-cell ${fut ? 'future' : ''} ${isT ? 'today' : ''} ${!fut && k < firstKey ? 'pre' : ''}" title="${k}: ${n} done"><span class="dn">${i}</span>` +
-      (fut ? '' : fxRing(50, 6, n) + `<span class="cnt">${Math.min(n, G)}</span>`) + (!fut && n >= G ? '<span class="star">★</span>' : '') + (n > G ? `<span class="xtra">+${n - G}</span>` : '') + '</div>';
+      (fut ? '' : fxRing(50, 6, n) + `<span class="cnt">${n}</span>`) + '</div>';
   }
   out += `<div class="chart-card">
     <div class="fx-calhead"><button class="hm-nav" onclick="fxMonth(-1)">‹</button>
       <div class="fx-num">${fxFmt(ref, { month: 'long', year: 'numeric' })}</div>
       <button class="hm-nav ${statsMonthOffset >= 0 ? 'disabled' : ''}" onclick="fxMonth(1)">›</button></div>
     <div class="fx-cal">${cells}</div>
-    <div class="fx-pills"><span class="fx-pill acc">★ ${mHits} of ${mDays} day${mDays === 1 ? '' : 's'} hit</span><span class="fx-pill">✓ ${mTot} task${mTot === 1 ? '' : 's'}</span>
+    <div class="fx-pills"><span class="fx-pill acc">★ ${mHits} of ${mDays} day${mDays === 1 ? '' : 's'} active</span><span class="fx-pill">✓ ${mTot} task${mTot === 1 ? '' : 's'}</span>
       ${isCur ? `<span class="fx-pill">${flame} ${streak.current}-day streak</span>${mDays ? `<span class="fx-pill">📈 on pace for ${Math.round(mTot / mDays * dim)}</span>` : ''}` : ''}</div>
   </div>`;
 
@@ -4222,15 +4181,15 @@ function renderFocus(activeTasks, doneTasks) {
   const night = done.filter(([, ts]) => new Date(ts).getHours() >= 22).length;
   const buster = done.filter(([title, ts]) => { const c = Date.parse(created[title]); return !isNaN(c) && ts - c >= 30 * 864e5; }).length;
   const maxDay = Math.max(0, ...Object.values(FD));
-  const B = [['🎯', 'Hat trick', `Hit your ${G} for the first time`, hitDays, 1], ['⚡', 'Week warrior', '7-day focus streak', streak.best, 7],
-    ['🔥', 'Unstoppable', '30-day focus streak', streak.best, 30], ['💯', 'Century', '100 tasks done', total, 100],
+  const B = [['🎯', 'Hat trick', '3 tasks in a single day', maxDay, 3], ['⚡', 'Week warrior', '7-day streak', streak.best, 7],
+    ['🔥', 'Unstoppable', '30-day streak', streak.best, 30], ['💯', 'Century', '100 tasks done', total, 100],
     ['🌅', 'Early bird', '25 tasks done before 9 AM', early, 25], ['🦉', 'Night owl', '25 tasks done after 10 PM', night, 25],
     ['🚀', 'Overachiever', '6 tasks in a single day', maxDay, 6], ['🧹', 'Backlog buster', 'Close 10 tasks that sat 30+ days', buster, 10]];
   out += `<div class="chart-card" style="margin-top:16px">
       <div class="fx-lvl"><div class="fx-lvl-badge"><small>LEVEL</small><div class="fx-num">${lv}</div></div>
         <div style="flex:1;min-width:0"><div class="fx-num" style="font-size:calc(24px * var(--fxs));line-height:1.1">${TITLES[Math.min(lv, TITLES.length - 1)]}</div>
           <div class="fx-xp"><i style="width:${Math.max(2, (xp - lo) / (hi - lo) * 100).toFixed(1)}%"></i></div>
-          <div class="fx-xprow"><span class="fx-sub">${(xp - lo).toLocaleString()} / ${(hi - lo).toLocaleString()} XP to level ${lv + 1}</span><span class="fx-sub">+10 per task · +25 for hitting ${G}</span></div></div></div>
+          <div class="fx-xprow"><span class="fx-sub">${(xp - lo).toLocaleString()} / ${(hi - lo).toLocaleString()} XP to level ${lv + 1}</span><span class="fx-sub">+10 per task · +25 per active day</span></div></div></div>
     </div>
     <div class="fx-badges">${B.map(([ic, n, d, v, goal]) => { const ok = v >= goal;
       return `<div class="chart-card fx-bdg ${ok ? '' : 'locked'}"><div class="ic">${ic}</div><h4>${n}</h4><p>${d}</p>${ok ? '<p class="ok">Unlocked</p>' : `<div class="fx-bar"><i style="width:${Math.max(3, v / goal * 100).toFixed(0)}%"></i></div><p class="prog">${Math.min(v, goal)} / ${goal}</p>`}</div>`; }).join('')}</div>
@@ -4586,8 +4545,7 @@ function taskCard(t) {
         if (t.tomorrow) return `<button class="today-ring-btn in-tomorrow" data-tmr-toggle="${esc(t.title)}" title="Staged for tomorrow — tap to unstage">🌙</button>`;
         if (inT) return `<button class="today-ring-btn in-today" data-today-toggle="${esc(t.title)}" title="In Today — tap to remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>`;
         if (t.ondeck) return `<button class="today-ring-btn in-deck" data-deck-toggle="${esc(t.title)}" title="On Deck — tap to remove from queue">${IC_DECK}</button>`;
-        // Focus set has room → "+" adds to the 3. Otherwise it's never locked — "+" queues it on deck.
-        if (canAddToToday().ok) return `<button class="today-ring-btn" data-today-toggle="${esc(t.title)}" title="${todayUnfinishedCount() + todayDoneCount() >= TODAY_LIMIT ? 'Add to Today as a stretch task' : 'Add to Today\'s focus'}">+</button>`;
+        if (canAddToToday().ok) return `<button class="today-ring-btn" data-today-toggle="${esc(t.title)}" title="Add to Today">+</button>`;
         return `<button class="today-ring-btn add-deck" data-deck-toggle="${esc(t.title)}" title="Focus set full — queue on deck">${IC_DECK}</button>`;
       })() : ''}
     </div>
@@ -4809,8 +4767,13 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.11.16-4"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.21-1"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.21-1", date: "Nov 21, 2026", items: [
+    ["improved", "No more Focus and Stretch: Today is one list. Add as many tasks as you want and drag them into any order"],
+    ["improved", "Tomorrow planning has no 3-task cap either"],
+    ["improved", "Stats: the Focus page is now Today. Any day you finish a Today task counts toward your streak"],
+  ]},
   { v: "2026.11.16-4", date: "Nov 16, 2026", items: [
     ["new", "Lists tab: your Reading, Gift Cards, Restaurants, Words of Wisdom, Fashion and Gift Ideas lists live in Donezo now, styled by whichever look you have on"],
     ["new", "Add, edit, check off and delete list items; make new lists from scratch or a template (Movies & Shows, Whiskey Shelf, Packing List, Songs to Learn, Travel Bucket List)"],
@@ -5106,7 +5069,7 @@ function ageChip(t) {
   return `<span class="age-chip ${cls}" title="Created ${new Date(ms).toLocaleDateString()}">${d < 1 ? 'new' : d + 'd'}</span>`;
 }
 function blKpis(activeTasks) {
-  const U = todayUnfinishedCount(), Dn = todayDoneCount(), goal = TODAY_LIMIT;
+  const U = todayUnfinishedCount(), Dn = todayDoneCount(), goal = Math.max(1, U + Dn);   // done out of everything on Today
   const pct = Math.min(1, Dn / goal), planPct = Math.min(1, (U + Dn) / goal), C = 2 * Math.PI * 15, slots = Math.max(0, goal - U - Dn);
   const pkW = tasks.filter(t => !t.done && t.parked === 'waiting'); const waiting = pkW.length, due = pkW.filter(parkDue).length;
   const dated = activeTasks.filter(t => createdMsOf(t)).sort((a, b) => createdMsOf(a) - createdMsOf(b));
@@ -5114,7 +5077,7 @@ function blKpis(activeTasks) {
   return `<div class="bl-kpis">
     <div class="bl-kpi glass-panel bl-kpi-ring" onclick="switchTab('today')"><svg width="70" height="70" viewBox="0 0 36 36"><defs><linearGradient id="blgr" x1="0" x2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs>
       <circle cx="18" cy="18" r="15" fill="none" stroke="var(--tag-bg)" stroke-width="4"/>${planPct > pct ? `<circle cx="18" cy="18" r="15" fill="none" stroke="var(--accent)" stroke-opacity=".3" stroke-width="4" stroke-linecap="round" stroke-dasharray="${planPct * C} ${C}" transform="rotate(-90 18 18)"/>` : ''}${Dn ? `<circle cx="18" cy="18" r="15" fill="none" stroke="url(#blgr)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${pct * C} ${C}" transform="rotate(-90 18 18)"/>` : ''}</svg>
-      <div><div class="l">Today’s focus</div><div class="v">${Dn} / ${goal}</div><div class="s">${Dn >= goal && !U ? 'Set complete 🤙' : [U + Dn ? `${U + Dn} on Today` : 'Nothing on Today yet', slots ? `${slots} slot${slots > 1 ? 's' : ''} open` : ''].filter(Boolean).join(' · ')}</div></div></div>
+      <div><div class="l">Today</div><div class="v">${Dn} / ${U + Dn}</div><div class="s">${U + Dn ? (U ? `${U} to go` : 'All done 🤙') : 'Nothing on Today yet'}</div></div></div>
     <div class="bl-kpi glass-panel" ${pkW.length ? 'style="cursor:pointer" onclick="blSetView(\'parked\')"' : ''}><div class="l">⏳ Waiting on others</div><div class="v" style="color:var(--orange)">${waiting}</div><div class="s">${due ? `<span style="color:var(--danger)">${due} follow-up${due > 1 ? 's' : ''} due</span>` : 'no follow-ups due'}</div></div>
     <div class="bl-kpi glass-panel" ${old ? `data-bl-open="${old.lineIndex}"` : ''}><div class="l">Oldest open</div><div class="v">${old ? oldD + 'd' : '—'}</div><div class="s bl-trunc">${old ? old.title.replace(/</g, '&lt;') : 'nothing dated'}</div></div>
   </div>`;
