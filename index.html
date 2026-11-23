@@ -1490,7 +1490,9 @@
     font-family: 'Caveat', cursive; font-weight: 700; font-size: 25px; line-height: 1.1; padding: 8px 12px 6px; border-radius: 2px; background: #fff; }
   :root[data-skin="cork"] .modal textarea, :root[data-skin="cork"] .pj-notes {
     font-family: 'Caveat', cursive; font-weight: 500; font-size: 22px; line-height: 24px; border-radius: 2px;
-    background: repeating-linear-gradient(#fff 0 23px, #e3eefa 23px 24px); background-attachment: local; }
+    /* write ON the rule: Caveat's baseline sits 19px into each 24px line, so with 8px top padding the
+       baseline lands at 27px; shifting the rules down 6px puts each one at 29px, 2px under the letters */
+    padding-top: 8px; background: repeating-linear-gradient(#fff 0 23px, #e3eefa 23px 24px) 0 6px; background-attachment: local; }
   :root[data-skin="cork"] .modal-btns button, :root[data-skin="cork"] .btn-danger-outline, :root[data-skin="cork"] .pj-link-btn, :root[data-skin="cork"] .pj-btn {
     font-family: var(--font-marker); font-weight: 400; font-size: 16px; letter-spacing: .4px; border-radius: 2px; }
   :root[data-skin="cork"] .modal-btns .btn-primary { box-shadow: var(--shadow-sm); rotate: -.6deg; }
@@ -4833,8 +4835,11 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.11.23-3"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.23-4"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.23-4", date: "Nov 23, 2026", items: [
+    ["fixed", "Corkboard notes: your writing and cursor now sit on the ruled lines instead of across them"],
+  ]},
   { v: "2026.11.23-3", date: "Nov 23, 2026", items: [
     ["improved", "Bigger Edit Task window with a Notes box that grows as you type"],
     ["fixed", "Enter now adds a new line in Notes instead of saving, and line breaks are kept when you save. Ctrl+Enter (⌘+Enter on Mac) saves"],
