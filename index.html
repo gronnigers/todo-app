@@ -624,6 +624,11 @@
     resize: vertical; min-height: 76px; font-family: inherit; line-height: 1.5;
   }
   .modal textarea:focus { border-color: var(--accent); }
+  /* Add / Edit Task: roomier window, Notes grows with what you type */
+  #modal .modal { max-width: 600px; max-height: calc(100dvh - env(safe-area-inset-top) - 100px); overflow-y: auto; overscroll-behavior: contain; }
+  #modal-task-notes { min-height: 180px; max-height: 55dvh; resize: vertical; }
+  .md-hint { font-size: 12px; color: var(--sub); margin: -6px 2px 12px; }
+  @media (max-width: 600px) { .md-hint { display: none; } }
   .modal textarea::placeholder { color: var(--sub); }
   .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
   .modal-btns button {
@@ -2034,7 +2039,8 @@
     <select id="modal-task-tag">
       <option value="">No tag</option>
     </select>
-    <textarea id="modal-task-notes" placeholder="Notes (optional)…"></textarea>
+    <textarea id="modal-task-notes" placeholder="Notes (optional)…" oninput="growNotes()"></textarea>
+    <div class="md-hint">Enter adds a new line · Ctrl+Enter saves</div>
     <div id="modal-files" class="md-files hidden"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -2558,13 +2564,17 @@ let created = loadCreated();
 // ============================================================
 // NOTES HELPERS — stored inline in markdown as [notes:encoded]
 // ']' is escaped as &#93; so it can't break the bracket syntax;
-// newlines are collapsed to a space (notes are single-paragraph).
+// line breaks are kept as &#10; so the whole task still fits on one markdown line.
 // ============================================================
+function growNotes() {   // Notes box grows to fit its text (up to ~half the screen, then scrolls)
+  const ta = document.getElementById('modal-task-notes'); if (!ta) return;
+  ta.style.height = 'auto'; ta.style.height = Math.max(180, ta.scrollHeight + 4) + 'px';
+}
 function encodeNotes(text) {
-  return (text || '').replace(/\r?\n/g, ' ').replace(/\]/g, '&#93;').trim();
+  return (text || '').replace(/\r\n?/g, '\n').trim().replace(/\]/g, '&#93;').replace(/\n/g, '&#10;');
 }
 function decodeNotes(text) {
-  return (text || '').replace(/&#93;/g, ']');
+  return (text || '').replace(/&#10;/g, '\n').replace(/&#93;/g, ']');
 }
 
 // ============================================================
@@ -3225,7 +3235,7 @@ function openAddModal() {
   document.getElementById('modal-title').textContent = 'New Task';
   document.getElementById('modal-submit-btn').textContent = 'Add Task';
   document.getElementById('modal-task-title').value = '';
-  document.getElementById('modal-task-notes').value = '';
+  document.getElementById('modal-task-notes').value = ''; setTimeout(growNotes, 0);
   document.getElementById('modal-delete-btn').classList.add('hidden');
   document.getElementById('modal-park-btn').classList.add('hidden');
   document.getElementById('modal-files').classList.add('hidden');
@@ -3237,7 +3247,7 @@ function openEditModal(task) {
   document.getElementById('modal-title').textContent = 'Edit Task';
   document.getElementById('modal-submit-btn').textContent = 'Save';
   document.getElementById('modal-task-title').value = task.title;
-  document.getElementById('modal-task-notes').value = task.notes || '';
+  document.getElementById('modal-task-notes').value = task.notes || ''; setTimeout(growNotes, 0);
   document.getElementById('modal-delete-btn').classList.remove('hidden');
   renderModalFiles(task);
   const pkb = document.getElementById('modal-park-btn');
@@ -4809,7 +4819,10 @@ function onSearchInput(val) {
 // KEYBOARD
 // ============================================================
 document.addEventListener('keydown', e => {
-  if (e.key==='Enter' && !document.getElementById('modal')?.classList.contains('hidden')) submitModal();
+  if (e.key==='Enter' && !document.getElementById('modal')?.classList.contains('hidden')) {
+    if (e.target && e.target.tagName === 'TEXTAREA' && !(e.ctrlKey || e.metaKey)) return;   // Enter = new line in Notes
+    e.preventDefault(); submitModal();                                                        // Enter in title / Ctrl+Enter = save
+  }
   if (e.key==='Escape') closeModal();
 });
 
@@ -4820,8 +4833,12 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.11.23-2"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.23-3"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.23-3", date: "Nov 23, 2026", items: [
+    ["improved", "Bigger Edit Task window with a Notes box that grows as you type"],
+    ["fixed", "Enter now adds a new line in Notes instead of saving, and line breaks are kept when you save. Ctrl+Enter (⌘+Enter on Mac) saves"],
+  ]},
   { v: "2026.11.23-2", date: "Nov 23, 2026", items: [
     ["fixed", "The day card from Year in squares now uses your style's fonts"],
   ]},
