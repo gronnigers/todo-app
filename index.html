@@ -1897,6 +1897,14 @@
   .dt-t small::first-letter { text-transform: uppercase; }
   .dt-time { flex: none; font-size: 12px; color: var(--sub); margin-top: 2px; }
   .dt-note, .dt-empty { font-size: 13px; color: var(--sub); text-align: center; padding: 10px 0 2px; }
+  /* day card follows the active style's fonts, same as task rows */
+  :root[data-skin="vinyl"] .dt-t small, :root[data-skin="vinyl"] .dt-time { font: 10.5px 'Space Mono', ui-monospace, monospace; letter-spacing: .1em; }
+  :root[data-skin="vinyl"] .wn-hero p { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: .08em; }
+  :root[data-skin="moleskine"] .dt-t { font-family: var(--font-pen); font-size: 26px; line-height: 1.05; }
+  :root[data-skin="moleskine"] .dt-t small, :root[data-skin="moleskine"] .dt-time, :root[data-skin="moleskine"] .dt-note, :root[data-skin="moleskine"] .dt-empty, :root[data-skin="moleskine"] .wn-hero p { font-family: var(--font-pen); font-size: 20px; line-height: 1.05; }
+  :root[data-skin="moleskine"] .dt-chk { margin-top: 3px; }
+  :root[data-skin="cork"] .dt-t { font-family: var(--font-marker); font-size: 16px; line-height: 1.25; letter-spacing: .3px; }
+  :root[data-skin="cork"] .dt-t small, :root[data-skin="cork"] .dt-time, :root[data-skin="cork"] .dt-note, :root[data-skin="cork"] .dt-empty, :root[data-skin="cork"] .wn-hero p { font-family: var(--font-hand); font-size: 19px; line-height: 1.1; letter-spacing: 0; }
 
   .about-row { flex-wrap: wrap; gap: 10px; }
   .about-l { display: flex; flex-direction: column; gap: 2px; }
@@ -4812,8 +4820,11 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.11.23-1"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.23-2"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.23-2", date: "Nov 23, 2026", items: [
+    ["fixed", "The day card from Year in squares now uses your style's fonts"],
+  ]},
   { v: "2026.11.23-1", date: "Nov 23, 2026", items: [
     ["new", "Tap any square in Year in squares (or any day on the calendar) to see the tasks you finished that day"],
   ]},
