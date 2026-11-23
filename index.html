@@ -1888,6 +1888,15 @@
     font-size: 14px; line-height: 1.4;
   }
   .wn-item small { display: block; font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .fx-day { cursor: pointer; } .fx-day:hover { stroke: var(--text); stroke-width: 1.5; }
+  .dt-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--border); }
+  .dt-row:last-child { border-bottom: 0; }
+  .dt-chk { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; margin-top: 1px; }
+  .dt-t { flex: 1; min-width: 0; font-size: 15px; line-height: 1.3; overflow-wrap: anywhere; }
+  .dt-t small { display: block; font-size: 11.5px; color: var(--sub); margin-top: 2px; }
+  .dt-t small::first-letter { text-transform: uppercase; }
+  .dt-time { flex: none; font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .dt-note, .dt-empty { font-size: 13px; color: var(--sub); text-align: center; padding: 10px 0 2px; }
 
   .about-row { flex-wrap: wrap; gap: 10px; }
   .about-l { display: flex; flex-direction: column; gap: 2px; }
@@ -4138,7 +4147,7 @@ function renderFocus(activeTasks, doneTasks) {
     for (let i = 0; i < 7; i++) {
       const d = fxAdd(w, i); if (d > T || d < yStart) continue;
       const k = dayKeyFromDate(d), n = FD[k] || 0, isT = d.getTime() === T.getTime();
-      svg += `<rect x="${col * step}" y="${i * step}" width="${cell}" height="${cell}" rx="3" fill="${heat(lvl(n))}"${k < firstKey ? ' opacity=".45"' : ''}${isT ? ' stroke="var(--text)" stroke-width="1.5"' : ''}><title>${fxFmt(d, { weekday: 'short', month: 'short', day: 'numeric' })}: ${n} done</title></rect>`;
+      svg += `<rect x="${col * step}" y="${i * step}" width="${cell}" height="${cell}" rx="3" fill="${heat(lvl(n))}"${k < firstKey ? ' opacity=".45"' : ''}${isT ? ' stroke="var(--text)" stroke-width="1.5"' : ''} class="fx-day" onclick="showDayTasks('${k}')"><title>${fxFmt(d, { weekday: 'short', month: 'short', day: 'numeric' })}: ${n} done</title></rect>`;
     }
   }
   const W = col * step;
@@ -4160,7 +4169,7 @@ function renderFocus(activeTasks, doneTasks) {
   for (let i = 1; i <= dim; i++) {
     const d = new Date(y, m, i), k = dayKeyFromDate(d), n = FD[k] || 0, fut = d > T, isT = d.getTime() === T.getTime();
     if (!fut) { mDays++; mTot += n; if (n >= G) mHits++; }
-    cells += `<div class="fx-cell ${fut ? 'future' : ''} ${isT ? 'today' : ''} ${!fut && k < firstKey ? 'pre' : ''}" title="${k}: ${n} done"><span class="dn">${i}</span>` +
+    cells += `<div class="fx-cell ${fut ? 'future' : ''} ${isT ? 'today' : ''} ${!fut && k < firstKey ? 'pre' : ''}" title="${k}: ${n} done"${fut ? '' : ` onclick="showDayTasks('${k}')" style="cursor:pointer"`}><span class="dn">${i}</span>` +
       (fut ? '' : fxRing(50, 6, n) + `<span class="cnt">${n}</span>`) + '</div>';
   }
   out += `<div class="chart-card">
@@ -4195,6 +4204,42 @@ function renderFocus(activeTasks, doneTasks) {
       return `<div class="chart-card fx-bdg ${ok ? '' : 'locked'}"><div class="ic">${ic}</div><h4>${n}</h4><p>${d}</p>${ok ? '<p class="ok">Unlocked</p>' : `<div class="fx-bar"><i style="width:${Math.max(3, v / goal * 100).toFixed(0)}%"></i></div><p class="prog">${Math.min(v, goal)} / ${goal}</p>`}</div>`; }).join('')}</div>
   </div>`;
   return out;
+}
+
+// Tap a square (year heatmap) or a day (ring calendar) to see what got done that day.
+function dayDoneList(key) {
+  const seen = new Map();
+  tasks.forEach(t => { if (!t.done) return; const iso = t.doneAt || completions[t.title]; if (!iso) return;
+    const d = new Date(iso); if (isNaN(d) || dayKeyFromDate(d) !== key) return;
+    seen.set(t.title, { title: t.title, tag: t.tag || null, ts: +d }); });
+  Object.entries(completions).forEach(([title, iso]) => { if (seen.has(title)) return;
+    const d = new Date(iso); if (isNaN(d) || dayKeyFromDate(d) !== key) return;
+    seen.set(title, { title, tag: null, ts: +d }); });
+  return [...seen.values()].sort((a, b) => a.ts - b.ts);
+}
+function showDayTasks(key) {
+  const h = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const [y, m, d] = key.split('-').map(Number), date = new Date(y, m - 1, d);
+  const list = dayDoneList(key), counted = focusDays()[key] || 0, extra = Math.max(0, counted - list.length);
+  const n = Math.max(list.length, counted);
+  const rows = list.map(t => `<div class="dt-row"><span class="dt-chk">✓</span><span class="dt-t">${h(t.title)}${t.tag ? `<small>${h(t.tag)}</small>` : ''}</span>` +
+    `<span class="dt-time">${new Date(t.ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span></div>`).join('');
+  const body = list.length || extra
+    ? rows + (extra ? `<p class="dt-note">+ ${extra} more from before Donezo kept task names</p>` : '')
+    : `<p class="dt-empty">Nothing finished this day.</p>`;
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.innerHTML = `<div class="modal">
+    <div class="wn-hero"><h2>${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h2>
+      <p>${n} task${n === 1 ? '' : 's'} done</p></div>
+    <div class="wn-body dt-body">${body}</div>
+    <div class="modal-btns"><button class="btn-primary">Close</button></div>
+  </div>`;
+  const close = () => { ov.classList.remove('visible'); setTimeout(() => ov.remove(), 200); };
+  ov.querySelector('.btn-primary').onclick = close;
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  document.body.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('visible'));
 }
 
 // ---- TRENDS TAB ----
@@ -4767,8 +4812,11 @@ document.addEventListener('keydown', e => {
 // IN-APP UPDATES + WHAT'S NEW (same handshake as Dwellness)
 // Release checklist: bump APP_VERSION here AND VERSION in sw.js, add a CHANGELOG entry, push both.
 // ============================================================
-const APP_VERSION = "2026.11.21-1"; // keep in sync with VERSION in sw.js
+const APP_VERSION = "2026.11.23-1"; // keep in sync with VERSION in sw.js
 const CHANGELOG = [
+  { v: "2026.11.23-1", date: "Nov 23, 2026", items: [
+    ["new", "Tap any square in Year in squares (or any day on the calendar) to see the tasks you finished that day"],
+  ]},
   { v: "2026.11.21-1", date: "Nov 21, 2026", items: [
     ["improved", "No more Focus and Stretch: Today is one list. Add as many tasks as you want and drag them into any order"],
     ["improved", "Tomorrow planning has no 3-task cap either"],
